@@ -57,3 +57,10 @@ tasks:
     deps: [ install-golangci-lint ]
     cmds:
       - '{{.GOLANGCI_LINT}} run ./... --config=.golangci.yml'
+  
+  generate:
+    aliases:
+      - gen
+    desc: "Generate code from proto files"
+    cmds:
+      - protoc -I proto proto/sso/*.proto --go_out=./proto --go_opt=paths=source_relative --go-grpc_out=./proto --go-grpc_opt=paths=source_relative
