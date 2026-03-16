@@ -19,7 +19,9 @@ func New(log *slog.Logger, grpcPort int, tokenTTL time.Duration) *App {
 
 	// TODO: инициализация auth сервиса
 
-	grpcServer := server.NewGRPCServer(log, grpcPort, func(s *grpc.Server) { auth.Register(s, authService) })
+	grpcServer := server.NewGRPCServer(log, grpcPort, func(s *grpc.Server) {
+		auth.Register(s)
+	})
 	return &App{
 		GRPCServer: grpcServer,
 	}

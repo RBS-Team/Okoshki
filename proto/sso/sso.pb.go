@@ -358,6 +358,7 @@ var (
 		(*IsAdminResponse)(nil),  // 5: sso.IsAdminResponse
 	}
 )
+
 var file_sso_sso_proto_depIdxs = []int32{
 	0, // 0: sso.Auth.Register:input_type -> sso.RegisterRequest
 	2, // 1: sso.Auth.Login:input_type -> sso.LoginRequest
