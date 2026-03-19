@@ -9,6 +9,7 @@ import (
 
 	"github.com/RBS-Team/Okoshki/daemon/sso/domain/model"
 	"github.com/RBS-Team/Okoshki/daemon/sso/repository/postgresql"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Auth struct {
@@ -58,7 +59,16 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID i
 
 		a.log.Error("failed to get user", slog.String("error", err.Error()))
 		return "", fmt.Errorf("%s:%w", op, err)
+	}
 
+	if err := bcrypt.CompareHashAndPassword(user.PassHash, []byte(password)); err != nil {
+		a.log.Info("invalid credentials", slog.String("error", err.Error()))
+		return "", fmt.Errorf("%s:%w", op, ErrInvalidCredentials)
+	}
+
+	app, err := a.appProvider.App(ctx, appID)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 }
 

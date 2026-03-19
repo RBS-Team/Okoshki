@@ -1,6 +1,9 @@
 version: '3'
-
+dotenv: ['.env']
 # Глобальные переменные проекта
+env:
+  PROJECT_ROOT: '{{.ROOT_DIR}}'
+
 vars:
   GO_VERSION: '1.26'
   GOLANGCI_LINT_VERSION: 'v2.8.0'
@@ -11,6 +14,8 @@ vars:
   GOLANGCI_LINT: '{{.BIN_DIR}}/golangci-lint'
   GCI: '{{.BIN_DIR}}/gci'
   GOFUMPT: '{{.BIN_DIR}}/gofumpt'
+
+
 
 tasks:
   install-formatters:
@@ -64,3 +69,38 @@ tasks:
     desc: "Generate code from proto files"
     cmds:
       - protoc -I proto proto/sso/*.proto --go_out=./proto --go_opt=paths=source_relative --go-grpc_out=./proto --go-grpc_opt=paths=source_relative
+  
+  env-up-sso:
+    desc: "Поднимает докер с БД для сервиса sso"
+    cmds:
+      - docker compose -f deployments/docker-compose.yaml up -d sso-db
+
+  env-down-sso:
+    cmds:
+      - docker compose -f deployments/docker-compose.yaml down sso-db
+  
+  env-cleanup-sso:
+    silent: true
+    cmds:
+      - | 
+        read -p "Очистить все volume файлы окружения? ОПАСНОСТЬ утери данных. [y/N]:" ans; 
+        if [ "$ans" = "y" ]; then 
+          docker compose -f deployments/docker-compose.yaml down sso-db && 
+          sudo rm -rf out/sso_pg_data && 
+          echo "Файлы окружения очищены"; 
+        else 
+          echo "Очистка окружения отменена"; 
+        fi
+
+  migrate-create-sso:
+    silent: true
+    vars:
+      seq: '{{.seq}}'
+    cmds:
+      - |
+        if [ -z "{{.seq}}" ]; then
+          echo "Отсутствует необходимый параметр seq. Пример: task migrate-create-sso seq=init";
+          exit 1;
+        fi;
+        docker compose -f deployments/docker-compose.yaml run --rm sso-db-migrate create -ext sql -dir /migrations -seq {{.seq}}
+

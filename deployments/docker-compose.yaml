@@ -1,0 +1,17 @@
+
+services:
+  sso-db:
+    image: postgres:15-alpine
+    container_name: okoshki-sso-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER_SSO}
+      POSTGRES_PASSWORD: ${DB_PASSWORD_SSO}
+      POSTGRES_DB: ${DB_NAME_SSO}
+    volumes:
+      - ${PROJECT_ROOT}/out/sso_pg_data:/var/lib/postgresql/data
+
+  sso-db-migrate:
+    image: migrate/migrate:v4.19.1
+    volumes: 
+      - ${PROJECT_ROOT}/migrations/sso:/migrations
