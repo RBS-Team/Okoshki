@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson42239ddeDecodeSpotifyPkgResponse(in *jlexer.Lexer, out *ErrorResponse) {
+func easyjson42239ddeDecodeGithubComRBSTeamOkoshkiPkgResponse(in *jlexer.Lexer, out *ErrorResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -47,7 +47,7 @@ func easyjson42239ddeDecodeSpotifyPkgResponse(in *jlexer.Lexer, out *ErrorRespon
 		in.Consumed()
 	}
 }
-func easyjson42239ddeEncodeSpotifyPkgResponse(out *jwriter.Writer, in ErrorResponse) {
+func easyjson42239ddeEncodeGithubComRBSTeamOkoshkiPkgResponse(out *jwriter.Writer, in ErrorResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -62,23 +62,23 @@ func easyjson42239ddeEncodeSpotifyPkgResponse(out *jwriter.Writer, in ErrorRespo
 // MarshalJSON supports json.Marshaler interface
 func (v ErrorResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson42239ddeEncodeSpotifyPkgResponse(&w, v)
+	easyjson42239ddeEncodeGithubComRBSTeamOkoshkiPkgResponse(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ErrorResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson42239ddeEncodeSpotifyPkgResponse(w, v)
+	easyjson42239ddeEncodeGithubComRBSTeamOkoshkiPkgResponse(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ErrorResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson42239ddeDecodeSpotifyPkgResponse(&r, v)
+	easyjson42239ddeDecodeGithubComRBSTeamOkoshkiPkgResponse(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ErrorResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson42239ddeDecodeSpotifyPkgResponse(l, v)
+	easyjson42239ddeDecodeGithubComRBSTeamOkoshkiPkgResponse(l, v)
 }
