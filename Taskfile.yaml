@@ -104,3 +104,24 @@ tasks:
         fi;
         docker compose -f deployments/docker-compose.yaml run --rm sso-db-migrate create -ext sql -dir /migrations -seq {{.seq}}
 
+  migrate-up-sso:
+    cmds:
+      - migrate-action-sso action=up
+  migrate-down-sso:
+    cmds:
+      - migrate-action-sso action=down
+    
+
+  migrate-action-sso:
+    silent: true
+    cmds:
+      - |
+        if [ -z "{{.action}}" ]; then
+          echo "Отсутствует необходимый параметр action. Пример: task migrate-create-sso action=up";
+          exit 1;
+        fi;
+        docker compose -f deployments/docker-compose.yaml run --rm sso-db-migrate \
+        -path /migrations \
+        -database "postgres://{{.DB_USER_SSO}}:{{.DB_PASSWORD_SSO}}@sso-db:5432/{{.DB_NAME_SSO}}?sslmode=disable" \
+        {{.action}}
+

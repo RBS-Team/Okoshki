@@ -9,6 +9,7 @@ import (
 
 	"github.com/RBS-Team/Okoshki/daemon/sso/domain/model"
 	"github.com/RBS-Team/Okoshki/daemon/sso/repository/postgresql"
+	"github.com/RBS-Team/Okoshki/pkg/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -70,6 +71,9 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID i
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
+	log.Info("user logged in successfully")
+	token, err := jwt.
+	return token, nil
 }
 
 func (a *Auth) RegisterNewUser(ctx context.Context, email string, password string) (int64, error) {
