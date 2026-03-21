@@ -80,7 +80,6 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
 	user, err := h.service.Login(r.Context(), dto.LoginRequest{
 		Email:    req.Email,
 		Password: req.Password,
@@ -91,7 +90,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.jwtManager.NewToken(user.ID,user.Role)
+	token, err := h.jwtManager.NewToken(user.ID, user.Role)
 	if err != nil {
 		log.Errorf("[%s]: Failed to generate token: %v", op, err)
 		response.InternalErrorJSON(w)
@@ -107,7 +106,10 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	})
 
 	log.Infof("[%s]: User login successfully: %s", op, user.ID)
-	response.JSON(w, http.StatusOK, dto.LoginResponse{ID: user.ID})
+	response.JSON(w, http.StatusOK, dto.LoginResponse{
+		ID:   user.ID,
+		Role: user.Role,
+	})
 }
 
 // func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {

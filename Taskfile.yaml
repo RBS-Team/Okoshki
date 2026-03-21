@@ -1,5 +1,5 @@
 version: '3'
-
+dotenv: ['.env']
 # Глобальные переменные проекта
 vars:
   GO_VERSION: '1.26'
@@ -64,3 +64,49 @@ tasks:
     desc: "Generate code from proto files"
     cmds:
       - protoc -I proto proto/sso/*.proto --go_out=./proto --go_opt=paths=source_relative --go-grpc_out=./proto --go-grpc_opt=paths=source_relative
+  
+  env-up:
+    desc: "Поднимает докер с БД для сервиса core"
+    cmds:
+      - docker compose -f deployments/docker-compose.yaml up -d db
+
+  env-down:
+    cmds:
+      - docker compose -f deployments/docker-compose.yaml down db
+  
+  migrate-create:
+    silent: true
+    vars:
+      seq: '{{.seq}}'
+    cmds:
+      - |
+        if [ -z "{{.seq}}" ]; then
+          echo "Отсутствует необходимый параметр seq. Пример: task migrate-create seq=init";
+          exit 1;
+        fi;
+        docker compose -f deployments/docker-compose.yaml run --rm migrate create -ext sql -dir /migrations -seq {{.seq}}
+
+  migrate-up:
+    cmds:
+      - task: migrate-action
+        vars:
+          action: up
+
+  migrate-down:
+    cmds:
+      - task: migrate-action
+        vars:
+          action: down
+
+  migrate-action:
+    silent: true
+    cmds:
+      - |
+        if [ -z "{{.action}}" ]; then
+          echo "Отсутствует необходимый параметр action. Пример: task migrate-action action=up";
+          exit 1;
+        fi;
+        docker compose -f deployments/docker-compose.yaml run --rm migrate \
+        -path /migrations \
+        -database "postgres://{{.DB_USER}}:{{.DB_PASSWORD}}@db:5432/{{.DB_NAME}}?sslmode=disable" \
+        {{.action}}

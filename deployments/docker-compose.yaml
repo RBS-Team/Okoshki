@@ -6,9 +6,9 @@ services:
     container_name: okoshki-db
     restart: always
     environment:
-      POSTGRES_USER: dev_user
-      POSTGRES_PASSWORD: dev_password
-      POSTGRES_DB: okoshki_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
@@ -23,11 +23,11 @@ services:
     image: migrate/migrate
     container_name: okoshki-migrate
     volumes:
-      - ./migrations:/migrations
-    command: [ "-path", "/migrations", "-database", "postgres://dev_user:dev_password@db:5432/okoshki_db?sslmode=disable", "up" ]
+      - ../migrations:/migrations
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   pg_data:
+  

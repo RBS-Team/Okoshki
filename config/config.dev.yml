@@ -20,11 +20,11 @@ auth:
     mode: "dev"
 
 db:
-  host: "db"
+  host: "localhost"
   port: 5432
-  user: "myuser"
-  password: "mypassword"
-  dbName: "mydb"
+  user: "dev_user"
+  password: "dev_password"
+  dbName: "okoshki_db"
   sslmode: "disable"
   maxOpenConns: 25
   maxIdleConns: 25
