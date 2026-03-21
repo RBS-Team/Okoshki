@@ -4,6 +4,7 @@ package http
 
 import (
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
@@ -31,6 +32,10 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		response.BadRequestJSON(w)
 		return
 	}
+	if !validate(req.Email, req.Password) {
+		response.BadRequestJSON(w)
+		return
+	}
 
 	user, err := h.service.RegisterNewUser(r.Context(), dto.RegisterRequest{
 		Email:    req.Email,
@@ -39,7 +44,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Errorf("[%s]: Service error: %v", op, err)
-		h.handleError(w, err)
+		h.handleAuthError(w, err)
 		return
 	}
 
@@ -73,9 +78,13 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	log := middleware.LoggerFromContext(r.Context())
 
 	var req dto.LoginRequest
-
 	if err := easyjson.UnmarshalFromReader(r.Body, &req); err != nil {
 		log.Errorf("[%s]: Invalid request body: %v", op, err)
+		response.BadRequestJSON(w)
+		return
+	}
+	// Валидация
+	if !validate(req.Email, req.Password) {
 		response.BadRequestJSON(w)
 		return
 	}
@@ -84,9 +93,10 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Email:    req.Email,
 		Password: req.Password,
 	})
+
 	if err != nil {
 		log.Errorf("[%s]: Service error: %v", op, err)
-		h.handleError(w, err)
+		h.handleAuthError(w, err)
 		return
 	}
 
@@ -127,3 +137,43 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 // 	log.Infof("[%s]: User logout successful", op)
 // 	response.JSON(w, http.StatusOK, logoutResponse{Status: "ok"})
 // }
+
+// validateCredentials - простая валидация формата
+// func (h *AuthHandler) validateCredentials(email, password string) error {
+// 	if email == "" || password == "" {
+// 		return errors.New("email and password are required")
+// 	}
+
+// 	if !strings.Contains(email, "@") {
+// 		return errors.New("invalid email format")
+// 	}
+
+// 	if len(password) < 6 {
+// 		return errors.New("password must be at least 6 characters")
+// 	}
+
+//		return nil
+//	}
+func validate(email string, pass string) bool {
+
+	if email == "" || pass == "" {
+		return false
+	}
+	if !isValidEmail(email) {
+		return false
+	}
+	if len(pass) < 6 {
+		return false
+	}
+	return true
+}
+
+var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+
+func isValidEmail(email string) bool {
+
+	if len(email) > 254 { // Максимальная длина email
+		return false
+	}
+	return emailRegex.MatchString(email)
+}

@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+
 	"github.com/RBS-Team/Okoshki/microservices/core/auth/repository/postgres"
 )
 

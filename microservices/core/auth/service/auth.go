@@ -20,7 +20,7 @@ func (a *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 	if err != nil {
 		return nil, mapRepositoryError(err)
 	}
-
+	
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
 		return nil, fmt.Errorf("[%s]: invalid credentials: %w", op, ErrValidation)
 	}

@@ -6,10 +6,12 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserRole string
+
 const (
-	RoleClient = "client"
-	RoleMaster = "master"
-	RoleAdmin  = "admin"
+	RoleClient UserRole = "client"
+	RoleMaster UserRole = "master"
+	RoleAdmin  UserRole = "admin"
 )
 
 type User struct {
