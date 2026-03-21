@@ -23,12 +23,7 @@ services:
     image: migrate/migrate
     container_name: okoshki-migrate
     volumes:
-<<<<<<< HEAD
       - ../migrations:/migrations
-=======
-      - ../migrations:/migrations 
-    command: [ "-path", "/migrations", "-database", "postgres://dev_user:dev_password@db:5432/okoshki_db?sslmode=disable", "up" ]
->>>>>>> catalog_master_category
     depends_on:
       db:
         condition: service_healthy
