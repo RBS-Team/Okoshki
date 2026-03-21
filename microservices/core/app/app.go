@@ -10,6 +10,9 @@ import (
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/internal/server"
+	catalogHttp "github.com/RBS-Team/Okoshki/microservices/core/catalog/delivery/http"
+	catalogRepo "github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
+	catalogSvc "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
 	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
 
 	httpDelivery "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
@@ -53,18 +56,20 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 
 	authMiddleware := middleware.NewAuthMiddleware(jwtManager)
 
-	httpHandler := httpDelivery.NewHandler(userService, jwtManager)
-
+	authHandler := httpDelivery.NewHandler(userService, jwtManager)
+	catalogRepository := catalogRepo.New(db)
+	catalogService := catalogSvc.New(catalogRepository)
+	catalogHandler := catalogHttp.NewHandler(catalogService)
 	router := mux.NewRouter()
 
 	api := router.PathPrefix("/api/v1").Subrouter()
 	api.Use(middleware.RequestLoggerMiddleware(appLogger))
-
+	catalogHandler.RegisterRoutes(api)
 	public := api.PathPrefix("").Subrouter()
 	protected := api.PathPrefix("").Subrouter()
 	protected.Use(authMiddleware.AuthMiddleware)
 
-	httpHandler.RegisterRoutes(public, protected)
+	authHandler.RegisterRoutes(public, protected)
 
 	httpServer := server.NewHTTPServer(&cfg.Auth.HTTP, router, appLogger)
 
