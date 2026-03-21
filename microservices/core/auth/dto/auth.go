@@ -16,7 +16,13 @@ type LoginRequest struct {
 }
 
 //easyjson:json
-type AuthResponse struct {
+type LoginResponse struct {
+	ID   string `json:"id"`
+	Role string `json:"role"`
+}
+
+//easyjson:json
+type RegisterResponse struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`
 	Role  string `json:"role"`

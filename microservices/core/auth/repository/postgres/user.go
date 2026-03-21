@@ -98,13 +98,13 @@ func handlePostgresError(err error) error {
 	if err == nil {
 		return nil
 	}
-	
+
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		if pgErr.Code == "23505" {
 			return ErrConflict
 		}
 	}
-	
+
 	return err
 }

@@ -1,0 +1,31 @@
+auth:
+  http:
+    port: "8080"
+    readTimeout: 5s
+    writeTimeout: 10s
+    idleTimeout: 60s
+    shutdownTimeout: 15s
+    
+    auth:
+      jwt:
+        secretKey: "dev-jwt-secret"
+        accessTokenTTL: 720h
+      csrf:
+        secretKey: "dev-csrf-secret"
+        tokenTTL: 15m
+  grpc:
+    port: "9001"
+  logger:
+    level: "debug"
+    mode: "dev"
+
+db:
+  host: "db"
+  port: 5432
+  user: "myuser"
+  password: "mypassword"
+  dbName: "mydb"
+  sslmode: "disable"
+  maxOpenConns: 25
+  maxIdleConns: 25
+  connMaxLifetime: 5m
