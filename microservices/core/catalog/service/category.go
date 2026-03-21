@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
+	"github.com/google/uuid"
 )
 
 func (s *Service) GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Category, error) {
@@ -33,36 +33,43 @@ func (s *Service) GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Categ
 	return catDTO, nil
 }
 
-func (s *Service) GetAllCategories(ctx context.Context) ([]dto.Category, error) {
+func (s *Service) GetAllCategories(ctx context.Context) ([]*dto.Category, error) {
 	const op = "catalog.service.GetAllCategories"
 
 	catModels, err := s.repo.GetAllCategories(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: failed to get categories: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: failed to get categories from repo: %w", op, mapError(err))
 	}
 
 	if len(catModels) == 0 {
-		return[]dto.Category{}, nil
+		return []*dto.Category{}, nil
 	}
 
-	catDTOs := make([]dto.Category, 0, len(catModels))
+	categoryMap := make(map[uuid.UUID]*dto.Category, len(catModels))
 	for _, catModel := range catModels {
-		cat := dto.Category{
-			ID:   catModel.ID.String(),
-			Name: catModel.Name,
+		dtoCat := &dto.Category{
+			ID:          catModel.ID.String(),
+			Name:        catModel.Name,
+			Description: catModel.Description,
+			Children:    []*dto.Category{},
 		}
-
 		if catModel.ParentID != nil {
 			parentIDStr := catModel.ParentID.String()
-			cat.ParentID = &parentIDStr
+			dtoCat.ParentID = &parentIDStr
 		}
-
-		if catModel.Description != nil {
-			cat.Description = catModel.Description
-		}
-
-		catDTOs = append(catDTOs, cat)
+		categoryMap[catModel.ID] = dtoCat
 	}
 
-	return catDTOs, nil
+	rootCategories := make([]*dto.Category, 0)
+	for _, catModel := range catModels {
+		if catModel.ParentID == nil {
+			rootCategories = append(rootCategories, categoryMap[catModel.ID])
+		} else {
+			if parentDTO, ok := categoryMap[*catModel.ParentID]; ok {
+				parentDTO.Children = append(parentDTO.Children, categoryMap[catModel.ID])
+			}
+		}
+	}
+
+	return rootCategories, nil
 }

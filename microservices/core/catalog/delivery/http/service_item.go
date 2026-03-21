@@ -86,6 +86,34 @@ func (h *Handler) GetServiceItemsByMasterID(w http.ResponseWriter, r *http.Reque
 	response.JSON(w, http.StatusOK, items)
 }
 
+func (h *Handler) GetServicesByCategory(w http.ResponseWriter, r *http.Request) {
+	const op = "catalog.handler.GetServicesByCategory"
+
+	idStr, ok := mux.Vars(r)["id"]
+	if !ok {
+		response.BadRequestJSON(w)
+		return
+	}
+
+	categoryID, err := uuid.Parse(idStr)
+	if err != nil {
+		response.BadRequestJSON(w)
+		return
+	}
+
+	limit, offset := parsePagination(r)
+
+	items, err := h.service.GetServicesByCategory(r.Context(), categoryID, limit, offset)
+	if err != nil {
+		if !errors.Is(err, service.ErrNotFound) {
+		}
+		h.handleServiceItemError(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, items)
+}
+
 func (h *Handler) handleServiceItemError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, service.ErrNotFound):

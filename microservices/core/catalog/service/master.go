@@ -82,6 +82,31 @@ func (s *Service) GetAllMasters(ctx context.Context, limit, offset uint64) ([]dt
 	return masterDTOs, nil
 }
 
+func (s *Service) GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error) {
+	const op = "catalog.service.GetMastersByCategory"
+
+	_, err := s.repo.GetCategoryByID(ctx, categoryID)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: failed to validate category: %w", op, mapError(err))
+	}
+
+	masterModels, err := s.repo.GetMastersByCategoryID(ctx, categoryID, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: failed to get masters by category: %w", op, mapError(err))
+	}
+
+	if len(masterModels) == 0 {
+		return []dto.Master{}, nil
+	}
+
+	masterDTOs := make([]dto.Master, 0, len(masterModels))
+	for i := range masterModels {
+		masterDTOs = append(masterDTOs, *mapMasterModelToDTO(&masterModels[i]))
+	}
+
+	return masterDTOs, nil
+}
+
 func mapMasterModelToDTO(m *model.Master) *dto.Master {
 	return &dto.Master{
 		ID:          m.ID.String(),

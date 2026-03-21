@@ -89,6 +89,38 @@ func (h *Handler) GetAllMasters(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, masters)
 }
 
+func (h *Handler) GetMastersByCategory(w http.ResponseWriter, r *http.Request) {
+	const op = "catalog.handler.GetMastersByCategory"
+	// log := middleware.LoggerFromContext(r.Context())
+
+	idStr, ok := mux.Vars(r)["id"]
+	if !ok {
+		// log.Errorf("[%s]: category id is missing in URL vars", op)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	categoryID, err := uuid.Parse(idStr)
+	if err != nil {
+		// log.Warnf("[%s]: Failed to parse category ID from URL: %v", op, err)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	limit, offset := parsePagination(r)
+
+	masters, err := h.service.GetMastersByCategory(r.Context(), categoryID, limit, offset)
+	if err != nil {
+		if !errors.Is(err, service.ErrNotFound) {
+			// log.Errorf("[%s]: Service error: %v", op, err)
+		}
+		h.handleMasterError(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, masters)
+}
+
 func parsePagination(r *http.Request) (uint64, uint64) {
 	query := r.URL.Query()
 

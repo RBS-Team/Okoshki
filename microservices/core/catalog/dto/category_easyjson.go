@@ -71,6 +71,41 @@ func easyjson6a91a67cDecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(in
 					*out.Description = string(in.String())
 				}
 			}
+		case "children":
+			if in.IsNull() {
+				in.Skip()
+				out.Children = nil
+			} else {
+				in.Delim('[')
+				if out.Children == nil {
+					if !in.IsDelim(']') {
+						out.Children = make([]*Category, 0, 8)
+					} else {
+						out.Children = []*Category{}
+					}
+				} else {
+					out.Children = (out.Children)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v1 *Category
+					if in.IsNull() {
+						in.Skip()
+						v1 = nil
+					} else {
+						if v1 == nil {
+							v1 = new(Category)
+						}
+						if in.IsNull() {
+							in.Skip()
+						} else {
+							(*v1).UnmarshalEasyJSON(in)
+						}
+					}
+					out.Children = append(out.Children, v1)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -104,6 +139,24 @@ func easyjson6a91a67cEncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(ou
 		const prefix string = ",\"description\":"
 		out.RawString(prefix)
 		out.String(string(*in.Description))
+	}
+	if len(in.Children) != 0 {
+		const prefix string = ",\"children\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('[')
+			for v2, v3 := range in.Children {
+				if v2 > 0 {
+					out.RawByte(',')
+				}
+				if v3 == nil {
+					out.RawString("null")
+				} else {
+					(*v3).MarshalEasyJSON(out)
+				}
+			}
+			out.RawByte(']')
+		}
 	}
 	out.RawByte('}')
 }

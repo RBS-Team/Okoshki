@@ -80,3 +80,50 @@ func (r *Repository) GetServiceItemsByMasterID(ctx context.Context, masterID uui
 
 	return items, nil
 }
+
+func (r *Repository) GetServicesByCategoryID(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]model.ServiceItem, error) {
+	const op = "catalog.repository.postgres.GetServicesByCategoryID"
+
+	query := `
+		WITH RECURSIVE cat_tree AS (
+			SELECT id FROM category WHERE id = $1 AND is_active = true
+			UNION ALL
+			SELECT c.id FROM category c
+			INNER JOIN cat_tree ct ON c.parent_id = ct.id
+			WHERE c.is_active = true
+		)
+		SELECT id, master_id, category_id, title, description, price, 
+		       duration_minutes, buffer_before_minutes, buffer_after_minutes, 
+		       is_active, created_at, updated_at
+		FROM master_services
+		WHERE is_active = true 
+		  AND category_id IN (SELECT id FROM cat_tree)
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, categoryID, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: query failed: %w", op, err)
+	}
+	defer rows.Close()
+
+	items := make([]model.ServiceItem, 0)
+	for rows.Next() {
+		var s model.ServiceItem
+		if err := rows.Scan(
+			&s.ID, &s.MasterID, &s.CategoryID, &s.Title, &s.Description,
+			&s.Price, &s.DurationMinutes, &s.BufferBeforeMinutes,
+			&s.BufferAfterMinutes, &s.IsActive, &s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("[%s]: scan failed: %w", op, err)
+		}
+		items = append(items, s)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("[%s]: rows iteration failed: %w", op, err)
+	}
+
+	return items, nil
+}
