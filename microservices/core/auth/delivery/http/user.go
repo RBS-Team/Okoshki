@@ -32,7 +32,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.Register(r.Context(), dto.RegisterRequest{
+	user, err := h.service.RegisterNewUser(r.Context(), dto.RegisterRequest{
 		Email:    req.Email,
 		Password: req.Password,
 		Role:     req.Role,

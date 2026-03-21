@@ -49,12 +49,6 @@ func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(in *j
 			} else {
 				out.Role = string(in.String())
 			}
-		case "token":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				out.Token = string(in.String())
-			}
 		default:
 			in.SkipRecursive()
 		}
@@ -83,11 +77,6 @@ func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(out *
 		const prefix string = ",\"role\":"
 		out.RawString(prefix)
 		out.String(string(in.Role))
-	}
-	if in.Token != "" {
-		const prefix string = ",\"token\":"
-		out.RawString(prefix)
-		out.String(string(in.Token))
 	}
 	out.RawByte('}')
 }

@@ -26,19 +26,19 @@ func (a *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 	}
 
 	return &dto.LoginResponse{
-		ID: user.ID.String(),
+		ID:   user.ID.String(),
 		Role: user.Role,
 	}, nil
 }
 
-func (a *AuthService) RegisterNewUser(ctx context.Context, req dto.RegisterRequest) error {
+func (a *AuthService) RegisterNewUser(ctx context.Context, req dto.RegisterRequest) (*dto.RegisterResponse, error) {
 	const op = "auth.RegisterNewUser"
 	// log := a.log.With(slog.String("op", op))
 	// log.Info("registering user")
 
 	passHash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("[%s]: failed to hash password: %w", op, err)
+		return nil, fmt.Errorf("[%s]: failed to hash password: %w", op, err)
 	}
 	user := model.User{
 		ID:           uuid.New(),
@@ -50,9 +50,13 @@ func (a *AuthService) RegisterNewUser(ctx context.Context, req dto.RegisterReque
 		UpdatedAt:    time.Now(),
 	}
 	if err := a.usrSaver.CreateUser(ctx, user); err != nil {
-		return mapRepositoryError(err)
+		return nil, mapRepositoryError(err)
 	}
-	return nil
+	return &dto.RegisterResponse{
+		ID:    user.ID.String(),
+		Email: user.Email,
+		Role:  user.Role,
+	}, nil
 
 }
 

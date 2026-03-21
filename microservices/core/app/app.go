@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
+	"net/http"
+	"sync"
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/internal/server"
@@ -57,7 +60,6 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	api := router.PathPrefix("/api/v1").Subrouter()
 	api.Use(middleware.RequestLoggerMiddleware(appLogger))
 
-
 	public := api.PathPrefix("").Subrouter()
 	protected := api.PathPrefix("").Subrouter()
 	protected.Use(authMiddleware.AuthMiddleware)
@@ -72,4 +74,64 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 		db:         db,
 		httpServer: httpServer,
 	}, nil
+}
+
+func (a *App) Run(ctx context.Context) error {
+	var wg sync.WaitGroup
+	serverErrors := make(chan error, 1)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := a.httpServer.Run(); err != nil && err != http.ErrServerClosed {
+			serverErrors <- fmt.Errorf("http server error: %w", err)
+		}
+	}()
+
+	// wg.Add(1)
+	// go func() {
+	// 	defer wg.Done()
+	// 	if err := a.grpcServer.Run(); err != nil {
+	// 		serverErrors <- fmt.Errorf("grpc server error: %w", err)
+	// 	}
+	// }()
+
+	a.logger.Infof("Auth microservice is running...")
+
+	select {
+	case err := <-serverErrors:
+		return fmt.Errorf("server run failed: %w", err)
+	case <-ctx.Done():
+		a.logger.Infof("shutting down servers due to context cancellation...")
+	}
+
+	if err := a.Stop(); err != nil {
+		return fmt.Errorf("failed to gracefully stop application: %w", err)
+	}
+
+	wg.Wait()
+	a.logger.Infof("All servers stopped, application is shutting down.")
+	return nil
+}
+
+func (a *App) Stop() error {
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), a.cfg.Auth.HTTP.ShutdownTimeout)
+	defer cancel()
+
+	errHTTP := a.httpServer.Shutdown(shutdownCtx)
+	// a.grpcServer.Stop()
+
+	errDB := a.db.Close()
+
+	errLog := a.logger.Sync()
+	if errLog != nil {
+		log.Printf("ERROR: failed to sync logger: %v", errLog)
+	}
+
+	if errHTTP != nil || errDB != nil {
+		return fmt.Errorf("shutdown errors: http=%v, db=%v", errHTTP, errDB)
+	}
+
+	a.logger.Infof("Application stopped gracefully.")
+	return nil
 }
