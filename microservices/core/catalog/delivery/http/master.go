@@ -15,6 +15,19 @@ import (
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
+// CreateMaster godoc
+// @Summary      Создание мастера
+// @Description  Создаёт нового мастера в каталоге
+// @Tags         masters
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.CreateMasterRequest true "Данные мастера"
+// @Success      201 {object} dto.Master "Мастер успешно создан"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат запроса или отсутствуют обязательные поля"
+// @Failure      409 {object} response.ErrorResponse "Мастер с таким user_id уже существует"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Security     CookieAuth
+// @Router       /masters [post]
 func (h *Handler) CreateMaster(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.CreateMaster"
 	log := middleware.LoggerFromContext(r.Context())
@@ -43,6 +56,18 @@ func (h *Handler) CreateMaster(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusCreated, master)
 }
 
+// GetMasterByID godoc
+// @Summary      Получение мастера по ID
+// @Description  Возвращает информацию о мастере по его уникальному идентификатору
+// @Tags         masters
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "UUID мастера" format(uuid)
+// @Success      200 {object} dto.Master "Мастер найден"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат ID"
+// @Failure      404 {object} response.ErrorResponse "Мастер не найден"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router       /masters/{id} [get]
 func (h *Handler) GetMasterByID(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetMasterByID"
 	log := middleware.LoggerFromContext(r.Context())
@@ -73,6 +98,17 @@ func (h *Handler) GetMasterByID(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, master)
 }
 
+// GetAllMasters godoc
+// @Summary      Получение списка мастеров
+// @Description  Возвращает список всех мастеров с пагинацией
+// @Tags         masters
+// @Accept       json
+// @Produce      json
+// @Param        limit  query    int     false "Количество записей на странице (max: 100)" default(20) minimum(1) maximum(100)
+// @Param        offset query    int     false "Смещение для пагинации" default(0) minimum(0)
+// @Success      200 {array}  dto.Master "Список мастеров"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router       /masters [get]
 func (h *Handler) GetAllMasters(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetAllMasters"
 	log := middleware.LoggerFromContext(r.Context())
@@ -89,6 +125,20 @@ func (h *Handler) GetAllMasters(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, masters)
 }
 
+// GetMastersByCategory godoc
+// @Summary      Получение мастеров по категории
+// @Description  Возвращает список мастеров, предоставляющих услуги в указанной категории
+// @Tags         masters
+// @Accept       json
+// @Produce      json
+// @Param        id     path    string  true  "UUID категории" format(uuid)
+// @Param        limit  query   int     false "Количество записей на странице (max: 100)" default(20) minimum(1) maximum(100)
+// @Param        offset query   int     false "Смещение для пагинации" default(0) minimum(0)
+// @Success      200 {array}  dto.Master "Список мастеров категории"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат ID категории"
+// @Failure      404 {object} response.ErrorResponse "Категория не найдена"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router       /categories/{id}/masters [get]
 func (h *Handler) GetMastersByCategory(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetMastersByCategory"
 	log := middleware.LoggerFromContext(r.Context())

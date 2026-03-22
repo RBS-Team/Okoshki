@@ -44,7 +44,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		response.BadRequestJSON(w)
 		return
 	}
-	if !validate(req.Email, req.Password) {
+	if !h.validateCredentials(req.Email, req.Password) {
 		response.BadRequestJSON(w)
 		return
 	}
@@ -108,7 +108,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Валидация
-	if !validate(req.Email, req.Password) {
+	if !h.validateCredentials(req.Email, req.Password) {
 		response.BadRequestJSON(w)
 		return
 	}
@@ -145,6 +145,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Role: user.Role,
 	})
 }
+
 // Login godoc
 // @Summary      Выход из аккаунта
 // @Description  Выход из системы. При успешном выходе юзеру устанавливается кука с пустым jwt токеном
@@ -167,7 +168,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	})
 	log.Infof("[%s]: User logged out successfully: %s", op, userID)
 
-	response.JSON(w, http.StatusOK, "ok")
+	response.JSON(w, http.StatusOK, "Ok")
 }
 
 // validateCredentials - простая валидация формата
@@ -186,7 +187,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 //		return nil
 //	}
-func validate(email string, pass string) bool {
+func (h *AuthHandler) validateCredentials(email, pass string) bool {
 
 	if email == "" || pass == "" {
 		return false
