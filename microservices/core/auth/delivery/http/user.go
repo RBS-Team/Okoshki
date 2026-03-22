@@ -19,6 +19,18 @@ const (
 	sessionTokenCookie = "session_token"
 )
 
+// Register godoc
+// @Summary      Регистрация нового пользователя
+// @Description  Создаёт нового пользователя с указанными email, паролем и ролью
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.RegisterRequest true "Данные для регистрации"
+// @Success      201 {object} dto.RegisterResponse "Пользователь успешно создан"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат запроса или email/пароль не проходят валидацию"
+// @Failure      409 {object} response.ErrorResponse "Пользователь с таким email уже существует"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router       /client/register [post]
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	const op = "handler.Register"
 	defer r.Body.Close()
@@ -71,6 +83,18 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Login godoc
+// @Summary      Аутентификация пользователя
+// @Description  Вход в систему по email и паролю. При успешном входе устанавливается httpOnly cookie с JWT токеном
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.LoginRequest true "Учётные данные пользователя"
+// @Success      200 {object} dto.LoginResponse "Успешный вход"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат запроса или email/пароль не проходят валидацию"
+// @Failure      401 {object} response.ErrorResponse "Неверный email или пароль"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router       /client/login [post]
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	const op = "handler.Login"
 	defer r.Body.Close()
@@ -121,22 +145,30 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Role: user.Role,
 	})
 }
+// Login godoc
+// @Summary      Выход из аккаунта
+// @Description  Выход из системы. При успешном выходе юзеру устанавливается кука с пустым jwt токеном
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Router       /logout [post]
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.Logout"
+	defer r.Body.Close()
+	userID, _ := middleware.GetUserID(r.Context())
+	log := middleware.LoggerFromContext(r.Context())
 
-// func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
-// 	const op = "handler.Logout"
-// 	log := middleware.LoggerFromContext(r.Context())
+	http.SetCookie(w, &http.Cookie{
+		Name:     sessionTokenCookie,
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HttpOnly: true,
+		Path:     "/",
+	})
+	log.Infof("[%s]: User logged out successfully: %s", op, userID)
 
-// 	http.SetCookie(w, &http.Cookie{
-// 		Name:     sessionTokenCookie,
-// 		Value:    "",
-// 		Expires:  time.Now().Add(-time.Hour),
-// 		HttpOnly: true,
-// 		Path:     "/",
-// 	})
-
-// 	log.Infof("[%s]: User logout successful", op)
-// 	response.JSON(w, http.StatusOK, logoutResponse{Status: "ok"})
-// }
+	response.JSON(w, http.StatusOK, "ok")
+}
 
 // validateCredentials - простая валидация формата
 // func (h *AuthHandler) validateCredentials(email, password string) error {

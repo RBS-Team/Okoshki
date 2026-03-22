@@ -1,6 +1,8 @@
 package app
 
 import (
+	httpSwagger "github.com/swaggo/http-swagger"
+    _ "github.com/RBS-Team/Okoshki/docs" // сгенерированная документация
 	"context"
 	"database/sql"
 	"fmt"
@@ -61,7 +63,7 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	catalogService := catalogSvc.New(catalogRepository)
 	catalogHandler := catalogHttp.NewHandler(catalogService)
 	router := mux.NewRouter()
-
+	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 	api := router.PathPrefix("/api/v1").Subrouter()
 	api.Use(middleware.RequestLoggerMiddleware(appLogger))
 	catalogHandler.RegisterRoutes(api)
