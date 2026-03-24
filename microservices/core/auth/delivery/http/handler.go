@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/RBS-Team/Okoshki/microservices/core/auth/dto"
+	"github.com/RBS-Team/Okoshki/pkg/csrfmanager"
 	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
 )
 
@@ -16,6 +17,7 @@ type IService interface {
 type AuthHandler struct {
 	service    IService
 	jwtManager *jwtmanager.Manager
+	csrfManager *csrfmanager.Manager
 }
 
 func NewHandler(svc IService, jwtManager *jwtmanager.Manager) *AuthHandler {

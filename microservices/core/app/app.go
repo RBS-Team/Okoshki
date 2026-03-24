@@ -1,8 +1,6 @@
 package app
 
 import (
-	httpSwagger "github.com/swaggo/http-swagger"
-    _ "github.com/RBS-Team/Okoshki/docs" // сгенерированная документация
 	"context"
 	"database/sql"
 	"fmt"
@@ -10,18 +8,22 @@ import (
 	"net/http"
 	"sync"
 
+	_ "github.com/RBS-Team/Okoshki/docs" // сгенерированная документация
+	httpSwagger "github.com/swaggo/http-swagger"
+
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/internal/server"
 	catalogHttp "github.com/RBS-Team/Okoshki/microservices/core/catalog/delivery/http"
 	catalogRepo "github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
-	catalogSvc "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
+	catalogService "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
 	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
 
-	httpDelivery "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
+	userHtpp "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
 	userRepo "github.com/RBS-Team/Okoshki/microservices/core/auth/repository/postgres"
 	userService "github.com/RBS-Team/Okoshki/microservices/core/auth/service"
 	"github.com/RBS-Team/Okoshki/pkg/logger"
 	"github.com/RBS-Team/Okoshki/pkg/postgres"
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 )
 
@@ -51,27 +53,50 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	}
 	appLogger.Infof("Database connection established")
 
-	userRepository := userRepo.NewUserRepository(db)
-	userService := userService.NewAuthService(userRepository, userRepository)
-
 	jwtManager := jwtmanager.NewManager(cfg.Auth.HTTP.Auth.JWT.SecretKey, cfg.Auth.HTTP.Auth.JWT.AccessTokenTTL)
 
+	userRepository := userRepo.NewUserRepository(db)
+	userService := userService.NewAuthService(userRepository, userRepository)
+	userHandler := userHtpp.NewHandler(userService, jwtManager)
+
+	catalogRepository := catalogRepo.New(db)
+	catalogService := catalogService.New(catalogRepository)
+	catalogHandler := catalogHttp.NewHandler(catalogService)
+
+	requestLoggerMiddleware := middleware.RequestLoggerMiddleware(appLogger)
+	corsMiddleware := middleware.CORS(cfg.Auth.HTTP.CORS)
+	csrfMiddleware := csrf.Protect(
+		[]byte(cfg.Auth.HTTP.Auth.CSRF.SecretKey),
+		csrf.Secure(false),
+		csrf.TrustedOrigins([]string{
+			"localhost:8000",
+			"localhost:8080",
+			"http://localhost:8000",
+			"http://localhost:8080",
+		}),
+	)
 	authMiddleware := middleware.NewAuthMiddleware(jwtManager)
 
-	authHandler := httpDelivery.NewHandler(userService, jwtManager)
-	catalogRepository := catalogRepo.New(db)
-	catalogService := catalogSvc.New(catalogRepository)
-	catalogHandler := catalogHttp.NewHandler(catalogService)
 	router := mux.NewRouter()
+
+	// Swagger (без CSRF, без аутентификации)
 	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
+
+	// API v1
 	api := router.PathPrefix("/api/v1").Subrouter()
-	api.Use(middleware.RequestLoggerMiddleware(appLogger))
-	catalogHandler.RegisterRoutes(api)
-	public := api.PathPrefix("").Subrouter()
+
+	// Глобальные middleware для ВСЕГО API
+	api.Use(requestLoggerMiddleware)
+	api.Use(corsMiddleware)
+	api.Use(csrfMiddleware) //CSRF для всех API маршрутов
+
 	protected := api.PathPrefix("").Subrouter()
 	protected.Use(authMiddleware.AuthMiddleware)
 
-	authHandler.RegisterRoutes(public, protected)
+	catalogHandler.RegisterRoutes(api)
+
+	public := api.PathPrefix("").Subrouter()
+	userHandler.RegisterRoutes(public, protected)
 
 	httpServer := server.NewHTTPServer(&cfg.Auth.HTTP, router, appLogger)
 

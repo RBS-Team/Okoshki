@@ -110,3 +110,7 @@ tasks:
         -path /migrations \
         -database "postgres://{{.DB_USER}}:{{.DB_PASSWORD}}@db:5432/{{.DB_NAME}}?sslmode=disable" \
         {{.action}}
+  swager:
+    cmds:
+      - swag init -g cmd/core/main.go
+    desc: "Дергать ручки можно http://localhost:8080/swagger/index.html"

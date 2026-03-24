@@ -5,13 +5,19 @@ auth:
     writeTimeout: 10s
     idleTimeout: 60s
     shutdownTimeout: 15s
-    
+    cors:
+      allowedOrigins:
+        - "http://localhost:8080"
+        - "http://localhost:8000"
+      allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
+      allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"]
+      allowCredentials: true
     auth:
       jwt:
         secretKey: "dev-jwt-secret"
         accessTokenTTL: 720h
       csrf:
-        secretKey: "dev-csrf-secret"
+        secretKey: "Jn4616nw/oC0q5iJzAyRQoKCKCG20aJejiKgYlTTO6E="
         tokenTTL: 15m
   grpc:
     port: "9001"
