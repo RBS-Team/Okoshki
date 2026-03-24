@@ -1,14 +1,15 @@
 package app
 
 import (
-	httpSwagger "github.com/swaggo/http-swagger"
-    _ "github.com/RBS-Team/Okoshki/docs" // сгенерированная документация
 	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"sync"
+
+	_ "github.com/RBS-Team/Okoshki/docs" // сгенерированная документация
+	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/internal/server"
