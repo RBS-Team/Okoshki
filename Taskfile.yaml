@@ -113,4 +113,5 @@ tasks:
   swager:
     cmds:
       - swag init -g cmd/core/main.go
-    desc: "Дергать ручки можно http://localhost:8080/swagger/index.html"
+      - echo "Дергать ручки можно http://localhost:8080/swagger/index.html"
+    desc: "Апишка, которую можно потестировать в UI"
