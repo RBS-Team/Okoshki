@@ -40,11 +40,6 @@ tasks:
         echo "🎯 Сортируем импорты через gci ..."
         find . -type f -name '*.go' ! -path '*/mocks/*' -exec {{.GCI}} write -s standard -s default -s "prefix(github.com/RBS-Team/Okoshki/)" {} +
 
-  swag:
-    desc: "Генерирует Swagger документацию API"
-    cmds:
-      - swag init -g cmd/core/main.go
-
   install-golangci-lint:
     desc: "Устанавливает golangci-lint в каталог bin"
     cmds:
@@ -115,6 +110,12 @@ tasks:
         -path /migrations \
         -database "postgres://{{.DB_USER}}:{{.DB_PASSWORD}}@db:5432/{{.DB_NAME}}?sslmode=disable" \
         {{.action}}
+
+  swager:
+    cmds:
+      - swag init -g cmd/core/main.go
+      - echo "Дергать ручки можно http://localhost:8080/swagger/index.html"
+    desc: "Апишка, которую можно потестировать в UI"
 
   up:
     desc: "Запускает проект (билд + старт контейнеров) с подробным выводом"

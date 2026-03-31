@@ -12,7 +12,7 @@ services:
     env_file:
       - ../.env.dev
     environment:
-      - CONFIG_FILE=config.dev
+      - CONFIG_FILE=config.${APP_ENV:-dev}
     volumes:
       - ../config:/config:ro
     depends_on:

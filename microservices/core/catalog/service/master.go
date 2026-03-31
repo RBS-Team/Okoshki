@@ -11,10 +11,10 @@ import (
 	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
 )
 
-func (s *Service) CreateMaster(ctx context.Context, req dto.CreateMasterRequest) (*dto.Master, error) {
+func (s *Service) CreateMaster(ctx context.Context, userIDStr string, req dto.CreateMasterRequest) (*dto.Master, error) {
 	const op = "catalog.service.CreateMaster"
 
-	userID, err := uuid.Parse(req.UserID)
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: invalid user id: %w", op, err)
 	}

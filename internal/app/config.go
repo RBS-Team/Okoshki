@@ -3,8 +3,9 @@ package app
 import (
 	"time"
 
-	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/spf13/viper"
+
+	"github.com/RBS-Team/Okoshki/internal/middleware"
 )
 
 type HTTPConfig struct {
@@ -33,8 +34,10 @@ type JWTConfig struct {
 }
 
 type CSRFConfig struct {
-	SecretKey string        `mapstructure:"secretKey"`
-	TokenTTL  time.Duration `mapstructure:"tokenTTL"`
+	SecretKey      string        `mapstructure:"secretKey"`
+	TokenTTL       time.Duration `mapstructure:"tokenTTL"`
+	TrustedOrigins []string      `mapstructure:"trustedOrigins"`
+	Secure         bool          `mapstructure:"secure"`
 }
 
 func BindViperEnv(v *viper.Viper) error {

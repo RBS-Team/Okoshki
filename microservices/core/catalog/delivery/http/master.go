@@ -16,15 +16,17 @@ import (
 )
 
 // CreateMaster godoc
-// @Summary      Создание мастера
-// @Description  Создаёт нового мастера в каталоге
+// @Summary      Создание профиля мастера
+// @Description  Создаёт профиль мастера для текущего авторизованного пользователя. Доступно только для роли "master".
 // @Tags         masters
 // @Accept       json
 // @Produce      json
 // @Param        request body dto.CreateMasterRequest true "Данные мастера"
 // @Success      201 {object} dto.Master "Мастер успешно создан"
 // @Failure      400 {object} response.ErrorResponse "Неверный формат запроса или отсутствуют обязательные поля"
-// @Failure      409 {object} response.ErrorResponse "Мастер с таким user_id уже существует"
+// @Failure      401 {object} response.ErrorResponse "Не авторизован"
+// @Failure      403 {object} response.ErrorResponse "Доступ запрещен (необходима роль master)"
+// @Failure      409 {object} response.ErrorResponse "У данного пользователя уже есть профиль мастера"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Security     CookieAuth
 // @Router       /masters [post]
@@ -33,6 +35,13 @@ func (h *Handler) CreateMaster(w http.ResponseWriter, r *http.Request) {
 	log := middleware.LoggerFromContext(r.Context())
 	defer r.Body.Close()
 
+	userIDStr, ok := middleware.GetUserID(r.Context())
+	if !ok || userIDStr == "" {
+		log.Errorf("[%s]: missing user id in context", op)
+		response.UnauthorizedJSON(w)
+		return
+	}
+
 	var req dto.CreateMasterRequest
 	if err := easyjson.UnmarshalFromReader(r.Body, &req); err != nil {
 		log.Warnf("[%s]: failed to unmarshal request: %v", op, err)
@@ -40,13 +49,13 @@ func (h *Handler) CreateMaster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.UserID == "" || req.Name == "" {
-		log.Warnf("[%s]: missing required fields: user_id or name", op)
+	if req.Name == "" {
+		log.Warnf("[%s]: missing required field: name", op)
 		response.BadRequestJSON(w)
 		return
 	}
 
-	master, err := h.service.CreateMaster(r.Context(), req)
+	master, err := h.service.CreateMaster(r.Context(), userIDStr, req)
 	if err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
 		h.handleMasterError(w, err)

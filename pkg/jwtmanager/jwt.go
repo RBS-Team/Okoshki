@@ -22,16 +22,17 @@ type Manager struct {
 func (m *Manager) GetTTL() time.Duration {
 	return m.ttl
 }
+
 func NewManager(secretKey string, ttl time.Duration) *Manager {
 	return &Manager{secretKey: secretKey, ttl: ttl}
 }
 
-func (m *Manager) NewToken(userID string, role string) (string, error) {
+func (m *Manager) NewToken(userID, role string) (string, error) {
 	now := time.Now()
 	claims := &Claims{
 		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ID:        uuid.New().String(), //Это jti
+			ID:        uuid.New().String(), // Это jti
 			Subject:   userID,
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(m.ttl)),
@@ -54,7 +55,6 @@ func (m *Manager) Validate(tokenString string) (*Claims, error) {
 		}
 		return []byte(m.secretKey), nil
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse token: %w", err)
 	}

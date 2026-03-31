@@ -6,10 +6,11 @@ import (
 	"errors"
 	"net"
 	"net/http"
-	"github.com/RBS-Team/Okoshki/pkg/logger"
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/RBS-Team/Okoshki/pkg/logger"
 )
 
 const (

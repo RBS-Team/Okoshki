@@ -34,9 +34,9 @@ func GetUserID(ctx context.Context) (string, bool) {
 }
 
 func GetUserRole(ctx context.Context) (string, bool) {
-    claims, err := ClaimsFromContext(ctx)
-    if err != nil {
-        return "", false
-    }
-    return claims.Role, true
+	claims, err := ClaimsFromContext(ctx)
+	if err != nil {
+		return "", false
+	}
+	return claims.Role, true
 }

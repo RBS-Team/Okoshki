@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
 	"github.com/google/uuid"
+
+	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
 )
 
 func (s *Service) GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Category, error) {

@@ -7,12 +7,11 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/RBS-Team/Okoshki/internal/middleware"
+	easyjson "github.com/mailru/easyjson"
 
+	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/microservices/core/auth/dto"
 	"github.com/RBS-Team/Okoshki/pkg/response"
-
-	easyjson "github.com/mailru/easyjson"
 )
 
 const (
@@ -21,13 +20,13 @@ const (
 
 // Register godoc
 // @Summary      Регистрация нового пользователя
-// @Description  Создаёт нового пользователя с указанными email, паролем и ролью
+// @Description  Создаёт нового пользователя. Роль может быть только "client" или "master".
 // @Tags         auth
 // @Accept       json
 // @Produce      json
 // @Param        request body dto.RegisterRequest true "Данные для регистрации"
 // @Success      201 {object} dto.RegisterResponse "Пользователь успешно создан"
-// @Failure      400 {object} response.ErrorResponse "Неверный формат запроса или email/пароль не проходят валидацию"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат запроса, невалидные данные или недопустимая роль"
 // @Failure      409 {object} response.ErrorResponse "Пользователь с таким email уже существует"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /client/register [post]
@@ -38,12 +37,18 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	log := middleware.LoggerFromContext(r.Context())
 
 	var req dto.RegisterRequest
-
 	if err := easyjson.UnmarshalFromReader(r.Body, &req); err != nil {
 		log.Errorf("[%s]: Invalid request body: %v", op, err)
 		response.BadRequestJSON(w)
 		return
 	}
+
+	if req.Role != "client" && req.Role != "master" {
+		log.Warnf("[%s]: Invalid role attempted: %s", op, req.Role)
+		response.BadRequestJSON(w)
+		return
+	}
+
 	if !h.validateCredentials(req.Email, req.Password) {
 		response.BadRequestJSON(w)
 		return
@@ -117,7 +122,6 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Email:    req.Email,
 		Password: req.Password,
 	})
-
 	if err != nil {
 		log.Errorf("[%s]: Service error: %v", op, err)
 		h.handleAuthError(w, err)
@@ -188,7 +192,6 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 //		return nil
 //	}
 func (h *AuthHandler) validateCredentials(email, pass string) bool {
-
 	if email == "" || pass == "" {
 		return false
 	}
@@ -204,7 +207,6 @@ func (h *AuthHandler) validateCredentials(email, pass string) bool {
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 func isValidEmail(email string) bool {
-
 	if len(email) > 254 { // Максимальная длина email
 		return false
 	}

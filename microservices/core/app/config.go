@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spf13/viper"
+
 	"github.com/RBS-Team/Okoshki/internal/app"
 	"github.com/RBS-Team/Okoshki/pkg/postgres"
-	"github.com/spf13/viper"
 )
 
 type Config struct {

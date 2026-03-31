@@ -28,7 +28,6 @@ func (r *Repository) GetCategoryByID(ctx context.Context, id uuid.UUID) (*model.
 		&cat.CreatedAt,
 		&cat.UpdatedAt,
 	)
-
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, mapErrors(err))
 	}
