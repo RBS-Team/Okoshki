@@ -15,8 +15,8 @@ type UserSaver interface {
 // Этот интерфейс на чтение
 type UserProvider interface {
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
-	//Мб check role сделать ?
-	//IsAdmin(ctx context.Context, userID int64) (bool, error)
+	// Мб check role сделать ?
+	// IsAdmin(ctx context.Context, userID int64) (bool, error)
 }
 
 type AuthService struct {

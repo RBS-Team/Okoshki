@@ -40,7 +40,6 @@ func (r *Repository) CreateMaster(ctx context.Context, master model.Master) erro
 		master.CreatedAt,
 		master.UpdatedAt,
 	)
-
 	if err != nil {
 		return fmt.Errorf("[%s]: %w", op, handleMasterPostgresError(err))
 	}
@@ -204,7 +203,6 @@ func (r *Repository) selectMaster(ctx context.Context, query string, args ...int
 		&m.Lat, &m.Lon, &m.Rating, &m.ReviewCount, &m.ReportsCount,
 		&m.IsBlocked, &m.CreatedAt, &m.UpdatedAt,
 	)
-
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotFound

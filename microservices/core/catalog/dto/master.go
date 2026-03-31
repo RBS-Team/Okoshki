@@ -18,7 +18,6 @@ type Master struct {
 
 //easyjson:json
 type CreateMasterRequest struct {
-	UserID   string   `json:"user_id"`
 	Name     string   `json:"name"`
 	Bio      *string  `json:"bio,omitempty"`
 	Timezone string   `json:"timezone,omitempty"`

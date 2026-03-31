@@ -13,7 +13,7 @@ type IService interface {
 	GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Category, error)
 	GetAllCategories(ctx context.Context) ([]*dto.Category, error)
 
-	CreateMaster(ctx context.Context, req dto.CreateMasterRequest) (*dto.Master, error)
+	CreateMaster(ctx context.Context, userIDStr string, req dto.CreateMasterRequest) (*dto.Master, error)
 	GetMasterByID(ctx context.Context, id uuid.UUID) (*dto.Master, error)
 	GetAllMasters(ctx context.Context, limit, offset uint64) ([]dto.Master, error)
 	GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error)

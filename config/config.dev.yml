@@ -10,15 +10,22 @@ auth:
         - "http://localhost:8080"
         - "http://localhost:8000"
       allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
-      allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"]
+      allowedHeaders:
+        ["Content-Type", "Authorization", "X-CSRF-Token", "X-Requested-With"]
       allowCredentials: true
     auth:
       jwt:
-        secretKey: "dev-jwt-secret"
+        secretKey: ""
         accessTokenTTL: 720h
       csrf:
-        secretKey: "Jn4616nw/oC0q5iJzAyRQoKCKCG20aJejiKgYlTTO6E="
+        secretKey: ""
         tokenTTL: 15m
+        secure: false # На проде будет true
+        trustedOrigins:
+          - "localhost:8000"
+          - "localhost:8080"
+          - "http://localhost:8000"
+          - "http://localhost:8080"
   grpc:
     port: "9001"
   logger:

@@ -29,7 +29,6 @@ func (r *Repository) CreateUser(ctx context.Context, user model.User) error {
 		user.CreatedAt,
 		user.UpdatedAt,
 	)
-
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, handlePostgresError(err))
 	}
@@ -83,7 +82,6 @@ func (r *Repository) selectUser(ctx context.Context, query string, args ...inter
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotFound

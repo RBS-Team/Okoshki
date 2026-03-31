@@ -35,7 +35,6 @@ func (r *Repository) CreateServiceItem(ctx context.Context, item model.ServiceIt
 		item.CreatedAt,
 		item.UpdatedAt,
 	)
-
 	if err != nil {
 		return fmt.Errorf("[%s]: %w", op, err)
 	}

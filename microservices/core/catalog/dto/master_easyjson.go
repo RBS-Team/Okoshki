@@ -397,12 +397,6 @@ func easyjsonB30beec6DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(i
 		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		switch key {
-		case "user_id":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				out.UserID = string(in.String())
-			}
 		case "name":
 			if in.IsNull() {
 				in.Skip()
@@ -472,13 +466,8 @@ func easyjsonB30beec6EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(o
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"user_id\":"
-		out.RawString(prefix[1:])
-		out.String(string(in.UserID))
-	}
-	{
 		const prefix string = ",\"name\":"
-		out.RawString(prefix)
+		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
 	if in.Bio != nil {

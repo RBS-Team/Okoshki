@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/RBS-Team/Okoshki/internal/model"
-	"github.com/RBS-Team/Okoshki/microservices/core/auth/dto"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/RBS-Team/Okoshki/internal/model"
+	"github.com/RBS-Team/Okoshki/microservices/core/auth/dto"
 )
 
 func (a *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error) {
@@ -20,7 +21,7 @@ func (a *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 	if err != nil {
 		return nil, mapRepositoryError(err)
 	}
-	
+
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
 		return nil, fmt.Errorf("[%s]: invalid credentials: %w", op, ErrValidation)
 	}
@@ -57,7 +58,6 @@ func (a *AuthService) RegisterNewUser(ctx context.Context, req dto.RegisterReque
 		Email: user.Email,
 		Role:  user.Role,
 	}, nil
-
 }
 
 func (a *AuthService) IsAdmin(ctx context.Context, userID int64) (bool, error) {

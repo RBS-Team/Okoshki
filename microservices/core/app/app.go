@@ -8,23 +8,22 @@ import (
 	"net/http"
 	"sync"
 
-	_ "github.com/RBS-Team/Okoshki/docs" // сгенерированная документация
+	"github.com/gorilla/csrf"
+	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
 
+	_ "github.com/RBS-Team/Okoshki/docs" // сгенерированная документация
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/internal/server"
+	userHtpp "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
+	userRepo "github.com/RBS-Team/Okoshki/microservices/core/auth/repository/postgres"
+	userService "github.com/RBS-Team/Okoshki/microservices/core/auth/service"
 	catalogHttp "github.com/RBS-Team/Okoshki/microservices/core/catalog/delivery/http"
 	catalogRepo "github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
 	catalogService "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
 	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
-
-	userHtpp "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
-	userRepo "github.com/RBS-Team/Okoshki/microservices/core/auth/repository/postgres"
-	userService "github.com/RBS-Team/Okoshki/microservices/core/auth/service"
 	"github.com/RBS-Team/Okoshki/pkg/logger"
 	"github.com/RBS-Team/Okoshki/pkg/postgres"
-	"github.com/gorilla/csrf"
-	"github.com/gorilla/mux"
 )
 
 type App struct {
@@ -65,15 +64,11 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 
 	requestLoggerMiddleware := middleware.RequestLoggerMiddleware(appLogger)
 	corsMiddleware := middleware.CORS(cfg.Auth.HTTP.CORS)
+
 	csrfMiddleware := csrf.Protect(
 		[]byte(cfg.Auth.HTTP.Auth.CSRF.SecretKey),
-		csrf.Secure(false),
-		csrf.TrustedOrigins([]string{
-			"localhost:8000",
-			"localhost:8080",
-			"http://localhost:8000",
-			"http://localhost:8080",
-		}),
+		csrf.Secure(cfg.Auth.HTTP.Auth.CSRF.Secure),
+		csrf.TrustedOrigins(cfg.Auth.HTTP.Auth.CSRF.TrustedOrigins),
 	)
 	authMiddleware := middleware.NewAuthMiddleware(jwtManager)
 
@@ -88,15 +83,20 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	// Глобальные middleware для ВСЕГО API
 	api.Use(requestLoggerMiddleware)
 	api.Use(corsMiddleware)
-	api.Use(csrfMiddleware) //CSRF для всех API маршрутов
+	// УБРАЛИ ОТСЮДА api.Use(csrfMiddleware)
+
+	public := api.PathPrefix("").Subrouter()
 
 	protected := api.PathPrefix("").Subrouter()
 	protected.Use(authMiddleware.AuthMiddleware)
 
-	catalogHandler.RegisterRoutes(api)
+	// Создаем отдельный роутер для изменения состояния (POST/PUT/DELETE)
+	csrfProtected := protected.PathPrefix("").Subrouter()
+	csrfProtected.Use(csrfMiddleware)
 
-	public := api.PathPrefix("").Subrouter()
-	userHandler.RegisterRoutes(public, protected)
+	// Прокидываем 3 роутера в обработчики
+	catalogHandler.RegisterRoutes(public, protected, csrfProtected)
+	userHandler.RegisterRoutes(public, protected, csrfProtected)
 
 	httpServer := server.NewHTTPServer(&cfg.Auth.HTTP, router, appLogger)
 

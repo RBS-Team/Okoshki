@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"net/http"
+
 	"github.com/RBS-Team/Okoshki/internal/app"
 	"github.com/RBS-Team/Okoshki/pkg/logger"
 )

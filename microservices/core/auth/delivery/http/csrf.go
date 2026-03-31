@@ -3,10 +3,11 @@ package http
 import (
 	"net/http"
 
+	"github.com/gorilla/csrf"
+
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/microservices/core/auth/dto"
 	"github.com/RBS-Team/Okoshki/pkg/response"
-	"github.com/gorilla/csrf"
 )
 
 // GetCSRFToken обрабатывает запрос на получение CSRF токена.
@@ -22,14 +23,15 @@ import (
 func (h *AuthHandler) GetCSRFToken(w http.ResponseWriter, r *http.Request) {
 	const op = "handler.user.GetCSRFToken"
 	log := middleware.LoggerFromContext(r.Context())
-	userID, ok := middleware.GetUserID(r.Context())
-	if !ok {
-		log.Errorf("[%s]: %s", op, "Не удалось получить userID из контекста")
-	}
-	//Теперь иди в pkg и придумывай там функцию генерации
+
 	token := csrf.Token(r)
 
-	log.Debugf("[%s]: successfully generated csrf token for user %s", op, userID)
+	userID, ok := middleware.GetUserID(r.Context())
+	if !ok {
+		log.Debugf("[%s]: successfully generated csrf token for guest", op)
+	} else {
+		log.Debugf("[%s]: successfully generated csrf token for user %s", op, userID)
+	}
 
 	response.JSON(w, http.StatusOK, dto.CsrfResponse{Token: token})
 }
