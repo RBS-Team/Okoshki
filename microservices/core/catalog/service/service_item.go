@@ -19,6 +19,11 @@ func (s *Service) CreateServiceItem(ctx context.Context, masterID uuid.UUID, req
 		return nil, fmt.Errorf("[%s]: invalid category id: %w", op, err)
 	}
 
+	isAutoConfirm := true
+	if req.IsAutoConfirm != nil {
+		isAutoConfirm = *req.IsAutoConfirm
+	}
+
 	itemModel := model.ServiceItem{
 		ID:                  uuid.New(),
 		MasterID:            masterID,
@@ -30,6 +35,7 @@ func (s *Service) CreateServiceItem(ctx context.Context, masterID uuid.UUID, req
 		BufferBeforeMinutes: req.BufferBeforeMinutes,
 		BufferAfterMinutes:  req.BufferAfterMinutes,
 		IsActive:            true,
+		IsAutoConfirm:       isAutoConfirm,
 		CreatedAt:           time.Now(),
 		UpdatedAt:           time.Now(),
 	}
@@ -114,11 +120,23 @@ func (s *Service) GetServicesByCategory(ctx context.Context, categoryID uuid.UUI
 			BufferBeforeMinutes: srv.BufferBeforeMinutes,
 			BufferAfterMinutes:  srv.BufferAfterMinutes,
 			IsActive:            srv.IsActive,
+			IsAutoConfirm:       srv.IsAutoConfirm,
 			Master:              masterDTO,
 		})
 	}
 
 	return dtos, nil
+}
+
+func (s *Service) GetServiceItemByID(ctx context.Context, id uuid.UUID) (*dto.ServiceItem, error) {
+	const op = "catalog.service.GetServiceItemByID"
+
+	itemModel, err := s.repo.GetServiceItemByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, mapError(err))
+	}
+
+	return mapServiceItemModelToDTO(itemModel), nil
 }
 
 func mapServiceItemModelToDTO(m *model.ServiceItem) *dto.ServiceItem {
@@ -133,5 +151,6 @@ func mapServiceItemModelToDTO(m *model.ServiceItem) *dto.ServiceItem {
 		BufferBeforeMinutes: m.BufferBeforeMinutes,
 		BufferAfterMinutes:  m.BufferAfterMinutes,
 		IsActive:            m.IsActive,
+		IsAutoConfirm:       m.IsAutoConfirm,
 	}
 }

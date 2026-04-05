@@ -107,6 +107,17 @@ func (s *Service) GetMastersByCategory(ctx context.Context, categoryID uuid.UUID
 	return masterDTOs, nil
 }
 
+func (s *Service) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto.Master, error) {
+	const op = "catalog.service.GetMasterByUserID"
+
+	masterModel, err := s.repo.GetMasterByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: failed to get master by user id: %w", op, mapError(err))
+	}
+
+	return mapMasterModelToDTO(masterModel), nil
+}
+
 func mapMasterModelToDTO(m *model.Master) *dto.Master {
 	return &dto.Master{
 		ID:          m.ID.String(),

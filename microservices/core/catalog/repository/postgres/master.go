@@ -195,6 +195,24 @@ func (r *Repository) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]mo
 	return masters, nil
 }
 
+func (r *Repository) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*model.Master, error) {
+	const op = "catalog.repository.postgres.GetMasterByUserID"
+
+	query := `
+		SELECT id, user_id, name, bio, avatar_url, timezone, lat, lon, 
+		       rating, review_count, reports_count, is_blocked, created_at, updated_at
+		FROM masters
+		WHERE user_id = $1 AND is_blocked = false
+	`
+
+	master, err := r.selectMaster(ctx, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, err)
+	}
+
+	return master, nil
+}
+
 func (r *Repository) selectMaster(ctx context.Context, query string, args ...interface{}) (*model.Master, error) {
 	var m model.Master
 

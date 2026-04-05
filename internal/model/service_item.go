@@ -17,6 +17,7 @@ type ServiceItem struct {
 	BufferBeforeMinutes int
 	BufferAfterMinutes  int
 	IsActive            bool
+	IsAutoConfirm       bool
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
 }
