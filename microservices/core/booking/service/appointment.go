@@ -51,7 +51,29 @@ func (s *Service) CreateAppointment(ctx context.Context, clientID uuid.UUID, req
 
 	now := time.Now().UTC()
 	if dbStartAt.Before(now) {
-		return nil, fmt.Errorf("[%s]: cannot book an appointment in the past", op)
+		return nil, fmt.Errorf("[%s]: cannot book an appointment in the past: %w", op, ErrValidation)
+	}
+
+	dateStr := clientArrivalTime.Format(dateFormat)
+	timeStr := clientArrivalTime.Format("15:04")
+
+	availableSlotsResp, err := s.GetAvailableSlots(ctx, serviceID, dateStr, dateStr)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: failed to validate schedule: %w", op, err)
+	}
+
+	isValidSlot := false
+	if slots, ok := availableSlotsResp.Slots[dateStr]; ok {
+		for _, slot := range slots {
+			if slot == timeStr {
+				isValidSlot = true
+				break
+			}
+		}
+	}
+
+	if !isValidSlot {
+		return nil, fmt.Errorf("[%s]: time slot %s is not available in master schedule: %w", op, timeStr, ErrValidation)
 	}
 
 	status := model.StatusPending

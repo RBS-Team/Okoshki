@@ -80,7 +80,9 @@ func (s *Service) GetAvailableSlots(ctx context.Context, serviceID uuid.UUID, st
 
 	apptsByDate := make(map[string][]model.Appointment)
 	for _, a := range appointments {
-		dateStr := a.StartAt.In(masterLoc).Format(dateFormat)
+		a.StartAt = a.StartAt.In(masterLoc)
+		a.EndAt = a.EndAt.In(masterLoc)
+		dateStr := a.StartAt.Format(dateFormat)
 		apptsByDate[dateStr] = append(apptsByDate[dateStr], a)
 	}
 

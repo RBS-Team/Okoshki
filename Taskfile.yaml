@@ -148,3 +148,12 @@ tasks:
     desc: "Статус контейнеров"
     cmds:
       - docker compose -f deployments/docker-compose.yaml ps
+
+  easyjson:
+    desc: "Полная очистка и перегенерация всех easyjson файлов"
+    cmds:
+      - echo "🧹 Удаляем старые easyjson файлы..."
+      - find . -name "*_easyjson.go" -exec rm -f {} +
+      - echo "🔨 Генерируем новые файлы..."
+      - go generate ./...
+      - echo "✅ Готово!"

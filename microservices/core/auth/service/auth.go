@@ -63,3 +63,22 @@ func (a *AuthService) RegisterNewUser(ctx context.Context, req dto.RegisterReque
 func (a *AuthService) IsAdmin(ctx context.Context, userID int64) (bool, error) {
 	panic("not implemented")
 }
+
+func (a *AuthService) GetUsersInfo(ctx context.Context, ids []uuid.UUID) ([]dto.UserInfo, error) {
+	const op = "auth.service.GetUsersInfo"
+
+	users, err := a.usrProvider.GetUsersByIDs(ctx, ids)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, err)
+	}
+
+	result := make([]dto.UserInfo, 0, len(users))
+	for _, u := range users {
+		result = append(result, dto.UserInfo{
+			ID:        u.ID.String(),
+			Email:     u.Email,
+			AvatarURL: u.AvatarURL,
+		})
+	}
+	return result, nil
+}

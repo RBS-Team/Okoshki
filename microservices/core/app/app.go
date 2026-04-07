@@ -66,7 +66,7 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	catalogHandler := catalogHttp.NewHandler(catalogService)
 
 	bookingRepository := bookingRepo.New(db)
-	bookingSvc := bookingService.New(bookingRepository, catalogService)
+	bookingSvc := bookingService.New(bookingRepository, catalogService, userService)
 	bookingHandler := bookingHttp.NewHandler(bookingSvc)
 
 	requestLoggerMiddleware := middleware.RequestLoggerMiddleware(appLogger)

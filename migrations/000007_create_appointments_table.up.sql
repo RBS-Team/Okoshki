@@ -2,9 +2,9 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 CREATE TABLE IF NOT EXISTS appointments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    client_id UUID NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+    client_id UUID REFERENCES "user"(user_id) ON DELETE CASCADE,
     master_id UUID NOT NULL REFERENCES masters(id) ON DELETE CASCADE,
-    service_id UUID NOT NULL REFERENCES master_services(id) ON DELETE RESTRICT,
+    service_id UUID REFERENCES master_services(id) ON DELETE RESTRICT,
     start_at TIMESTAMP WITH TIME ZONE NOT NULL,
     end_at TIMESTAMP WITH TIME ZONE NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'pending',
@@ -18,6 +18,11 @@ CREATE TABLE IF NOT EXISTS appointments (
     
     CONSTRAINT chk_appointments_status CHECK (
         status IN ('pending', 'confirmed', 'rejected', 'cancelled', 'completed')
+    ),
+
+    CONSTRAINT chk_manual_block CHECK (
+        (is_manual_block = true AND client_id IS NULL AND service_id IS NULL) OR
+        (is_manual_block = false AND client_id IS NOT NULL AND service_id IS NOT NULL)
     ),
 
     CONSTRAINT exclude_overlapping_appointments EXCLUDE USING gist (

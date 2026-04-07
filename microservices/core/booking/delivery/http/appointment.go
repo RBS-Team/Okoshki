@@ -10,6 +10,7 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/microservices/core/booking/dto"
 	"github.com/RBS-Team/Okoshki/microservices/core/booking/repository/postgres"
+	"github.com/RBS-Team/Okoshki/microservices/core/booking/service"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
@@ -76,6 +77,11 @@ func (h *Handler) CreateAppointment(w http.ResponseWriter, r *http.Request) {
 
 		if errors.Is(err, postgres.ErrTimeConflict) {
 			response.JSON(w, http.StatusConflict, response.ErrorResponse{Error: "time slot is already booked"})
+			return
+		}
+
+		if errors.Is(err, service.ErrValidation) {
+			response.BadRequestJSON(w)
 			return
 		}
 
