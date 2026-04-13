@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  core:
+    build:
+      context: ../
+      dockerfile: docker/core.Dockerfile
+    container_name: okoshki-core
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - ../.env.dev
+    environment:
+      - CONFIG_FILE=config.${APP_ENV:-dev}
+    volumes:
+      - ../config:/config:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  db:
+    image: postgres:15-alpine
+    container_name: okoshki-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-dev_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev_password}
+      POSTGRES_DB: ${DB_NAME:-okoshki_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-dev_user} -d ${DB_NAME:-okoshki_db}"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    image: migrate/migrate
+    container_name: okoshki-migrate
+    volumes:
+      - ../migrations:/migrations
+    command: [ "-path", "/migrations", "-database", "postgres://${DB_USER:-dev_user}:${DB_PASSWORD:-dev_password}@db:5432/${DB_NAME:-okoshki_db}?sslmode=disable", "up" ]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pg_data:
