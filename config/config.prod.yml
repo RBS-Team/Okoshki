@@ -1,0 +1,48 @@
+auth:
+  http:
+    port: "8080"
+    readTimeout: 5s
+    writeTimeout: 10s
+    idleTimeout: 60s
+    shutdownTimeout: 15s
+    cors:
+      allowedOrigins:
+        - "http://localhost:8080"
+        - "http://localhost:8000"
+        - "http://87.239.106.223:8080"
+        - "http://87.239.106.223:8000"
+      allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
+      allowedHeaders:
+        ["Content-Type", "Authorization", "X-CSRF-Token", "X-Requested-With"]
+      allowCredentials: true
+    auth:
+      jwt:
+        secretKey: ""
+        accessTokenTTL: 720h
+      csrf:
+        secretKey: ""
+        tokenTTL: 15m
+        secure: false # На проде будет true
+        trustedOrigins:
+          - "localhost:8000"
+          - "localhost:8080"
+          - "http://localhost:8000"
+          - "http://localhost:8080"
+          - "http://87.239.106.223:8080"
+          - "http://87.239.106.223:8000"
+  grpc:
+    port: "9001"
+  logger:
+    level: "debug"
+    mode: "dev"
+
+db:
+  host: "localhost"
+  port: 5432
+  user: "dev_user"
+  password: "dev_password"
+  dbName: "okoshki_db"
+  sslmode: "disable"
+  maxOpenConns: 25
+  maxIdleConns: 25
+  connMaxLifetime: 5m
