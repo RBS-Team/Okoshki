@@ -5,6 +5,8 @@ services:
       dockerfile: docker/core.Dockerfile
     container_name: okoshki-core
     restart: always
+    ports:
+      - "8080:8080"
     env_file:
       - ../.env.${APP_ENV:-dev}
     environment:
@@ -25,6 +27,8 @@ services:
       POSTGRES_USER: ${DB_USER:-dev_user}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-dev_password}
       POSTGRES_DB: ${DB_NAME:-okoshki_db}
+    ports:
+      - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
@@ -80,6 +84,9 @@ services:
     restart: unless-stopped
     depends_on:
       - nginx
+
+
+
 
 volumes:
   pg_data:
