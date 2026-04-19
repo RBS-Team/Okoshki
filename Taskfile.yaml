@@ -163,7 +163,7 @@ tasks:
             -keyout {{.CERT_DIR}}/privkey.pem \
             -out {{.CERT_DIR}}/fullchain.pem \
             -subj "/CN=localhost"
-          touch {{.CERT_DIR}}/chain.pem
+          cp {{.CERT_DIR}}/fullchain.pem {{.CERT_DIR}}/chain.pem
         fi
       - echo "--- Запускаю контейнеры с помощью task up ---"
       - task: up
