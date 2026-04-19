@@ -8,6 +8,7 @@ auth:
     cors:
       allowedOrigins:
         - "https://okoski.ru"
+        - "https://www.okoski.ru"
         - "http://87.239.106.223:8080"
         - "http://87.239.106.223:8000"
       allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
@@ -21,9 +22,10 @@ auth:
       csrf:
         secretKey: ""
         tokenTTL: 15m
-        secure: false # На проде будет true
+        secure: true # На проде будет true
         trustedOrigins:
           - "https://okoski.ru"
+          - "https://www.okoski.ru"
           - "http://87.239.106.223:8080"
           - "http://87.239.106.223:8000"
   grpc:

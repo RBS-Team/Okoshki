@@ -3,7 +3,7 @@ services:
     build:
       context: ../
       dockerfile: docker/core.Dockerfile
-    container_name: okoshki-core
+    container_name: okoshki-core-service
     restart: always
     env_file:
       - ../.env.${APP_ENV:-dev}
@@ -19,7 +19,7 @@ services:
 
   db:
     image: postgres:15-alpine
-    container_name: okoshki-db
+    container_name: okoshki-postgres-db
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER:-dev_user}
@@ -47,7 +47,7 @@ services:
     build:
       context: ../
       dockerfile: docker/nginx.Dockerfile
-    container_name: okoshki_nginx
+    container_name: okoshki-nginx-frontend
     restart: always
     ports:
       - "80:80"
@@ -64,7 +64,7 @@ services:
   
   certbot:
     image: certbot/certbot
-    container_name: certbot
+    container_name: okoshki-certbot
     volumes:
       - ../nginx/certs:/etc/letsencrypt           # Пишет ключи сюда
       - ../nginx/www:/var/www/certbot             # Пишет файлы проверки сюда
