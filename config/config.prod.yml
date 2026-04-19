@@ -7,8 +7,7 @@ auth:
     shutdownTimeout: 15s
     cors:
       allowedOrigins:
-        - "http://localhost:8080"
-        - "http://localhost:8000"
+        - "https://okoski.ru"
         - "http://87.239.106.223:8080"
         - "http://87.239.106.223:8000"
       allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
@@ -24,10 +23,7 @@ auth:
         tokenTTL: 15m
         secure: false # На проде будет true
         trustedOrigins:
-          - "localhost:8000"
-          - "localhost:8080"
-          - "http://localhost:8000"
-          - "http://localhost:8080"
+          - "https://okoski.ru"
           - "http://87.239.106.223:8080"
           - "http://87.239.106.223:8000"
   grpc:

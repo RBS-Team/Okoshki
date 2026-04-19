@@ -169,11 +169,11 @@ tasks:
       - task: up
       - echo "--- Запрашиваю реальные сертификаты ---"
       - |
-        docker-compose run --rm certbot certonly --webroot -w /var/www/certbot \
+        docker compose -f deployments/docker-compose.yaml --env-file .env.prod run --rm certbot certonly --webroot -w /var/www/certbot \
           --email {{.EMAIL}} --agree-tos --no-eff-email \
           -d {{.DOMAIN}} -d www.{{.DOMAIN}}
       - echo "--- Перезагружаю Nginx ---"
-      - docker compose -f deployments/docker-compose.yaml --env-file .env.dev exec nginx nginx -s reload
+      - docker compose -f deployments/docker-compose.yaml --env-file .env.prod exec nginx nginx -s reload
     status:
       # Команда не будет запускаться повторно, если реальный сертификат уже есть
       - test -f {{.CERT_DIR}}/fullchain.pem && openssl x509 -checkend 86400 -noout -in {{.CERT_DIR}}/fullchain.pem
