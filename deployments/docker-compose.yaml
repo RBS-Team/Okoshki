@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   core:
     build:
@@ -48,6 +46,47 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  nginx:
+    build:
+      context: ../
+      dockerfile: docker/nginx.Dockerfile
+    container_name: okoshki_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - ../.env.${APP_ENV:-dev}
+    volumes:
+      - ${FRONT_PATH}:/usr/share/nginx/html:ro
+      - ../nginx/certs:/etc/letsencrypt:ro        # Здесь будут лежать ключи
+      - ../nginx/www:/var/www/certbot:ro          # Папка для проверки домена
+    
+    depends_on:
+      - core
+  
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ../nginx/certs:/etc/letsencrypt           # Пишет ключи сюда
+      - ../nginx/www:/var/www/certbot             # Пишет файлы проверки сюда
+    entrypoint: >
+      /bin/sh -c "trap exit TERM;
+      certbot certonly --webroot -w /var/www/certbot
+      --email safonov.300@yandex.ru --agree-tos --no-eff-email
+      -d okoski.ru -d www.okoski.ru --keep-until-expiring;
+      while :; do 
+        certbot renew; 
+        sleep 12h & wait $${!}; 
+      done"
+    restart: unless-stopped
+    depends_on:
+      - nginx
+
+
+
 
 volumes:
   pg_data:

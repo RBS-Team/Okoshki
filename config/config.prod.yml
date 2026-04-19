@@ -34,7 +34,7 @@ auth:
     port: "9001"
   logger:
     level: "debug"
-    mode: "dev"
+    mode: "prod"
 
 db:
   host: "localhost"
