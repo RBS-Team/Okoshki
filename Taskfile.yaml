@@ -145,7 +145,7 @@ tasks:
   logs:
     desc: "Логи сервиса"
     cmds:
-      - docker logs -f okoshki-core
+      - docker logs -f okoshki-core-service
 
   ps:
     desc: "Статус контейнеров"
