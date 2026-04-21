@@ -27,3 +27,10 @@ type RegisterResponse struct {
 	Email string `json:"email"`
 	Role  string `json:"role"`
 }
+
+//easyjson:json
+type UserInfo struct {
+	ID        string `json:"id"`
+	Email     string `json:"email"`
+	AvatarURL string `json:"avatar_url"`
+}

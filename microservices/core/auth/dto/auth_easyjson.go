@@ -17,7 +17,94 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(in *jlexer.Lexer, out *RegisterResponse) {
+func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(in *jlexer.Lexer, out *UserInfo) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		switch key {
+		case "id":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.ID = string(in.String())
+			}
+		case "email":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Email = string(in.String())
+			}
+		case "avatar_url":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.AvatarURL = string(in.String())
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(out *jwriter.Writer, in UserInfo) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"id\":"
+		out.RawString(prefix[1:])
+		out.String(string(in.ID))
+	}
+	{
+		const prefix string = ",\"email\":"
+		out.RawString(prefix)
+		out.String(string(in.Email))
+	}
+	{
+		const prefix string = ",\"avatar_url\":"
+		out.RawString(prefix)
+		out.String(string(in.AvatarURL))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v UserInfo) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v UserInfo) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *UserInfo) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *UserInfo) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(l, v)
+}
+func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(in *jlexer.Lexer, out *RegisterResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -59,7 +146,7 @@ func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(in *j
 		in.Consumed()
 	}
 }
-func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(out *jwriter.Writer, in RegisterResponse) {
+func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(out *jwriter.Writer, in RegisterResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -84,27 +171,27 @@ func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(out *
 // MarshalJSON supports json.Marshaler interface
 func (v RegisterResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(&w, v)
+	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v RegisterResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(w, v)
+	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *RegisterResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(&r, v)
+	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *RegisterResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(l, v)
+	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(l, v)
 }
-func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(in *jlexer.Lexer, out *RegisterRequest) {
+func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(in *jlexer.Lexer, out *RegisterRequest) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -146,7 +233,7 @@ func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(in *
 		in.Consumed()
 	}
 }
-func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(out *jwriter.Writer, in RegisterRequest) {
+func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(out *jwriter.Writer, in RegisterRequest) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -171,27 +258,27 @@ func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(out 
 // MarshalJSON supports json.Marshaler interface
 func (v RegisterRequest) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(&w, v)
+	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v RegisterRequest) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(w, v)
+	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *RegisterRequest) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(&r, v)
+	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *RegisterRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto1(l, v)
+	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(l, v)
 }
-func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(in *jlexer.Lexer, out *LoginResponse) {
+func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(in *jlexer.Lexer, out *LoginResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -227,7 +314,7 @@ func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(in *
 		in.Consumed()
 	}
 }
-func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(out *jwriter.Writer, in LoginResponse) {
+func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(out *jwriter.Writer, in LoginResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -247,27 +334,27 @@ func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(out 
 // MarshalJSON supports json.Marshaler interface
 func (v LoginResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(&w, v)
+	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v LoginResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(w, v)
+	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *LoginResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(&r, v)
+	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *LoginResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto2(l, v)
+	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(l, v)
 }
-func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(in *jlexer.Lexer, out *LoginRequest) {
+func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto4(in *jlexer.Lexer, out *LoginRequest) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -303,7 +390,7 @@ func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(in *
 		in.Consumed()
 	}
 }
-func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(out *jwriter.Writer, in LoginRequest) {
+func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto4(out *jwriter.Writer, in LoginRequest) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -323,23 +410,23 @@ func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(out 
 // MarshalJSON supports json.Marshaler interface
 func (v LoginRequest) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(&w, v)
+	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto4(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v LoginRequest) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(w, v)
+	easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto4(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *LoginRequest) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(&r, v)
+	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto4(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *LoginRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto3(l, v)
+	easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto4(l, v)
 }

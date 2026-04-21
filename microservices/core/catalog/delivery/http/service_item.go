@@ -154,14 +154,3 @@ func (h *Handler) GetServicesByCategory(w http.ResponseWriter, r *http.Request) 
 
 	response.JSON(w, http.StatusOK, items)
 }
-
-func (h *Handler) handleServiceItemError(w http.ResponseWriter, err error) {
-	switch {
-	case errors.Is(err, service.ErrNotFound):
-		response.NotFoundJSON(w)
-	case errors.Is(err, service.ErrConflict):
-		response.ConflictJSON(w)
-	default:
-		response.InternalErrorJSON(w)
-	}
-}

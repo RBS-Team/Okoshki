@@ -18,6 +18,9 @@ import (
 	userHtpp "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
 	userRepo "github.com/RBS-Team/Okoshki/microservices/core/auth/repository/postgres"
 	userService "github.com/RBS-Team/Okoshki/microservices/core/auth/service"
+	bookingHttp "github.com/RBS-Team/Okoshki/microservices/core/booking/delivery/http"
+	bookingRepo "github.com/RBS-Team/Okoshki/microservices/core/booking/repository/postgres"
+	bookingService "github.com/RBS-Team/Okoshki/microservices/core/booking/service"
 	catalogHttp "github.com/RBS-Team/Okoshki/microservices/core/catalog/delivery/http"
 	catalogRepo "github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
 	catalogService "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
@@ -62,6 +65,10 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	catalogService := catalogService.New(catalogRepository)
 	catalogHandler := catalogHttp.NewHandler(catalogService)
 
+	bookingRepository := bookingRepo.New(db)
+	bookingSvc := bookingService.New(bookingRepository, catalogService, userService)
+	bookingHandler := bookingHttp.NewHandler(bookingSvc)
+
 	requestLoggerMiddleware := middleware.RequestLoggerMiddleware(appLogger)
 	corsMiddleware := middleware.CORS(cfg.Auth.HTTP.CORS)
 
@@ -74,29 +81,24 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 
 	router := mux.NewRouter()
 
-	// Swagger (без CSRF, без аутентификации)
 	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
-	// API v1
 	api := router.PathPrefix("/api/v1").Subrouter()
 
-	// Глобальные middleware для ВСЕГО API
 	api.Use(requestLoggerMiddleware)
 	api.Use(corsMiddleware)
-	// УБРАЛИ ОТСЮДА api.Use(csrfMiddleware)
 
 	public := api.PathPrefix("").Subrouter()
 
 	protected := api.PathPrefix("").Subrouter()
 	protected.Use(authMiddleware.AuthMiddleware)
 
-	// Создаем отдельный роутер для изменения состояния (POST/PUT/DELETE)
 	csrfProtected := protected.PathPrefix("").Subrouter()
 	csrfProtected.Use(csrfMiddleware)
 
-	// Прокидываем 3 роутера в обработчики
 	catalogHandler.RegisterRoutes(public, protected, csrfProtected)
 	userHandler.RegisterRoutes(public, protected, csrfProtected)
+	bookingHandler.RegisterRoutes(public, protected, csrfProtected)
 
 	httpServer := server.NewHTTPServer(&cfg.Auth.HTTP, router, appLogger)
 

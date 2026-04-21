@@ -16,9 +16,9 @@ func (r *Repository) CreateServiceItem(ctx context.Context, item model.ServiceIt
 		INSERT INTO master_services (
 			id, master_id, category_id, title, description, price, 
 			duration_minutes, buffer_before_minutes, buffer_after_minutes, 
-			is_active, created_at, updated_at
+			is_active, is_auto_confirm, created_at, updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
@@ -32,6 +32,7 @@ func (r *Repository) CreateServiceItem(ctx context.Context, item model.ServiceIt
 		item.BufferBeforeMinutes,
 		item.BufferAfterMinutes,
 		item.IsActive,
+		item.IsAutoConfirm,
 		item.CreatedAt,
 		item.UpdatedAt,
 	)
@@ -48,7 +49,7 @@ func (r *Repository) GetServiceItemsByMasterID(ctx context.Context, masterID uui
 	query := `
 		SELECT id, master_id, category_id, title, description, price, 
 		       duration_minutes, buffer_before_minutes, buffer_after_minutes, 
-		       is_active, created_at, updated_at
+		       is_active, is_auto_confirm, created_at, updated_at
 		FROM master_services
 		WHERE master_id = $1 AND is_active = true
 		ORDER BY created_at ASC
@@ -66,7 +67,8 @@ func (r *Repository) GetServiceItemsByMasterID(ctx context.Context, masterID uui
 		if err := rows.Scan(
 			&item.ID, &item.MasterID, &item.CategoryID, &item.Title, &item.Description,
 			&item.Price, &item.DurationMinutes, &item.BufferBeforeMinutes,
-			&item.BufferAfterMinutes, &item.IsActive, &item.CreatedAt, &item.UpdatedAt,
+			&item.BufferAfterMinutes, &item.IsActive, &item.IsAutoConfirm,
+			&item.CreatedAt, &item.UpdatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("[%s]: scan failed: %w", op, err)
 		}
@@ -93,7 +95,7 @@ func (r *Repository) GetServicesByCategoryID(ctx context.Context, categoryID uui
 		)
 		SELECT id, master_id, category_id, title, description, price, 
 		       duration_minutes, buffer_before_minutes, buffer_after_minutes, 
-		       is_active, created_at, updated_at
+		       is_active, is_auto_confirm, created_at, updated_at
 		FROM master_services
 		WHERE is_active = true 
 		  AND category_id IN (SELECT id FROM cat_tree)
@@ -113,7 +115,8 @@ func (r *Repository) GetServicesByCategoryID(ctx context.Context, categoryID uui
 		if err := rows.Scan(
 			&s.ID, &s.MasterID, &s.CategoryID, &s.Title, &s.Description,
 			&s.Price, &s.DurationMinutes, &s.BufferBeforeMinutes,
-			&s.BufferAfterMinutes, &s.IsActive, &s.CreatedAt, &s.UpdatedAt,
+			&s.BufferAfterMinutes, &s.IsActive, &s.IsAutoConfirm,
+			&s.CreatedAt, &s.UpdatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("[%s]: scan failed: %w", op, err)
 		}
@@ -125,4 +128,29 @@ func (r *Repository) GetServicesByCategoryID(ctx context.Context, categoryID uui
 	}
 
 	return items, nil
+}
+
+func (r *Repository) GetServiceItemByID(ctx context.Context, id uuid.UUID) (*model.ServiceItem, error) {
+	const op = "catalog.repository.postgres.GetServiceItemByID"
+
+	query := `
+		SELECT id, master_id, category_id, title, description, price, 
+		       duration_minutes, buffer_before_minutes, buffer_after_minutes, 
+		       is_active, is_auto_confirm, created_at, updated_at
+		FROM master_services
+		WHERE id = $1 AND is_active = true
+	`
+
+	var item model.ServiceItem
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&item.ID, &item.MasterID, &item.CategoryID, &item.Title, &item.Description,
+		&item.Price, &item.DurationMinutes, &item.BufferBeforeMinutes,
+		&item.BufferAfterMinutes, &item.IsActive, &item.IsAutoConfirm,
+		&item.CreatedAt, &item.UpdatedAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, mapErrors(err))
+	}
+
+	return &item, nil
 }

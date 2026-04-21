@@ -93,6 +93,12 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(in
 			} else {
 				out.IsActive = bool(in.Bool())
 			}
+		case "is_auto_confirm":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.IsAutoConfirm = bool(in.Bool())
+			}
 		case "master":
 			if in.IsNull() {
 				in.Skip()
@@ -157,6 +163,11 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(ou
 		const prefix string = ",\"is_active\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.IsActive))
+	}
+	{
+		const prefix string = ",\"is_auto_confirm\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.IsAutoConfirm))
 	}
 	{
 		const prefix string = ",\"master\":"
@@ -271,6 +282,12 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto1(i
 			} else {
 				out.IsActive = bool(in.Bool())
 			}
+		case "is_auto_confirm":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.IsAutoConfirm = bool(in.Bool())
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -334,6 +351,11 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto1(o
 		const prefix string = ",\"is_active\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.IsActive))
+	}
+	{
+		const prefix string = ",\"is_auto_confirm\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.IsAutoConfirm))
 	}
 	out.RawByte('}')
 }
@@ -425,6 +447,20 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(i
 			} else {
 				out.BufferAfterMinutes = int(in.Int())
 			}
+		case "is_auto_confirm":
+			if in.IsNull() {
+				in.Skip()
+				out.IsAutoConfirm = nil
+			} else {
+				if out.IsAutoConfirm == nil {
+					out.IsAutoConfirm = new(bool)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.IsAutoConfirm = bool(in.Bool())
+				}
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -473,6 +509,11 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(o
 		const prefix string = ",\"buffer_after_minutes\":"
 		out.RawString(prefix)
 		out.Int(int(in.BufferAfterMinutes))
+	}
+	if in.IsAutoConfirm != nil {
+		const prefix string = ",\"is_auto_confirm\":"
+		out.RawString(prefix)
+		out.Bool(bool(*in.IsAutoConfirm))
 	}
 	out.RawByte('}')
 }

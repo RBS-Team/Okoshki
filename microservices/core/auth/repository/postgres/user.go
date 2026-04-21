@@ -70,6 +70,40 @@ func (r *Repository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User
 	return user, nil
 }
 
+func (r *Repository) GetUsersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.User, error) {
+	const op = "auth.repository.postgres.GetUsersByIDs"
+
+	if len(ids) == 0 {
+		return []model.User{}, nil
+	}
+
+	query := `
+		SELECT user_id, email, password_hash, role, avatar_url, created_at, updated_at
+		FROM "user" 
+		WHERE user_id = ANY($1)
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, ids)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: query failed: %w", op, err)
+	}
+	defer rows.Close()
+
+	var users []model.User
+	for rows.Next() {
+		var u model.User
+		if err := rows.Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Role, &u.AvatarURL, &u.CreatedAt, &u.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("[%s]: scan failed: %w", op, err)
+		}
+		users = append(users, u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("[%s]: rows iteration failed: %w", op, err)
+	}
+
+	return users, nil
+}
+
 func (r *Repository) selectUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
 	var user model.User
 

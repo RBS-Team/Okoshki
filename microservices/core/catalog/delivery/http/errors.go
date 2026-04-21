@@ -29,3 +29,25 @@ func (h *Handler) handleMasterError(w http.ResponseWriter, err error) {
 		response.InternalErrorJSON(w)
 	}
 }
+
+func (h *Handler) handleServiceItemError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, service.ErrNotFound):
+		response.NotFoundJSON(w)
+	case errors.Is(err, service.ErrConflict):
+		response.ConflictJSON(w)
+	default:
+		response.InternalErrorJSON(w)
+	}
+}
+
+func (h *Handler) handleScheduleError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, service.ErrNotFound):
+		response.NotFoundJSON(w)
+	case errors.Is(err, service.ErrConflict):
+		response.ConflictJSON(w)
+	default:
+		response.BadRequestJSON(w)
+	}
+}

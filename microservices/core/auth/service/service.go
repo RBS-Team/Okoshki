@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/RBS-Team/Okoshki/internal/model"
+	"github.com/google/uuid"
 )
 
 // Это интерйфесы для работы с базой данных.
@@ -15,6 +16,7 @@ type UserSaver interface {
 // Этот интерфейс на чтение
 type UserProvider interface {
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
+	GetUsersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.User, error)
 	// Мб check role сделать ?
 	// IsAdmin(ctx context.Context, userID int64) (bool, error)
 }

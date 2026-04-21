@@ -24,4 +24,12 @@ func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 
 	masterProtected.HandleFunc("/masters", h.CreateMaster).Methods(http.MethodPost, http.MethodOptions)
 	masterProtected.HandleFunc("/masters/{id}/services", h.CreateServiceItem).Methods(http.MethodPost, http.MethodOptions)
+
+	masterProtected.HandleFunc("/working-hours", h.GetWorkingHours).Methods(http.MethodGet, http.MethodOptions)
+	masterProtected.HandleFunc("/working-hours", h.UpsertWorkingHours).Methods(http.MethodPut, http.MethodOptions)
+
+	masterProtected.HandleFunc("/schedule-exceptions", h.GetScheduleExceptions).Methods(http.MethodGet, http.MethodOptions)
+	masterProtected.HandleFunc("/schedule-exceptions", h.CreateScheduleException).Methods(http.MethodPost, http.MethodOptions)
+	masterProtected.HandleFunc("/schedule-exceptions/{id}", h.UpdateScheduleException).Methods(http.MethodPut, http.MethodOptions)
+	masterProtected.HandleFunc("/schedule-exceptions/{id}", h.DeleteScheduleException).Methods(http.MethodDelete, http.MethodOptions)
 }
