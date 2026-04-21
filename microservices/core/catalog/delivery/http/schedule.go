@@ -34,6 +34,20 @@ func (h *Handler) resolveMasterID(ctx context.Context) (uuid.UUID, error) {
 	return uuid.Parse(master.ID)
 }
 
+// UpsertWorkingHours godoc
+// @Summary      Обновление рабочих часов мастера
+// @Description  Создаёт или обновляет расписание рабочих часов мастера на неделю. Требуется роль master и наличие созданного профиля мастера.
+// @Tags         schedule
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.UpdateWorkingHoursBulkRequest true "Массив рабочих часов по дням недели"
+// @Success      200 {object} map[string]string "Расписание успешно обновлено"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат запроса или невалидные данные"
+// @Failure      401 {object} response.ErrorResponse "Пользователь не авторизован"
+// @Failure      403 {object} response.ErrorResponse "Профиль мастера не создан"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Security     ApiKeyAuth
+// @Router       /working-hours [put]
 func (h *Handler) UpsertWorkingHours(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.UpsertWorkingHours"
 	log := middleware.LoggerFromContext(r.Context())

@@ -123,8 +123,8 @@ tasks:
   up:
     desc: "Запускает проект (билд + старт контейнеров) с подробным выводом"
     cmds:
-      - docker compose -f deployments/docker-compose.yaml --env-file .env.prod build --progress=plain
-      - docker compose -f deployments/docker-compose.yaml --env-file .env.prod up -d
+      - docker compose -f deployments/docker-compose.dev.yaml --env-file .env.dev build --progress=plain
+      - docker compose -f deployments/docker-compose.dev.yaml --env-file .env.dev up -d
 
   stop:
     desc: "Останавливает контейнеры"
@@ -134,7 +134,7 @@ tasks:
   down:
     desc: "Удаляет контейнеры и сети"
     cmds:
-      - docker compose -f deployments/docker-compose.yaml --env-file .env.dev down
+      - docker compose -f deployments/docker-compose.dev.yaml --env-file .env.dev down
 
   # Эту команду запускать только если ХОЧЕШЬ очистить базу именно этого проекта
   reset-db:
