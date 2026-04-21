@@ -12,6 +12,9 @@ vars:
   GCI: "{{.BIN_DIR}}/gci"
   GOFUMPT: "{{.BIN_DIR}}/gofumpt"
 
+  DOMAIN: okoski.ru
+  CERT_DIR: ./nginx/certs/live/{{.DOMAIN}}
+
 tasks:
   install-formatters:
     desc: "Устанавливает форматтеры gci и gofumpt в ./bin"
@@ -120,8 +123,8 @@ tasks:
   up:
     desc: "Запускает проект (билд + старт контейнеров) с подробным выводом"
     cmds:
-      - docker compose -f deployments/docker-compose.yaml --env-file .env.dev build --progress=plain
-      - docker compose -f deployments/docker-compose.yaml --env-file .env.dev up -d
+      - docker compose -f deployments/docker-compose.yaml --env-file .env.prod build --progress=plain
+      - docker compose -f deployments/docker-compose.yaml --env-file .env.prod up -d
 
   stop:
     desc: "Останавливает контейнеры"
@@ -142,12 +145,40 @@ tasks:
   logs:
     desc: "Логи сервиса"
     cmds:
-      - docker logs -f okoshki-core
+      - docker logs -f okoshki-core-service
 
   ps:
     desc: "Статус контейнеров"
     cmds:
       - docker compose -f deployments/docker-compose.yaml ps
+
+  init:
+    desc: "Первый запуск с генерацией SSL пустышек"
+    cmds:
+      - echo "---Подготавливаю временные сертификаты---"
+      - mkdir -p {{.CERT_DIR}}
+      - |
+        if [ ! -f {{.CERT_DIR}}/fullchain.pem ]; then
+          openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+            -keyout {{.CERT_DIR}}/privkey.pem \
+            -out {{.CERT_DIR}}/fullchain.pem \
+            -subj "/CN=localhost"
+          cp {{.CERT_DIR}}/fullchain.pem {{.CERT_DIR}}/chain.pem
+        fi
+      - echo "--- Запускаю контейнеры с помощью task up ---"
+      - task: up
+      - echo "--- Запрашиваю реальные сертификаты ---"
+      - docker compose -f deployments/docker-compose.yaml --env-file .env.prod stop certbot
+      - |
+        docker compose -f deployments/docker-compose.yaml --env-file .env.prod run --rm certbot certonly --webroot -w /var/www/certbot \
+          --email {{.EMAIL}} --agree-tos --no-eff-email \
+          -d {{.DOMAIN}} -d www.{{.DOMAIN}}
+      - docker compose -f deployments/docker-compose.yaml --env-file .env.prod start certbot
+      - echo "--- Перезагружаю Nginx ---"
+      - docker compose -f deployments/docker-compose.yaml --env-file .env.prod exec nginx nginx -s reload
+    status:
+      # Команда не будет запускаться повторно, если реальный сертификат уже есть
+      - test -f {{.CERT_DIR}}/fullchain.pem && openssl x509 -checkend 86400 -noout -in {{.CERT_DIR}}/fullchain.pem
 
   easyjson:
     desc: "Полная очистка и перегенерация всех easyjson файлов"
