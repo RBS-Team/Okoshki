@@ -80,6 +80,18 @@ func (h *Handler) UpsertWorkingHours(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
+// GetWorkingHours godoc
+// @Summary      Получение рабочих часов мастера
+// @Description  Возвращает расписание рабочих часов авторизованного мастера. Требуется роль master и наличие созданного профиля мастера.
+// @Tags         schedule
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} dto.WorkingHours "Рабочие часы мастера"
+// @Failure      401 {object} response.ErrorResponse "Пользователь не авторизован"
+// @Failure      403 {object} response.ErrorResponse "Профиль мастера не создан"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Security     ApiKeyAuth
+// @Router       /working-hours [get]
 func (h *Handler) GetWorkingHours(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetWorkingHours"
 	log := middleware.LoggerFromContext(r.Context())
@@ -105,6 +117,21 @@ func (h *Handler) GetWorkingHours(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, hours)
 }
 
+// CreateScheduleException godoc
+// @Summary      Создание исключения в расписании
+// @Description  Создаёт новое исключение в расписании мастера (выходной, отпуск, особые часы работы). Требуется роль master и наличие созданного профиля мастера.
+// @Tags         schedule
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.CreateScheduleExceptionRequest true "Данные исключения"
+// @Success      201 {object} dto.ScheduleException "Исключение успешно создано"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат запроса или невалидные данные"
+// @Failure      401 {object} response.ErrorResponse "Пользователь не авторизован"
+// @Failure      403 {object} response.ErrorResponse "Профиль мастера не создан"
+// @Failure      409 {object} response.ErrorResponse "Конфликт дат с существующими исключениями"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Security     ApiKeyAuth
+// @Router       /schedule-exceptions [post]
 func (h *Handler) CreateScheduleException(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.CreateScheduleException"
 	log := middleware.LoggerFromContext(r.Context())
@@ -138,6 +165,23 @@ func (h *Handler) CreateScheduleException(w http.ResponseWriter, r *http.Request
 	response.JSON(w, http.StatusCreated, exc)
 }
 
+// UpdateScheduleException godoc
+// @Summary      Обновление исключения в расписании
+// @Description  Обновляет существующее исключение в расписании мастера по его ID. Требуется роль master и наличие созданного профиля мастера.
+// @Tags         schedule
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "UUID исключения"
+// @Param        request body dto.UpdateScheduleExceptionRequest true "Обновлённые данные исключения"
+// @Success      200 {object} map[string]string "Исключение успешно обновлено"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат запроса, невалидные данные или неверный UUID"
+// @Failure      401 {object} response.ErrorResponse "Пользователь не авторизован"
+// @Failure      403 {object} response.ErrorResponse "Профиль мастера не создан"
+// @Failure      404 {object} response.ErrorResponse "Исключение не найдено"
+// @Failure      409 {object} response.ErrorResponse "Конфликт дат с существующими исключениями"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Security     ApiKeyAuth
+// @Router       /schedule-exceptions/{id} [put]
 func (h *Handler) UpdateScheduleException(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.UpdateScheduleException"
 	log := middleware.LoggerFromContext(r.Context())
@@ -184,6 +228,21 @@ func (h *Handler) UpdateScheduleException(w http.ResponseWriter, r *http.Request
 	response.JSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
+// DeleteScheduleException godoc
+// @Summary      Удаление исключения из расписания
+// @Description  Удаляет исключение из расписания мастера по его ID. Требуется роль master и наличие созданного профиля мастера.
+// @Tags         schedule
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "UUID исключения"
+// @Success      200 {object} map[string]string "Исключение успешно удалено"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат UUID"
+// @Failure      401 {object} response.ErrorResponse "Пользователь не авторизован"
+// @Failure      403 {object} response.ErrorResponse "Профиль мастера не создан"
+// @Failure      404 {object} response.ErrorResponse "Исключение не найдено"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Security     ApiKeyAuth
+// @Router       /schedule-exceptions/{id} [delete]
 func (h *Handler) DeleteScheduleException(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.DeleteScheduleException"
 	log := middleware.LoggerFromContext(r.Context())
@@ -222,6 +281,21 @@ func (h *Handler) DeleteScheduleException(w http.ResponseWriter, r *http.Request
 	response.JSON(w, http.StatusOK, map[string]string{"status": "deleted"})
 }
 
+// GetScheduleExceptions godoc
+// @Summary      Получение исключений в расписании
+// @Description  Возвращает список исключений в расписании мастера за указанный период. Требуется роль master и наличие созданного профиля мастера.
+// @Tags         schedule
+// @Accept       json
+// @Produce      json
+// @Param        start_date query string true "Начальная дата периода в формате YYYY-MM-DD"
+// @Param        end_date query string true "Конечная дата периода в формате YYYY-MM-DD"
+// @Success      200 {array} dto.ScheduleException "Список исключений"
+// @Failure      400 {object} response.ErrorResponse "Отсутствуют обязательные query параметры"
+// @Failure      401 {object} response.ErrorResponse "Пользователь не авторизован"
+// @Failure      403 {object} response.ErrorResponse "Профиль мастера не создан"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Security     ApiKeyAuth
+// @Router       /schedule-exceptions [get]
 func (h *Handler) GetScheduleExceptions(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetScheduleExceptions"
 	log := middleware.LoggerFromContext(r.Context())
