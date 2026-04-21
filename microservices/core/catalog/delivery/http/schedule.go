@@ -35,7 +35,7 @@ func (h *Handler) resolveMasterID(ctx context.Context) (uuid.UUID, error) {
 }
 
 // UpsertWorkingHours godoc
-// @Summary      Обновление рабочих часов мастера
+// @Summary      Создание расписания мастера
 // @Description  Создаёт или обновляет расписание рабочих часов мастера на неделю. Требуется роль master и наличие созданного профиля мастера.
 // @Tags         schedule
 // @Accept       json
@@ -81,7 +81,7 @@ func (h *Handler) UpsertWorkingHours(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetWorkingHours godoc
-// @Summary      Получение рабочих часов мастера
+// @Summary      Получение расписания мастера
 // @Description  Возвращает расписание рабочих часов авторизованного мастера. Требуется роль master и наличие созданного профиля мастера.
 // @Tags         schedule
 // @Accept       json
