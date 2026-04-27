@@ -238,6 +238,12 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto1(i
 			} else {
 				out.Title = string(in.String())
 			}
+		case "address":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Address = string(in.String())
+			}
 		case "description":
 			if in.IsNull() {
 				in.Skip()
@@ -321,6 +327,11 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto1(o
 		const prefix string = ",\"title\":"
 		out.RawString(prefix)
 		out.String(string(in.Title))
+	}
+	{
+		const prefix string = ",\"address\":"
+		out.RawString(prefix)
+		out.String(string(in.Address))
 	}
 	if in.Description != nil {
 		const prefix string = ",\"description\":"
@@ -409,6 +420,12 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(i
 			} else {
 				out.Title = string(in.String())
 			}
+		case "address":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Address = string(in.String())
+			}
 		case "description":
 			if in.IsNull() {
 				in.Skip()
@@ -484,6 +501,11 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(o
 		const prefix string = ",\"title\":"
 		out.RawString(prefix)
 		out.String(string(in.Title))
+	}
+	{
+		const prefix string = ",\"address\":"
+		out.RawString(prefix)
+		out.String(string(in.Address))
 	}
 	if in.Description != nil {
 		const prefix string = ",\"description\":"

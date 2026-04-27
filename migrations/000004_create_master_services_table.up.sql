@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS master_services (
     master_id UUID NOT NULL REFERENCES masters(id) ON DELETE CASCADE,
     category_id UUID NOT NULL REFERENCES category(id) ON DELETE RESTRICT,
     title VARCHAR(255) NOT NULL,
+    address TEXT NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
     duration_minutes INT NOT NULL,

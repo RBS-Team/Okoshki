@@ -8,6 +8,7 @@ type ServiceItem struct {
 	MasterID            string  `json:"master_id"`
 	CategoryID          string  `json:"category_id"`
 	Title               string  `json:"title"`
+	Address				string	`json:"address"`
 	Description         *string `json:"description,omitempty"`
 	Price               float64 `json:"price"`
 	DurationMinutes     int     `json:"duration_minutes"`
@@ -21,6 +22,7 @@ type ServiceItem struct {
 type CreateServiceItemRequest struct {
 	CategoryID          string  `json:"category_id"`
 	Title               string  `json:"title"`
+	Address				string	`json:"address"`
 	Description         *string `json:"description,omitempty"`
 	Price               float64 `json:"price"`
 	DurationMinutes     int     `json:"duration_minutes"`

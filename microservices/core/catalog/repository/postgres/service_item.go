@@ -14,11 +14,11 @@ func (r *Repository) CreateServiceItem(ctx context.Context, item model.ServiceIt
 
 	query := `
 		INSERT INTO master_services (
-			id, master_id, category_id, title, description, price, 
+			id, master_id, category_id, title, address, description, price, 
 			duration_minutes, buffer_before_minutes, buffer_after_minutes, 
 			is_active, is_auto_confirm, created_at, updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
@@ -26,6 +26,7 @@ func (r *Repository) CreateServiceItem(ctx context.Context, item model.ServiceIt
 		item.MasterID,
 		item.CategoryID,
 		item.Title,
+		item.Address,
 		item.Description,
 		item.Price,
 		item.DurationMinutes,

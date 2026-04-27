@@ -55,7 +55,7 @@ func (h *Handler) CreateServiceItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Title == "" || req.CategoryID == "" || req.DurationMinutes <= 0 || req.Price < 0 {
+	if req.Title == "" || req.CategoryID == "" || req.DurationMinutes <= 0 || req.Price < 0 || req.Address == ""{
 		log.Warnf("[%s]: invalid request fields", op)
 		response.BadRequestJSON(w)
 		return

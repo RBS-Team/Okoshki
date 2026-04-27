@@ -11,6 +11,7 @@ type ServiceItem struct {
 	MasterID            uuid.UUID
 	CategoryID          uuid.UUID
 	Title               string
+	Address				string
 	Description         *string
 	Price               float64
 	DurationMinutes     int
