@@ -120,11 +120,17 @@ tasks:
       - echo "Дергать ручки можно http://localhost:8080/swagger/index.html"
     desc: "Апишка, которую можно потестировать в UI"
 
-  up:
-    desc: "Запускает проект (билд + старт контейнеров) с подробным выводом"
+  up-dev:
+    desc: "Запускает DEV версию проекта (билд + старт контейнеров) с подробным выводом"
     cmds:
       - docker compose -f deployments/docker-compose.dev.yaml --env-file .env.dev build --progress=plain
       - docker compose -f deployments/docker-compose.dev.yaml --env-file .env.dev up -d
+
+  up-prod:
+    desc: "Запускает PROD версию проекта (билд + старт контейнеров) с подробным выводом"
+    cmds:
+      - docker compose -f deployments/docker-compose.prod.yaml --env-file .env.prod build --progress=plain
+      - docker compose -f deployments/docker-compose.prod.yaml --env-file .env.prod up -d
 
   stop:
     desc: "Останавливает контейнеры"
@@ -165,8 +171,8 @@ tasks:
             -subj "/CN=localhost"
           cp {{.CERT_DIR}}/fullchain.pem {{.CERT_DIR}}/chain.pem
         fi
-      - echo "--- Запускаю контейнеры с помощью task up ---"
-      - task: up
+      - echo "--- Запускаю контейнеры с помощью task up-prod ---"
+      - task: up-prod
       - echo "--- Запрашиваю реальные сертификаты ---"
       - docker compose -f deployments/docker-compose.yaml --env-file .env.prod stop certbot
       - |

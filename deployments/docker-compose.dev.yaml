@@ -45,5 +45,23 @@ services:
       db:
         condition: service_healthy
 
+  nginx:
+    image: nginx:1.30.0-alpine
+    container_name: okoshki-nginx-frontend
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - ../.env.${APP_ENV:-dev}
+    volumes:
+      - ${FRONT_PATH}:/usr/share/nginx/html:ro
+      - ../nginx/certs:/etc/letsencrypt:ro               # Здесь будут лежать ключи
+      - ../nginx/www:/var/www/certbot:ro                 # Папка для проверки домена
+      - ../nginx/nginx.dev.conf:/etc/nginx/nginx.conf    # Монтируем конфиг для работы nginx на локалке без HTTPS
+    
+    depends_on:
+      - core
+
 volumes:
   pg_data:

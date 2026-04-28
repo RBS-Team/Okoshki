@@ -48,7 +48,7 @@ func (r *Repository) GetServiceItemsByMasterID(ctx context.Context, masterID uui
 	const op = "catalog.repository.postgres.GetServiceItemsByMasterID"
 
 	query := `
-		SELECT id, master_id, category_id, title, description, price, 
+		SELECT id, master_id, category_id, title, address, description, price, 
 		       duration_minutes, buffer_before_minutes, buffer_after_minutes, 
 		       is_active, is_auto_confirm, created_at, updated_at
 		FROM master_services
@@ -66,7 +66,7 @@ func (r *Repository) GetServiceItemsByMasterID(ctx context.Context, masterID uui
 	for rows.Next() {
 		var item model.ServiceItem
 		if err := rows.Scan(
-			&item.ID, &item.MasterID, &item.CategoryID, &item.Title, &item.Description,
+			&item.ID, &item.MasterID, &item.CategoryID, &item.Title, &item.Address, &item.Description,
 			&item.Price, &item.DurationMinutes, &item.BufferBeforeMinutes,
 			&item.BufferAfterMinutes, &item.IsActive, &item.IsAutoConfirm,
 			&item.CreatedAt, &item.UpdatedAt,
