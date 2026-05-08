@@ -140,13 +140,13 @@ tasks:
   down:
     desc: "Удаляет контейнеры и сети"
     cmds:
-      - docker compose -f deployments/docker-compose.dev.yaml --env-file .env.dev down
+      - docker compose -f deployments/docker-compose.prod.yaml --env-file .env.dev down
 
   # Эту команду запускать только если ХОЧЕШЬ очистить базу именно этого проекта
   reset-db:
     desc: "ВНИМАНИЕ: Полная очистка БД текущего проекта"
     cmds:
-      - docker compose -f deployments/docker-compose.yaml --env-file .env.dev down -v
+      - docker compose -f deployments/docker-compose.prod.yaml --env-file .env.dev down -v
 
   logs:
     desc: "Логи сервиса"
@@ -175,8 +175,9 @@ tasks:
       - task: up-prod
       - echo "--- Запрашиваю реальные сертификаты ---"
       - docker compose -f deployments/docker-compose.prod.yaml --env-file .env.prod stop certbot
+      - rm -f {{.CERT_DIR}}/fullchain.pem {{.CERT_DIR}}/privkey.pem {{.CERT_DIR}}/chain.pem
       - |
-        docker compose -f deployments/docker-compose.prod.yaml --env-file .env.prod run --rm certbot certonly --webroot -w /var/www/certbot \
+        docker compose -f deployments/docker-compose.prod.yaml --env-file .env.prod run --rm --entrypoint certbot certbot certonly --webroot -w /var/www/certbot \
           --email {{.EMAIL}} --agree-tos --no-eff-email \
           -d {{.DOMAIN}} -d www.{{.DOMAIN}}
       - docker compose -f deployments/docker-compose.prod.yaml --env-file .env.prod start certbot
