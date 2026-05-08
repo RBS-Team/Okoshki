@@ -22,7 +22,7 @@ import (
 // @Produce      json
 // @Param        id      path      string                       true  "UUID мастера" format(uuid)
 // @Param        request body      dto.CreateServiceItemRequest true  "Данные услуги"
-// @Success      201     {object}  dto.ServiceItem      "Услуга успешно создана"
+// @Success      201     {object}  dto.ServiceItem    			"Услуга успешно создана"
 // @Failure      400     {object}  response.ErrorResponse       "Неверный формат ID или тела запроса"
 // @Failure      404     {object}  response.ErrorResponse       "Мастер не найден"
 // @Failure      409     {object}  response.ErrorResponse       "Конфликт (например, услуга уже существует)"
@@ -70,6 +70,84 @@ func (h *Handler) CreateServiceItem(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusCreated, item)
 }
+// func (h *Handler) UploadServiceItemImages(w http.ResponseWriter, r *http.Request) {
+// 	const op = "catalog.handler.UploadServiceItemImages"
+// 	log:=middleware.LoggerFromContext(r.Context())
+
+// 	// Проверка авторизации (убеждаемся, что это мастер)
+// 	userRole, ok := middleware.GetUserRole(r.Context())
+// 	if !ok || userRole != "Master" {
+// 		response.UnauthorizedJSON(w)
+// 		return
+// 	}
+
+// 	// Получаем ID услуги из URL
+// 	serviceIDRaw := mux.Vars(r)["srvсid"]
+// 	serviceID, err := uuid.Parse(serviceIDRaw)
+// 	if err != nil {
+// 		log.Errorf("[%s]: invalid service id: %v", op, err)
+// 		response.BadRequestJSON(w)
+// 		return
+// 	}
+
+// 	file, header, err := r.FormFile("avatar")
+// 	if err != nil {
+// 		log.Errorf("[%s]: failed to get file: %v", op, err)
+// 		response.BadRequestJSON(w)
+// 		return
+// 	}
+// 	defer file.Close()
+
+// 	if err := h.validatePlaylistAvatar(header.Header.Get("Content-Type"), header.Size); err != nil {
+// 		log.Errorf("[%s] validation error: %v", op, err)
+// 		response.BadRequestJSON(w)
+// 		return
+// 	}
+
+// 	res, err := h.service.UploadPlaylistAvatar(r.Context(), dto.UploadServiceItemImagesRequest{
+// 		PlaylistID:  playlistID,
+// 		File:        file,
+// 		Size:        header.Size,
+// 		ContentType: header.Header.Get("Content-Type"),
+// 	})
+// 	if err != nil {
+// 		log.Errorf("[%s]: service error: %v", op, err)
+// 		h.handleError(w, err)
+// 		return
+// 	}
+
+// 	response.JSON(w, http.StatusOK, res)
+// }
+
+// func (h *Handler) DeletePlaylistAvatar(w http.ResponseWriter, r *http.Request) {
+// 	const op = "handler.DeletePlaylistAvatar"
+// 	log := middleware.LoggerFromContext(r.Context())
+
+// 	userID, ok := middleware.GetUserID(r.Context())
+// 	if !ok || userID == "" {
+// 		response.UnauthorizedJSON(w)
+// 		return
+// 	}
+
+// 	rawID := mux.Vars(r)["id"]
+// 	playlistID, err := uuid.Parse(rawID)
+// 	if err != nil {
+// 		log.Errorf("[%s] invalid playlist id: %v", op, err)
+// 		response.BadRequestJSON(w)
+// 		return
+// 	}
+
+// 	req := dto.DeletePlaylistAvatarRequest{
+// 		PlaylistID: playlistID,
+// 	}
+// 	if err := h.service.DeletePlaylistAvatar(r.Context(), req); err != nil {
+// 		log.Errorf("[%s]: service error: %v", op, err)
+// 		h.handleError(w, err)
+// 		return
+// 	}
+
+// 	response.JSON(w, http.StatusOK, map[string]string{"status": "deleted"})
+// }
 
 // GetServiceItemsByMasterID godoc
 // @Summary      Получение услуг мастера

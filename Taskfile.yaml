@@ -135,7 +135,7 @@ tasks:
   stop:
     desc: "Останавливает контейнеры"
     cmds:
-      - docker compose -f deployments/docker-compose.yaml --env-file .env.dev stop
+      - docker compose -f deployments/docker-compose.dev.yaml --env-file .env.dev stop
 
   down:
     desc: "Удаляет контейнеры и сети"
@@ -174,14 +174,14 @@ tasks:
       - echo "--- Запускаю контейнеры с помощью task up-prod ---"
       - task: up-prod
       - echo "--- Запрашиваю реальные сертификаты ---"
-      - docker compose -f deployments/docker-compose.yaml --env-file .env.prod stop certbot
+      - docker compose -f deployments/docker-compose.prod.yaml --env-file .env.prod stop certbot
       - |
-        docker compose -f deployments/docker-compose.yaml --env-file .env.prod run --rm certbot certonly --webroot -w /var/www/certbot \
+        docker compose -f deployments/docker-compose.prod.yaml --env-file .env.prod run --rm certbot certonly --webroot -w /var/www/certbot \
           --email {{.EMAIL}} --agree-tos --no-eff-email \
           -d {{.DOMAIN}} -d www.{{.DOMAIN}}
-      - docker compose -f deployments/docker-compose.yaml --env-file .env.prod start certbot
+      - docker compose -f deployments/docker-compose.prod.yaml --env-file .env.prod start certbot
       - echo "--- Перезагружаю Nginx ---"
-      - docker compose -f deployments/docker-compose.yaml --env-file .env.prod exec nginx nginx -s reload
+      - docker compose -f deployments/docker-compose.prod.yaml --env-file .env.prod exec nginx nginx -s reload
     status:
       # Команда не будет запускаться повторно, если реальный сертификат уже есть
       - test -f {{.CERT_DIR}}/fullchain.pem && openssl x509 -checkend 86400 -noout -in {{.CERT_DIR}}/fullchain.pem
