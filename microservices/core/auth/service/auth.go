@@ -60,6 +60,18 @@ func (a *AuthService) RegisterNewUser(ctx context.Context, req dto.RegisterReque
 	}, nil
 }
 
+func (a *AuthService) DeleteUser(ctx context.Context, userID string) error {
+	const op = "auth.service.DeleteUser"
+	id, err := uuid.Parse(userID)
+	if err != nil {
+		return fmt.Errorf("[%s]: invalid user id: %w", op, err)
+	}
+	if err := a.usrSaver.DeleteUserByID(ctx, id); err != nil {
+		return fmt.Errorf("[%s]: %w", op, err)
+	}
+	return nil
+}
+
 func (a *AuthService) IsAdmin(ctx context.Context, userID int64) (bool, error) {
 	panic("not implemented")
 }

@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 
+	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
@@ -30,6 +31,10 @@ func RequireRole(allowedRoles ...string) func(http.Handler) http.Handler {
 
 			if !isAllowed {
 				log.Warnf("[%s]: access denied for role %s", op, userRole)
+				if userRole == string(model.RoleGuest) {
+					response.RegistrationRequiredJSON(w)
+					return
+				}
 				response.ForbiddenJSON(w)
 				return
 			}

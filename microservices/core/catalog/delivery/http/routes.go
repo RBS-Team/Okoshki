@@ -23,7 +23,6 @@ func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 	masterProtected := csrfProtected.PathPrefix("").Subrouter()
 	masterProtected.Use(middleware.RequireRole(string(model.RoleMaster)))
 
-	masterProtected.HandleFunc("/masters", h.CreateMaster).Methods(http.MethodPost, http.MethodOptions)
 	masterProtected.HandleFunc("/masters/{id}/services", h.CreateServiceItem).Methods(http.MethodPost, http.MethodOptions)
 	masterProtected.HandleFunc("/masters/{masterID}/portfolio", h.UploadPortfolioPhotos).Methods(http.MethodPost, http.MethodOptions)
 	masterProtected.HandleFunc("/masters/{masterID}/portfolio/{photoID}", h.DeletePortfolioPhoto).Methods(http.MethodDelete, http.MethodOptions)

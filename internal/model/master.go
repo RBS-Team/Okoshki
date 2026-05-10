@@ -22,3 +22,4 @@ type Master struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
+

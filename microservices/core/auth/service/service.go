@@ -11,6 +11,7 @@ import (
 // Этот интерфейс на запись
 type UserSaver interface {
 	CreateUser(ctx context.Context, user model.User) error
+	DeleteUserByID(ctx context.Context, id uuid.UUID) error
 }
 
 // Этот интерфейс на чтение

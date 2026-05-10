@@ -10,6 +10,7 @@ import (
 	easyjson "github.com/mailru/easyjson"
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
+	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/auth/dto"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
@@ -43,7 +44,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Role != "client" && req.Role != "master" {
+	if req.Role != string(model.RoleClient) {
 		log.Warnf("[%s]: Invalid role attempted: %s", op, req.Role)
 		response.BadRequestJSON(w)
 		return
@@ -173,6 +174,89 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	log.Infof("[%s]: User logged out successfully: %s", op, userID)
 
 	response.JSON(w, http.StatusOK, "Ok")
+}
+
+// RegisterMaster godoc
+// @Summary      Регистрация мастера
+// @Description  Создаёт пользователя с ролью "master" и профиль мастера за один запрос. Устанавливает httpOnly cookie с JWT токеном.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.RegisterMasterRequest true "Данные мастера"
+// @Success      201 {object} dto.RegisterMasterResponse "Мастер успешно создан"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure      409 {object} response.ErrorResponse "Пользователь с таким email уже существует"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router       /master/register [post]
+func (h *AuthHandler) RegisterMaster(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.RegisterMaster"
+	defer r.Body.Close()
+
+	log := middleware.LoggerFromContext(r.Context())
+
+	var req dto.RegisterMasterRequest
+	if err := easyjson.UnmarshalFromReader(r.Body, &req); err != nil {
+		log.Errorf("[%s]: Invalid request body: %v", op, err)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	if !h.validateCredentials(req.Email, req.Password) {
+		response.BadRequestJSON(w)
+		return
+	}
+
+	if req.Name == "" {
+		log.Warnf("[%s]: missing required field: name", op)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	user, err := h.service.RegisterNewUser(r.Context(), dto.RegisterRequest{
+		Email:    req.Email,
+		Password: req.Password,
+		Role:     string(model.RoleMaster),
+	})
+	if err != nil {
+		log.Errorf("[%s]: failed to create user: %v", op, err)
+		h.handleAuthError(w, err)
+		return
+	}
+
+	masterID, err := h.masterCreator.CreateMasterProfile(
+		r.Context(), user.ID, req.Name, req.Bio, req.Timezone, req.Lat, req.Lon,
+	)
+	if err != nil {
+		log.Errorf("[%s]: failed to create master profile for user %s: %v", op, user.ID, err)
+		if delErr := h.service.DeleteUser(r.Context(), user.ID); delErr != nil {
+			log.Errorf("[%s]: rollback failed, orphaned user %s: %v", op, user.ID, delErr)
+		}
+		response.InternalErrorJSON(w)
+		return
+	}
+
+	token, err := h.jwtManager.NewToken(user.ID, string(model.RoleMaster))
+	if err != nil {
+		log.Errorf("[%s]: Failed to generate token: %v", op, err)
+		response.InternalErrorJSON(w)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     sessionTokenCookie,
+		Value:    token,
+		Expires:  time.Now().Add(h.jwtManager.GetTTL()),
+		HttpOnly: true,
+		Path:     "/",
+	})
+
+	log.Infof("[%s]: Master registered: userID=%s masterID=%s", op, user.ID, masterID)
+	response.JSON(w, http.StatusCreated, dto.RegisterMasterResponse{
+		UserID:   user.ID,
+		MasterID: masterID,
+		Email:    user.Email,
+		Role:     string(model.RoleMaster),
+	})
 }
 
 // validateCredentials - простая валидация формата

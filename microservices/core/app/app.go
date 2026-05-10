@@ -22,6 +22,7 @@ import (
 	bookingRepo "github.com/RBS-Team/Okoshki/microservices/core/booking/repository/postgres"
 	bookingService "github.com/RBS-Team/Okoshki/microservices/core/booking/service"
 	catalogHttp "github.com/RBS-Team/Okoshki/microservices/core/catalog/delivery/http"
+	catalogDto "github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
 	catalogRepo "github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
 	catalogService "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
 	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
@@ -29,6 +30,26 @@ import (
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 	"github.com/RBS-Team/Okoshki/pkg/postgres"
 )
+
+// masterCreatorAdapter реализует userHtpp.MasterCreator через catalog.Service.
+// Изолирует auth домен от прямой зависимости на catalog.
+type masterCreatorAdapter struct {
+	svc *catalogService.Service
+}
+
+func (a *masterCreatorAdapter) CreateMasterProfile(ctx context.Context, userIDStr, name string, bio *string, timezone string, lat, lon *float64) (string, error) {
+	master, err := a.svc.CreateMaster(ctx, userIDStr, catalogDto.CreateMasterRequest{
+		Name:     name,
+		Bio:      bio,
+		Timezone: timezone,
+		Lat:      lat,
+		Lon:      lon,
+	})
+	if err != nil {
+		return "", err
+	}
+	return master.ID, nil
+}
 
 type App struct {
 	cfg        *Config
@@ -60,7 +81,6 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 
 	userRepository := userRepo.NewUserRepository(db)
 	userService := userService.NewAuthService(userRepository, userRepository)
-	userHandler := userHtpp.NewHandler(userService, jwtManager)
 
 	minioClient, err := minioPkg.New(cfg.Minio)
 	if err != nil {
@@ -68,11 +88,13 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	}
 
 	catalogRepository := catalogRepo.New(db)
-	catalogService := catalogService.New(catalogRepository, minioClient)
-	catalogHandler := catalogHttp.NewHandler(catalogService)
+	catalogSvc := catalogService.New(catalogRepository, minioClient)
+	catalogHandler := catalogHttp.NewHandler(catalogSvc)
+
+	userHandler := userHtpp.NewHandler(userService, jwtManager, &masterCreatorAdapter{svc: catalogSvc})
 
 	bookingRepository := bookingRepo.New(db)
-	bookingSvc := bookingService.New(bookingRepository, catalogService, userService)
+	bookingSvc := bookingService.New(bookingRepository, catalogSvc, userService)
 	bookingHandler := bookingHttp.NewHandler(bookingSvc)
 
 	requestLoggerMiddleware := middleware.RequestLoggerMiddleware(appLogger)

@@ -126,6 +126,15 @@ func (r *Repository) selectUser(ctx context.Context, query string, args ...inter
 	return &user, nil
 }
 
+func (r *Repository) DeleteUserByID(ctx context.Context, id uuid.UUID) error {
+	const op = "auth.repository.postgres.DeleteUserByID"
+	_, err := r.db.ExecContext(ctx, `DELETE FROM "user" WHERE user_id = $1`, id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
 func handlePostgresError(err error) error {
 	if err == nil {
 		return nil
