@@ -9,6 +9,8 @@ import (
 var (
 	ErrNotFound        = errors.New("entity not found")
 	ErrConflict        = errors.New("entity already exists")
+	ErrForbidden       = errors.New("access denied")
+	ErrInvalidInput    = errors.New("invalid input")
 	ErrInvalidTimezone = errors.New("invalid timezone provided")
 )
 

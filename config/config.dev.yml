@@ -34,6 +34,13 @@ auth:
     level: "debug"
     mode: "dev"
 
+minio:
+  endpoint: "localhost:9000"
+  accessKey: ""
+  secretKey: ""
+  useSSL: false
+  publicURL: "http://localhost/minio"
+
 db:
   host: "localhost"
   port: 5432

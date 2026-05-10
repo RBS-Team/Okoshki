@@ -8,6 +8,7 @@ import (
 
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
+	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 )
 
 //go:generate mockgen -destination=../../../../mocks/catalog/repository/repository_mock.go -package=mock_catalog_repo github.com/RBS-Team/Okoshki/microservices/core/catalog/service IRepository
@@ -35,14 +36,24 @@ type IRepository interface {
 	GetScheduleExceptions(ctx context.Context, masterID uuid.UUID, startDate, endDate time.Time) ([]model.ScheduleException, error)
 	UpdateScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID, upd postgres.UpdateScheduleExceptionInput) error
 	DeleteScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID) error
+
+	SavePortfolioPhotos(ctx context.Context, photos []model.PortfolioPhoto) error
+	GetPortfolioPhotosByMasterID(ctx context.Context, masterID uuid.UUID) ([]model.PortfolioPhoto, error)
+}
+
+type IStorage interface {
+	Upload(ctx context.Context, obj minioPkg.ObjectInfo) (string, error)
+	BuildObjectURL(bucket, objectName string) string
 }
 
 type Service struct {
-	repo IRepository
+	repo    IRepository
+	storage IStorage
 }
 
-func New(repo IRepository) *Service {
+func New(repo IRepository, storage IStorage) *Service {
 	return &Service{
-		repo: repo,
+		repo:    repo,
+		storage: storage,
 	}
 }

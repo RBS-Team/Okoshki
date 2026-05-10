@@ -34,6 +34,13 @@ auth:
     level: "debug"
     mode: "prod"
 
+minio:
+  endpoint: "nginx:9000"
+  accessKey: ""
+  secretKey: ""
+  useSSL: false
+  publicURL: "https://okoski.ru/minio"
+
 db:
   host: "localhost"
   port: 5432

@@ -30,6 +30,9 @@ type IService interface {
 	UpdateScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID, req dto.UpdateScheduleExceptionRequest) error
 	DeleteScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID) error
 	GetScheduleExceptions(ctx context.Context, masterID uuid.UUID, startDateStr, endDateStr string) ([]dto.ScheduleException, error)
+
+	UploadPortfolioPhotos(ctx context.Context, userIDStr, masterIDStr string, files []dto.FileUpload) ([]dto.PortfolioPhoto, error)
+	GetPortfolioPhotos(ctx context.Context, masterIDStr string) ([]dto.PortfolioPhoto, error)
 }
 
 type Handler struct {

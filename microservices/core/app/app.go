@@ -26,6 +26,7 @@ import (
 	catalogService "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
 	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
 	"github.com/RBS-Team/Okoshki/pkg/logger"
+	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 	"github.com/RBS-Team/Okoshki/pkg/postgres"
 )
 
@@ -61,8 +62,13 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	userService := userService.NewAuthService(userRepository, userRepository)
 	userHandler := userHtpp.NewHandler(userService, jwtManager)
 
+	minioClient, err := minioPkg.New(cfg.Minio)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init minio client: %w", err)
+	}
+
 	catalogRepository := catalogRepo.New(db)
-	catalogService := catalogService.New(catalogRepository)
+	catalogService := catalogService.New(catalogRepository, minioClient)
 	catalogHandler := catalogHttp.NewHandler(catalogService)
 
 	bookingRepository := bookingRepo.New(db)

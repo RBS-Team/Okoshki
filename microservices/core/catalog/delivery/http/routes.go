@@ -18,13 +18,14 @@ func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 	public.HandleFunc("/masters", h.GetAllMasters).Methods(http.MethodGet, http.MethodOptions)
 	public.HandleFunc("/masters/{id}", h.GetMasterByID).Methods(http.MethodGet, http.MethodOptions)
 	public.HandleFunc("/masters/{id}/services", h.GetServiceItemsByMasterID).Methods(http.MethodGet, http.MethodOptions)
+	public.HandleFunc("/masters/{masterID}/portfolio", h.GetPortfolioPhotos).Methods(http.MethodGet, http.MethodOptions)
 
 	masterProtected := csrfProtected.PathPrefix("").Subrouter()
 	masterProtected.Use(middleware.RequireRole(string(model.RoleMaster)))
 
 	masterProtected.HandleFunc("/masters", h.CreateMaster).Methods(http.MethodPost, http.MethodOptions)
 	masterProtected.HandleFunc("/masters/{id}/services", h.CreateServiceItem).Methods(http.MethodPost, http.MethodOptions)
-	// masterProtected.HandleFunc("/masters/{id}/services/{srvсid}/portfolio", h.UploadServiceItemImages).Methods(http.MethodPost, http.MethodOptions)
+	masterProtected.HandleFunc("/masters/{masterID}/portfolio", h.UploadPortfolioPhotos).Methods(http.MethodPost, http.MethodOptions)
 
 	masterProtected.HandleFunc("/working-hours", h.GetWorkingHours).Methods(http.MethodGet, http.MethodOptions)
 	masterProtected.HandleFunc("/working-hours", h.UpsertWorkingHours).Methods(http.MethodPut, http.MethodOptions)

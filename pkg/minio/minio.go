@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 	"mime"
-	"net/url"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +19,7 @@ type Config struct {
 	AccessKey string `mapstructure:"accessKey"`
 	SecretKey string `mapstructure:"secretKey"`
 	UseSSL    bool   `mapstructure:"useSSL"`
+	PublicURL string `mapstructure:"publicURL"`
 }
 
 type ObjectInfo struct {
@@ -32,6 +33,7 @@ type ObjectInfo struct {
 
 type Client struct {
 	minioClient *minio.Client
+	publicURL   string
 }
 
 func New(cfg Config) (*Client, error) {
@@ -43,10 +45,16 @@ func New(cfg Config) (*Client, error) {
 		return nil, fmt.Errorf("init minio client: %w", err)
 	}
 
-	return &Client{minioClient: mClient}, nil
+	return &Client{minioClient: mClient, publicURL: strings.TrimRight(cfg.PublicURL, "/")}, nil
 }
 
-// Проверяет существует ли бакет с bucketName, если нет, то создает его
+// BuildObjectURL returns a permanent public URL for the given object.
+// Requires the bucket to have a public-read policy (set by EnsureBucket).
+func (c *Client) BuildObjectURL(bucket, objectName string) string {
+	return fmt.Sprintf("%s/%s/%s", c.publicURL, bucket, objectName)
+}
+
+// EnsureBucket creates the bucket if it does not exist and sets a public-read policy on it.
 func (c *Client) EnsureBucket(ctx context.Context, bucketName string) error {
 	exists, err := c.minioClient.BucketExists(ctx, bucketName)
 	if err != nil {
@@ -58,6 +66,21 @@ func (c *Client) EnsureBucket(ctx context.Context, bucketName string) error {
 		}
 		log.Printf("Bucket %s создан", bucketName)
 	}
+
+	policy := fmt.Sprintf(`{
+		"Version":"2012-10-17",
+		"Statement":[{
+			"Effect":"Allow",
+			"Principal":{"AWS":["*"]},
+			"Action":["s3:GetObject"],
+			"Resource":["arn:aws:s3:::%s/*"]
+		}]
+	}`, bucketName)
+
+	if err := c.minioClient.SetBucketPolicy(ctx, bucketName, policy); err != nil {
+		return fmt.Errorf("set bucket policy: %w", err)
+	}
+
 	return nil
 }
 
@@ -93,13 +116,4 @@ func (c *Client) Remove(ctx context.Context, bucket, objectName string) error {
 		return fmt.Errorf("remove object: %w", err)
 	}
 	return nil
-}
-
-func (c *Client) GetFileURL(ctx context.Context, bucket, objectName string) (string, error) {
-	params := make(url.Values)
-	u, err := c.minioClient.PresignedGetObject(ctx, bucket, objectName, time.Hour, params)
-	if err != nil {
-		return "", fmt.Errorf("presign url: %w", err)
-	}
-	return u.String(), nil
 }
