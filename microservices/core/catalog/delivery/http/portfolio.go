@@ -156,6 +156,51 @@ func (h *Handler) GetPortfolioPhotos(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, photos)
 }
 
+// DeletePortfolioPhoto godoc
+// @Summary      Удаление фотографии портфолио
+// @Description  Удаляет фотографию из портфолио мастера. Доступно только владельцу профиля.
+// @Tags         portfolio
+// @Produce      json
+// @Param        masterID path     string true "UUID мастера" format(uuid)
+// @Param        photoID  path     string true "UUID фотографии" format(uuid)
+// @Success      204
+// @Failure      400      {object} response.ErrorResponse
+// @Failure      401      {object} response.ErrorResponse
+// @Failure      403      {object} response.ErrorResponse
+// @Failure      404      {object} response.ErrorResponse
+// @Failure      500      {object} response.ErrorResponse
+// @Security     CookieAuth
+// @Router       /masters/{masterID}/portfolio/{photoID} [delete]
+func (h *Handler) DeletePortfolioPhoto(w http.ResponseWriter, r *http.Request) {
+	const op = "catalog.handler.DeletePortfolioPhoto"
+	log := middleware.LoggerFromContext(r.Context())
+
+	userIDStr, ok := middleware.GetUserID(r.Context())
+	if !ok || userIDStr == "" {
+		log.Errorf("[%s]: missing user id in context", op)
+		response.UnauthorizedJSON(w)
+		return
+	}
+
+	vars := mux.Vars(r)
+	masterIDStr := vars["masterID"]
+	photoIDStr := vars["photoID"]
+
+	if masterIDStr == "" || photoIDStr == "" {
+		log.Errorf("[%s]: masterID or photoID missing in URL", op)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	if err := h.service.DeletePortfolioPhoto(r.Context(), userIDStr, masterIDStr, photoIDStr); err != nil {
+		log.Errorf("[%s]: service error: %v", op, err)
+		h.handlePortfolioError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *Handler) handlePortfolioError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, service.ErrForbidden):

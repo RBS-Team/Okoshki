@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -68,4 +70,44 @@ func (r *Repository) GetPortfolioPhotosByMasterID(ctx context.Context, masterID 
 	}
 
 	return photos, nil
+}
+
+func (r *Repository) GetPortfolioPhotoByID(ctx context.Context, photoID uuid.UUID) (*model.PortfolioPhoto, error) {
+	const op = "catalog.repository.postgres.GetPortfolioPhotoByID"
+
+	var p model.PortfolioPhoto
+	err := r.db.QueryRowContext(ctx, `
+		SELECT id, master_id, object_name, created_at, updated_at
+		FROM master_portfolio_photos
+		WHERE id = $1
+	`, photoID).Scan(&p.ID, &p.MasterID, &p.ObjectName, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("[%s]: query: %w", op, err)
+	}
+
+	return &p, nil
+}
+
+func (r *Repository) DeletePortfolioPhotoByID(ctx context.Context, photoID uuid.UUID) error {
+	const op = "catalog.repository.postgres.DeletePortfolioPhotoByID"
+
+	res, err := r.db.ExecContext(ctx, `
+		DELETE FROM master_portfolio_photos WHERE id = $1
+	`, photoID)
+	if err != nil {
+		return fmt.Errorf("[%s]: exec: %w", op, err)
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("[%s]: rows affected: %w", op, err)
+	}
+	if n == 0 {
+		return ErrNotFound
+	}
+
+	return nil
 }

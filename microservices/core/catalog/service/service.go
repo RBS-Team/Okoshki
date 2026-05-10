@@ -39,11 +39,14 @@ type IRepository interface {
 
 	SavePortfolioPhotos(ctx context.Context, photos []model.PortfolioPhoto) error
 	GetPortfolioPhotosByMasterID(ctx context.Context, masterID uuid.UUID) ([]model.PortfolioPhoto, error)
+	GetPortfolioPhotoByID(ctx context.Context, photoID uuid.UUID) (*model.PortfolioPhoto, error)
+	DeletePortfolioPhotoByID(ctx context.Context, photoID uuid.UUID) error
 }
 
 type IStorage interface {
 	Upload(ctx context.Context, obj minioPkg.ObjectInfo) (string, error)
 	BuildObjectURL(bucket, objectName string) string
+	Remove(ctx context.Context, bucket, objectName string) error
 }
 
 type Service struct {

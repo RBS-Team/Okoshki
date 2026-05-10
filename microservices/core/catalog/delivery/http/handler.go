@@ -33,6 +33,7 @@ type IService interface {
 
 	UploadPortfolioPhotos(ctx context.Context, userIDStr, masterIDStr string, files []dto.FileUpload) ([]dto.PortfolioPhoto, error)
 	GetPortfolioPhotos(ctx context.Context, masterIDStr string) ([]dto.PortfolioPhoto, error)
+	DeletePortfolioPhoto(ctx context.Context, userIDStr, masterIDStr, photoIDStr string) error
 }
 
 type Handler struct {

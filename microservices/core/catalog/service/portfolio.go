@@ -91,6 +91,53 @@ func (s *Service) GetPortfolioPhotos(ctx context.Context, masterIDStr string) ([
 	return s.buildPhotoDTOs(photos), nil
 }
 
+func (s *Service) DeletePortfolioPhoto(ctx context.Context, userIDStr, masterIDStr, photoIDStr string) error {
+	const op = "catalog.service.DeletePortfolioPhoto"
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+	}
+
+	masterID, err := uuid.Parse(masterIDStr)
+	if err != nil {
+		return fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+	}
+
+	photoID, err := uuid.Parse(photoIDStr)
+	if err != nil {
+		return fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+	}
+
+	authedMaster, err := s.repo.GetMasterByUserID(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("[%s]: get master: %w", op, mapError(err))
+	}
+
+	if authedMaster.ID != masterID {
+		return fmt.Errorf("[%s]: %w", op, ErrForbidden)
+	}
+
+	photo, err := s.repo.GetPortfolioPhotoByID(ctx, photoID)
+	if err != nil {
+		return fmt.Errorf("[%s]: get photo: %w", op, mapError(err))
+	}
+
+	if photo.MasterID != masterID {
+		return fmt.Errorf("[%s]: %w", op, ErrForbidden)
+	}
+
+	if err := s.storage.Remove(ctx, portfolioBucket, photo.ObjectName); err != nil {
+		return fmt.Errorf("[%s]: remove from storage: %w", op, err)
+	}
+
+	if err := s.repo.DeletePortfolioPhotoByID(ctx, photoID); err != nil {
+		return fmt.Errorf("[%s]: delete from db: %w", op, mapError(err))
+	}
+
+	return nil
+}
+
 func (s *Service) buildPhotoDTOs(photos []model.PortfolioPhoto) []dto.PortfolioPhoto {
 	result := make([]dto.PortfolioPhoto, 0, len(photos))
 
