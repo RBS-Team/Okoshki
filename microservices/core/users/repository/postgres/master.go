@@ -240,6 +240,20 @@ func (r *Repository) GetMastersByCategoryID(ctx context.Context, categoryID uuid
 }
 
 
+func (r *Repository) UpdateMasterAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
+	const op = "users.repository.postgres.UpdateMasterAvatarURL"
+
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE masters SET avatar_url = $1 WHERE id = $2`,
+		objectName, id,
+	)
+	if err != nil {
+		return fmt.Errorf("[%s]: %w", op, err)
+	}
+
+	return nil
+}
+
 func handleMasterPostgresError(err error) error {
 	if err == nil {
 		return nil

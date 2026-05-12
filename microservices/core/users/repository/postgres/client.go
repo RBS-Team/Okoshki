@@ -2,10 +2,13 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
-	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/google/uuid"
+
+	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
 func (r *Repository) CreateClient(ctx context.Context, client model.Client) error {
@@ -27,6 +30,39 @@ func (r *Repository) CreateClient(ctx context.Context, client model.Client) erro
 	)
 	if err != nil {
 		return fmt.Errorf("[%s]: %w", op, handleMasterPostgresError(err))
+	}
+
+	return nil
+}
+
+func (r *Repository) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*model.Client, error) {
+	const op = "users.repository.postgres.GetClientByUserID"
+
+	var c model.Client
+	err := r.db.QueryRowContext(ctx,
+		`SELECT id, user_id, first_name, phone, avatar_url, created_at, updated_at
+		 FROM clients WHERE user_id = $1`,
+		userID,
+	).Scan(&c.ID, &c.UserID, &c.FirstName, &c.Phone, &c.AvatarURL, &c.CreatedAt, &c.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("[%s]: %w", op, err)
+	}
+
+	return &c, nil
+}
+
+func (r *Repository) UpdateClientAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
+	const op = "users.repository.postgres.UpdateClientAvatarURL"
+
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE clients SET avatar_url = $1 WHERE id = $2`,
+		objectName, id,
+	)
+	if err != nil {
+		return fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	return nil

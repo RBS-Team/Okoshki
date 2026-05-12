@@ -112,7 +112,7 @@ func (s *Service) CreateMaster(ctx context.Context, userIDStr string, req dto.Cr
 		return nil, fmt.Errorf("[%s]: failed to create master: %w", op, mapError(err))
 	}
 
-	return mapMasterModelToDTO(&masterModel), nil
+	return s.mapMasterToDTO(&masterModel), nil
 }
 
 func (s *Service) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto.Master, error) {
@@ -123,7 +123,7 @@ func (s *Service) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto
 		return nil, fmt.Errorf("[%s]: failed to get master by user id: %w", op, mapError(err))
 	}
 
-	return mapMasterModelToDTO(masterModel), nil
+	return s.mapMasterToDTO(masterModel), nil
 }
 
 func (s *Service) GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error) {
@@ -140,7 +140,7 @@ func (s *Service) GetMastersByCategory(ctx context.Context, categoryID uuid.UUID
 
 	masterDTOs := make([]dto.Master, 0, len(masterModels))
 	for i := range masterModels {
-		masterDTOs = append(masterDTOs, *mapMasterModelToDTO(&masterModels[i]))
+		masterDTOs = append(masterDTOs, *s.mapMasterToDTO(&masterModels[i]))
 	}
 
 	return masterDTOs, nil
@@ -155,7 +155,7 @@ func (s *Service) GetMasterByID(ctx context.Context, id uuid.UUID) (*dto.Master,
 		return nil, fmt.Errorf("[%s]: %w", op, mapError(err))
 	}
 
-	return mapMasterModelToDTO(m), nil
+	return s.mapMasterToDTO(m), nil
 }
 
 // GetAllMasters возвращает страницу мастеров как DTO (для HTTP-хендлеров).
@@ -173,7 +173,7 @@ func (s *Service) GetAllMasters(ctx context.Context, limit, offset uint64) ([]dt
 
 	result := make([]dto.Master, 0, len(masters))
 	for i := range masters {
-		result = append(result, *mapMasterModelToDTO(&masters[i]))
+		result = append(result, *s.mapMasterToDTO(&masters[i]))
 	}
 
 	return result, nil
@@ -185,8 +185,10 @@ func (s *Service) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]model
 	return s.repo.GetMastersByIDs(ctx, ids)
 }
 
-func mapMasterModelToDTO(m *model.Master) *dto.Master {
-	return &dto.Master{
+const usersBucket = "okoshki-users"
+
+func (s *Service) mapMasterToDTO(m *model.Master) *dto.Master {
+	d := &dto.Master{
 		ID:          m.ID.String(),
 		UserID:      m.UserID.String(),
 		CategoryID:  m.CategoryID.String(),
@@ -195,11 +197,15 @@ func mapMasterModelToDTO(m *model.Master) *dto.Master {
 		Address:     m.Address,
 		City:        m.City,
 		Bio:         m.Bio,
-		AvatarURL:   m.AvatarURL,
 		Timezone:    m.Timezone,
 		Lat:         m.Lat,
 		Lon:         m.Lon,
 		Rating:      m.Rating,
 		ReviewCount: m.ReviewCount,
 	}
+	if m.AvatarURL != nil {
+		url := s.storage.BuildObjectURL(usersBucket, *m.AvatarURL)
+		d.AvatarURL = &url
+	}
+	return d
 }

@@ -44,22 +44,16 @@ func (s *Service) RegisterClient(ctx context.Context, req dto.RegisterClientRequ
 	}, nil
 }
 
-func (a *Service) GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]dto.Client, error) {
-	const op = "auth.service.GetClientsByIDs"
-	clients, err := a.repo.GetClientsByIDs(ctx, ids)
+func (s *Service) GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]dto.Client, error) {
+	const op = "users.service.GetClientsByIDs"
+	clients, err := s.repo.GetClientsByIDs(ctx, ids)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	result := make([]dto.Client, 0, len(clients))
-	for _, client := range clients {
-		result = append(result, dto.Client{
-			ID:        client.ID.String(),
-			UserID:    client.UserID.String(),
-			FirstName: client.FirstName,
-			Phone:     client.Phone,
-			AvatarURL: client.AvatarURL,
-		})
+	for i := range clients {
+		result = append(result, s.mapClientToDTO(&clients[i]))
 	}
 
 	return result, nil

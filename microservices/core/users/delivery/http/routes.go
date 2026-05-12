@@ -21,6 +21,12 @@ func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 	masterProtected := csrfProtected.PathPrefix("").Subrouter()
 	masterProtected.Use(middleware.RequireRole(string(model.RoleMaster)))
 
+	masterProtected.HandleFunc("/masters/{masterID}/avatar", h.UploadMasterAvatar).Methods(http.MethodPut, http.MethodOptions)
 	masterProtected.HandleFunc("/masters/{masterID}/portfolio", h.UploadPortfolioPhotos).Methods(http.MethodPost, http.MethodOptions)
 	masterProtected.HandleFunc("/masters/{masterID}/portfolio/{photoID}", h.DeletePortfolioPhoto).Methods(http.MethodDelete, http.MethodOptions)
+
+	clientProtected := csrfProtected.PathPrefix("").Subrouter()
+	clientProtected.Use(middleware.RequireRole(string(model.RoleClient)))
+
+	clientProtected.HandleFunc("/clients/me/avatar", h.UploadClientAvatar).Methods(http.MethodPut, http.MethodOptions)
 }
