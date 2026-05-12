@@ -149,7 +149,7 @@ BEGIN
             );
 
             INSERT INTO masters (
-                user_id, category_id, first_name, last_name,
+                user_id, category_id, first_name, last_name, phone,
                 address, city, bio, timezone, lat, lon,
                 rating, review_count
             ) VALUES (
@@ -157,6 +157,7 @@ BEGIN
                 cat_id,
                 fname,
                 lname,
+                '+7' || LPAD(((cat_idx * 1000000 + i * 100000 + 9000000000) % 9000000000 + 9000000000)::TEXT, 10, '0'),
                 streets[street_i] || ', д. ' || ((cat_idx * 11 + i * 7) % 120 + 1),
                 cities[city_i],
                 bio_text,

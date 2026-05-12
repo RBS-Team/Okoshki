@@ -96,6 +96,7 @@ func (s *Service) mapClientToDTO(c *model.Client) dto.Client {
 		ID:        c.ID.String(),
 		UserID:    c.UserID.String(),
 		FirstName: c.FirstName,
+		LastName:  c.LastName,
 		Phone:     c.Phone,
 	}
 	if c.AvatarURL != nil {

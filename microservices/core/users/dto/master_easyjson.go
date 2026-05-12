@@ -73,6 +73,20 @@ func easyjsonB30beec6DecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(in *
 					*out.LastName = string(in.String())
 				}
 			}
+		case "phone":
+			if in.IsNull() {
+				in.Skip()
+				out.Phone = nil
+			} else {
+				if out.Phone == nil {
+					out.Phone = new(string)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.Phone = string(in.String())
+				}
+			}
 		case "address":
 			if in.IsNull() {
 				in.Skip()
@@ -196,6 +210,16 @@ func easyjsonB30beec6EncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(out 
 			out.RawString(prefix)
 		}
 		out.String(string(*in.LastName))
+	}
+	if in.Phone != nil {
+		const prefix string = ",\"phone\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(*in.Phone))
 	}
 	if in.Address != nil {
 		const prefix string = ",\"address\":"
@@ -425,6 +449,12 @@ func easyjsonB30beec6DecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto2(in 
 			} else {
 				out.LastName = string(in.String())
 			}
+		case "phone":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Phone = string(in.String())
+			}
 		case "address":
 			if in.IsNull() {
 				in.Skip()
@@ -525,6 +555,11 @@ func easyjsonB30beec6EncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto2(out
 		out.String(string(in.LastName))
 	}
 	{
+		const prefix string = ",\"phone\":"
+		out.RawString(prefix)
+		out.String(string(in.Phone))
+	}
+	{
 		const prefix string = ",\"address\":"
 		out.RawString(prefix)
 		out.String(string(in.Address))
@@ -623,6 +658,12 @@ func easyjsonB30beec6DecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto3(in 
 				in.Skip()
 			} else {
 				out.LastName = string(in.String())
+			}
+		case "phone":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Phone = string(in.String())
 			}
 		case "address":
 			if in.IsNull() {
@@ -750,6 +791,11 @@ func easyjsonB30beec6EncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto3(out
 		out.String(string(in.LastName))
 	}
 	{
+		const prefix string = ",\"phone\":"
+		out.RawString(prefix)
+		out.String(string(in.Phone))
+	}
+	{
 		const prefix string = ",\"address\":"
 		out.RawString(prefix)
 		out.String(string(in.Address))
@@ -852,6 +898,12 @@ func easyjsonB30beec6DecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto4(in 
 			} else {
 				out.LastName = string(in.String())
 			}
+		case "phone":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Phone = string(in.String())
+			}
 		case "address":
 			if in.IsNull() {
 				in.Skip()
@@ -940,6 +992,11 @@ func easyjsonB30beec6EncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto4(out
 		const prefix string = ",\"last_name\":"
 		out.RawString(prefix)
 		out.String(string(in.LastName))
+	}
+	{
+		const prefix string = ",\"phone\":"
+		out.RawString(prefix)
+		out.String(string(in.Phone))
 	}
 	{
 		const prefix string = ",\"address\":"

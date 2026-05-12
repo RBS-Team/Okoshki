@@ -9,6 +9,7 @@ type Master struct {
 	CategoryID  string   `json:"category_id"`
 	FirstName   string   `json:"first_name"`
 	LastName    string   `json:"last_name"`
+	Phone       string   `json:"phone"`
 	Address     string   `json:"address"`
 	City        string   `json:"city"`
 	Bio         *string  `json:"bio,omitempty"`
@@ -25,6 +26,7 @@ type CreateMasterRequest struct {
 	CategoryID string   `json:"category_id"`
 	FirstName  string   `json:"first_name"`
 	LastName   string   `json:"last_name"`
+	Phone      string   `json:"phone"`
 	Address    string   `json:"address"`
 	City       string   `json:"city"`
 	Bio        *string  `json:"bio,omitempty"`
@@ -40,6 +42,7 @@ type RegisterMasterRequest struct {
 	CategoryID string   `json:"category_id"`
 	FirstName  string   `json:"first_name"`
 	LastName   string   `json:"last_name"`
+	Phone      string   `json:"phone"`
 	Address    string   `json:"address"`
 	City       string   `json:"city"`
 	Bio        *string  `json:"bio,omitempty"`
@@ -61,6 +64,7 @@ type UpdateMasterRequest struct {
 	CategoryID *string  `json:"category_id,omitempty"`
 	FirstName  *string  `json:"first_name,omitempty"`
 	LastName   *string  `json:"last_name,omitempty"`
+	Phone      *string  `json:"phone,omitempty"`
 	Address    *string  `json:"address,omitempty"`
 	City       *string  `json:"city,omitempty"`
 	Bio        *string  `json:"bio,omitempty"`

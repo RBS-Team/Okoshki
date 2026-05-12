@@ -27,6 +27,7 @@ func (s *Service) RegisterClient(ctx context.Context, req dto.RegisterClientRequ
 		ID:        uuid.New(),
 		UserID:    userID,
 		FirstName: req.FirstName,
+		LastName:  req.LastName,
 		Phone:     req.Phone,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),

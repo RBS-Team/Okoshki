@@ -12,6 +12,7 @@ type Master struct {
 	CategoryID   uuid.UUID
 	FirstName    string
 	LastName     string
+	Phone        string
 	Address      string
 	City         string
 	Bio          *string

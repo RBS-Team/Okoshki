@@ -136,19 +136,17 @@ func easyjsonC0e5e3f1DecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto1(in 
 			} else {
 				out.FirstName = string(in.String())
 			}
+		case "last_name":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.LastName = string(in.String())
+			}
 		case "phone":
 			if in.IsNull() {
 				in.Skip()
-				out.Phone = nil
 			} else {
-				if out.Phone == nil {
-					out.Phone = new(string)
-				}
-				if in.IsNull() {
-					in.Skip()
-				} else {
-					*out.Phone = string(in.String())
-				}
+				out.Phone = string(in.String())
 			}
 		default:
 			in.SkipRecursive()
@@ -179,10 +177,15 @@ func easyjsonC0e5e3f1EncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto1(out
 		out.RawString(prefix)
 		out.String(string(in.FirstName))
 	}
-	if in.Phone != nil {
+	{
+		const prefix string = ",\"last_name\":"
+		out.RawString(prefix)
+		out.String(string(in.LastName))
+	}
+	{
 		const prefix string = ",\"phone\":"
 		out.RawString(prefix)
-		out.String(string(*in.Phone))
+		out.String(string(in.Phone))
 	}
 	out.RawByte('}')
 }
@@ -242,19 +245,17 @@ func easyjsonC0e5e3f1DecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto2(in 
 			} else {
 				out.FirstName = string(in.String())
 			}
+		case "last_name":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.LastName = string(in.String())
+			}
 		case "phone":
 			if in.IsNull() {
 				in.Skip()
-				out.Phone = nil
 			} else {
-				if out.Phone == nil {
-					out.Phone = new(string)
-				}
-				if in.IsNull() {
-					in.Skip()
-				} else {
-					*out.Phone = string(in.String())
-				}
+				out.Phone = string(in.String())
 			}
 		case "avatar_url":
 			if in.IsNull() {
@@ -299,10 +300,15 @@ func easyjsonC0e5e3f1EncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto2(out
 		out.RawString(prefix)
 		out.String(string(in.FirstName))
 	}
-	if in.Phone != nil {
+	{
+		const prefix string = ",\"last_name\":"
+		out.RawString(prefix)
+		out.String(string(in.LastName))
+	}
+	if in.Phone != "" {
 		const prefix string = ",\"phone\":"
 		out.RawString(prefix)
-		out.String(string(*in.Phone))
+		out.String(string(in.Phone))
 	}
 	if in.AvatarURL != nil {
 		const prefix string = ",\"avatar_url\":"

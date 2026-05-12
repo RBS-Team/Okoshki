@@ -17,11 +17,11 @@ func (r *Repository) CreateMaster(ctx context.Context, master model.Master) erro
 
 	query := `
 		INSERT INTO masters (
-			id, user_id, category_id, first_name, last_name, address, city, bio, avatar_url, timezone, 
-			lat, lon, rating, review_count, reports_count, is_blocked, 
+			id, user_id, category_id, first_name, last_name, phone, address, city, bio, avatar_url, timezone,
+			lat, lon, rating, review_count, reports_count, is_blocked,
 			created_at, updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
@@ -30,6 +30,7 @@ func (r *Repository) CreateMaster(ctx context.Context, master model.Master) erro
 		master.CategoryID,
 		master.FirstName,
 		master.LastName,
+		master.Phone,
 		master.Address,
 		master.City,
 		master.Bio,
@@ -55,8 +56,8 @@ func (r *Repository) GetMasterByID(ctx context.Context, id uuid.UUID) (*model.Ma
 	const op = "users.repository.postgres.GetMasterByID"
 
 	query := `
-		SELECT id, user_id, category_id, first_name, last_name, address, city, bio, avatar_url, timezone, 
-			lat, lon, rating, review_count, reports_count, is_blocked, 
+		SELECT id, user_id, category_id, first_name, last_name, phone, address, city, bio, avatar_url, timezone,
+			lat, lon, rating, review_count, reports_count, is_blocked,
 			created_at, updated_at
 		FROM masters
 		WHERE id = $1 AND is_blocked = false
@@ -74,7 +75,7 @@ func (r *Repository) GetAllMasters(ctx context.Context, limit, offset uint64) ([
 	const op = "users.repository.postgres.GetAllMasters"
 
 	query := `
-		SELECT id, user_id, category_id, first_name, last_name, address, city, bio, avatar_url, timezone,
+		SELECT id, user_id, category_id, first_name, last_name, phone, address, city, bio, avatar_url, timezone,
 			lat, lon, rating, review_count, reports_count, is_blocked,
 			created_at, updated_at
 		FROM masters
@@ -93,8 +94,8 @@ func (r *Repository) GetAllMasters(ctx context.Context, limit, offset uint64) ([
 	for rows.Next() {
 		var m model.Master
 		if err := rows.Scan(
-			&m.ID, &m.UserID, &m.CategoryID, &m.FirstName, &m.LastName, &m.Address,
-			&m.City, &m.Bio, &m.AvatarURL, &m.Timezone, &m.Lat,
+			&m.ID, &m.UserID, &m.CategoryID, &m.FirstName, &m.LastName, &m.Phone,
+			&m.Address, &m.City, &m.Bio, &m.AvatarURL, &m.Timezone, &m.Lat,
 			&m.Lon, &m.Rating, &m.ReviewCount, &m.ReportsCount, &m.IsBlocked,
 			&m.CreatedAt, &m.UpdatedAt,
 		); err != nil {
@@ -118,8 +119,8 @@ func (r *Repository) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]mo
 	}
 
 	query := `
-		SELECT id, user_id, category_id, first_name, last_name, address, city, bio, avatar_url, timezone, 
-			lat, lon, rating, review_count, reports_count, is_blocked, 
+		SELECT id, user_id, category_id, first_name, last_name, phone, address, city, bio, avatar_url, timezone,
+			lat, lon, rating, review_count, reports_count, is_blocked,
 			created_at, updated_at
 		FROM masters
 		WHERE id = ANY($1) AND is_blocked = false
@@ -135,8 +136,8 @@ func (r *Repository) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]mo
 	for rows.Next() {
 		var m model.Master
 		if err := rows.Scan(
-			&m.ID, &m.UserID, &m.CategoryID, &m.FirstName, &m.LastName, &m.Address,
-			&m.City, &m.Bio, &m.AvatarURL, &m.Timezone, &m.Lat,
+			&m.ID, &m.UserID, &m.CategoryID, &m.FirstName, &m.LastName, &m.Phone,
+			&m.Address, &m.City, &m.Bio, &m.AvatarURL, &m.Timezone, &m.Lat,
 			&m.Lon, &m.Rating, &m.ReviewCount, &m.ReportsCount, &m.IsBlocked,
 			&m.CreatedAt, &m.UpdatedAt,
 		); err != nil {
@@ -156,7 +157,7 @@ func (r *Repository) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*
 	const op = "users.repository.postgres.GetMasterByUserID"
 
 	query := `
-		SELECT id, user_id, category_id, first_name, last_name, address, city, bio, avatar_url, timezone,
+		SELECT id, user_id, category_id, first_name, last_name, phone, address, city, bio, avatar_url, timezone,
 			lat, lon, rating, review_count, reports_count, is_blocked,
 			created_at, updated_at
 		FROM masters
@@ -175,7 +176,8 @@ func (r *Repository) selectMaster(ctx context.Context, query string, args ...any
 	var m model.Master
 
 	err := r.db.QueryRowContext(ctx, query, args...).Scan(
-		&m.ID, &m.UserID, &m.CategoryID, &m.FirstName, &m.LastName, &m.Address, &m.City, &m.Bio, &m.AvatarURL, &m.Timezone,
+		&m.ID, &m.UserID, &m.CategoryID, &m.FirstName, &m.LastName, &m.Phone,
+		&m.Address, &m.City, &m.Bio, &m.AvatarURL, &m.Timezone,
 		&m.Lat, &m.Lon, &m.Rating, &m.ReviewCount, &m.ReportsCount,
 		&m.IsBlocked, &m.CreatedAt, &m.UpdatedAt,
 	)
@@ -193,7 +195,7 @@ func (r *Repository) GetMastersByCategoryID(ctx context.Context, categoryID uuid
 	const op = "users.repository.postgres.GetMastersByCategoryID"
 
 	query := `
-		SELECT id, user_id, category_id, first_name, last_name, address, city, bio, avatar_url, timezone,
+		SELECT id, user_id, category_id, first_name, last_name, phone, address, city, bio, avatar_url, timezone,
 			lat, lon, rating, review_count, reports_count, is_blocked,
 			created_at, updated_at
 		FROM masters
@@ -213,9 +215,10 @@ func (r *Repository) GetMastersByCategoryID(ctx context.Context, categoryID uuid
 	for rows.Next() {
 		var m model.Master
 		if err := rows.Scan(
-			&m.ID, &m.UserID, &m.CategoryID, &m.FirstName, &m.LastName, &m.Address, &m.City, &m.Bio, &m.AvatarURL, &m.Timezone,
-		&m.Lat, &m.Lon, &m.Rating, &m.ReviewCount, &m.ReportsCount,
-		&m.IsBlocked, &m.CreatedAt, &m.UpdatedAt,
+			&m.ID, &m.UserID, &m.CategoryID, &m.FirstName, &m.LastName, &m.Phone,
+			&m.Address, &m.City, &m.Bio, &m.AvatarURL, &m.Timezone,
+			&m.Lat, &m.Lon, &m.Rating, &m.ReviewCount, &m.ReportsCount,
+			&m.IsBlocked, &m.CreatedAt, &m.UpdatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("[%s]: scan failed: %w", op, err)
 		}
@@ -228,7 +231,6 @@ func (r *Repository) GetMastersByCategoryID(ctx context.Context, categoryID uuid
 
 	return masters, nil
 }
-
 
 func (r *Repository) UpdateMasterAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
 	const op = "users.repository.postgres.UpdateMasterAvatarURL"

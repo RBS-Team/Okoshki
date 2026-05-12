@@ -41,7 +41,7 @@ func (h *Handler) RegisterMaster(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !isValidCredentials(req.Email, req.Password) ||
-		req.FirstName == "" || req.LastName == "" || req.CategoryID == "" {
+		req.FirstName == "" || req.LastName == "" || req.Phone == "" || req.CategoryID == "" {
 		response.BadRequestJSON(w)
 		return
 	}

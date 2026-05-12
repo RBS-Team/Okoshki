@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS masters (
     category_id   UUID          NOT NULL REFERENCES category(id),
     first_name    VARCHAR(255)  NOT NULL,
     last_name     VARCHAR(255)  NOT NULL,
+    phone         VARCHAR(20)   NOT NULL CHECK (phone ~ '^\+[1-9][0-9]{6,14}$'),
     address       VARCHAR(255)  NOT NULL,
     city          VARCHAR(255)  NOT NULL,
     bio           TEXT,
@@ -197,7 +198,8 @@ CREATE TABLE IF NOT EXISTS clients (
     id         UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id    UUID         NOT NULL UNIQUE REFERENCES "user"(user_id) ON DELETE CASCADE,
     first_name VARCHAR(255) NOT NULL,
-    phone      VARCHAR(20),
+    last_name  VARCHAR(255) NOT NULL DEFAULT '',
+    phone      VARCHAR(20)   NOT NULL DEFAULT '' CHECK (phone = '' OR phone ~ '^\+[1-9][0-9]{6,14}$'),
     avatar_url VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
