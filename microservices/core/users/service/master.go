@@ -127,7 +127,7 @@ func (s *Service) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto
 }
 
 func (s *Service) GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error) {
-	const op = "catalog.service.GetMastersByCategory"
+	const op = "users.service.GetMastersByCategory"
 
 	masterModels, err := s.repo.GetMastersByCategoryID(ctx, categoryID, limit, offset)
 	if err != nil {

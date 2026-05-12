@@ -52,7 +52,7 @@ func (r *Repository) CreateMaster(ctx context.Context, master model.Master) erro
 }
 
 func (r *Repository) GetMasterByID(ctx context.Context, id uuid.UUID) (*model.Master, error) {
-	const op = "catalog.repository.postgres.GetMasterByID"
+	const op = "users.repository.postgres.GetMasterByID"
 
 	query := `
 		SELECT id, user_id, category_id, first_name, last_name, address, city, bio, avatar_url, timezone, 
@@ -71,11 +71,11 @@ func (r *Repository) GetMasterByID(ctx context.Context, id uuid.UUID) (*model.Ma
 }
 
 func (r *Repository) GetAllMasters(ctx context.Context, limit, offset uint64) ([]model.Master, error) {
-	const op = "catalog.repository.postgres.GetAllMasters"
+	const op = "users.repository.postgres.GetAllMasters"
 
 	query := `
-		id, user_id, category_id, first_name, last_name, address, city, bio, avatar_url, timezone, 
-			lat, lon, rating, review_count, reports_count, is_blocked, 
+		SELECT id, user_id, category_id, first_name, last_name, address, city, bio, avatar_url, timezone,
+			lat, lon, rating, review_count, reports_count, is_blocked,
 			created_at, updated_at
 		FROM masters
 		WHERE is_blocked = false
@@ -111,7 +111,7 @@ func (r *Repository) GetAllMasters(ctx context.Context, limit, offset uint64) ([
 }
 
 func (r *Repository) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Master, error) {
-	const op = "catalog.repository.postgres.GetMastersByIDs"
+	const op = "users.repository.postgres.GetMastersByIDs"
 
 	if len(ids) == 0 {
 		return []model.Master{}, nil
@@ -153,11 +153,12 @@ func (r *Repository) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]mo
 }
 
 func (r *Repository) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*model.Master, error) {
-	const op = "catalog.repository.postgres.GetMasterByUserID"
+	const op = "users.repository.postgres.GetMasterByUserID"
 
 	query := `
-		SELECT id, user_id, name, bio, avatar_url, timezone, lat, lon, 
-		       rating, review_count, reports_count, is_blocked, created_at, updated_at
+		SELECT id, user_id, category_id, first_name, last_name, address, city, bio, avatar_url, timezone,
+			lat, lon, rating, review_count, reports_count, is_blocked,
+			created_at, updated_at
 		FROM masters
 		WHERE user_id = $1 AND is_blocked = false
 	`
@@ -170,7 +171,7 @@ func (r *Repository) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*
 	return master, nil
 }
 
-func (r *Repository) selectMaster(ctx context.Context, query string, args ...interface{}) (*model.Master, error) {
+func (r *Repository) selectMaster(ctx context.Context, query string, args ...any) (*model.Master, error) {
 	var m model.Master
 
 	err := r.db.QueryRowContext(ctx, query, args...).Scan(
@@ -189,27 +190,16 @@ func (r *Repository) selectMaster(ctx context.Context, query string, args ...int
 }
 
 func (r *Repository) GetMastersByCategoryID(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]model.Master, error) {
-	const op = "catalog.repository.postgres.GetMastersByCategoryID"
+	const op = "users.repository.postgres.GetMastersByCategoryID"
 
 	query := `
-		WITH RECURSIVE cat_tree AS (
-			SELECT id FROM category WHERE id = $1 AND is_active = true
-			UNION ALL
-			SELECT c.id FROM category c
-			INNER JOIN cat_tree ct ON c.parent_id = ct.id
-			WHERE c.is_active = true
-		)
-		SELECT m.id, m.user_id, m.name, m.bio, m.avatar_url, m.timezone, m.lat, m.lon, 
-		       m.rating, m.review_count, m.reports_count, m.is_blocked, m.created_at, m.updated_at
-		FROM masters m
-		WHERE m.is_blocked = false
-		  AND EXISTS (
-			  SELECT 1 FROM master_services ms
-			  WHERE ms.master_id = m.id
-			    AND ms.is_active = true
-			    AND ms.category_id IN (SELECT id FROM cat_tree)
-		  )
-		ORDER BY m.rating DESC, m.created_at DESC
+		SELECT id, user_id, category_id, first_name, last_name, address, city, bio, avatar_url, timezone,
+			lat, lon, rating, review_count, reports_count, is_blocked,
+			created_at, updated_at
+		FROM masters
+		WHERE is_blocked = false
+		  AND category_id = $1
+		ORDER BY rating DESC, created_at DESC
 		LIMIT $2 OFFSET $3
 	`
 
