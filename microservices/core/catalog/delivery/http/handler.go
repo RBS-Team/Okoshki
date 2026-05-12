@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"io"
 
 	"github.com/google/uuid"
 
@@ -12,6 +13,7 @@ import (
 type IService interface {
 	GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Category, error)
 	GetAllCategories(ctx context.Context) ([]*dto.Category, error)
+	UploadCategoryAvatar(ctx context.Context, categoryIDStr string, file io.Reader, size int64, contentType string) error
 
 	CreateServiceItem(ctx context.Context, masterID uuid.UUID, req dto.CreateServiceItemRequest) (*dto.ServiceItem, error)
 	GetServiceItemsByMasterID(ctx context.Context, masterID uuid.UUID) ([]dto.ServiceItem, error)
@@ -24,7 +26,6 @@ type IService interface {
 	UpdateScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID, req dto.UpdateScheduleExceptionRequest) error
 	DeleteScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID) error
 	GetScheduleExceptions(ctx context.Context, masterID uuid.UUID, startDateStr, endDateStr string) ([]dto.ScheduleException, error)
-	
 }
 
 type Handler struct {

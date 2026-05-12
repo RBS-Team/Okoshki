@@ -16,6 +16,10 @@ func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 
 	public.HandleFunc("/masters/{id}/services", h.GetServiceItemsByMasterID).Methods(http.MethodGet, http.MethodOptions)
 
+	adminProtected := csrfProtected.PathPrefix("").Subrouter()
+	adminProtected.Use(middleware.RequireRole(string(model.RoleAdmin)))
+	adminProtected.HandleFunc("/categories/{id}/avatar", h.UploadCategoryAvatar).Methods(http.MethodPut, http.MethodOptions)
+
 	masterProtected := csrfProtected.PathPrefix("").Subrouter()
 	masterProtected.Use(middleware.RequireRole(string(model.RoleMaster)))
 

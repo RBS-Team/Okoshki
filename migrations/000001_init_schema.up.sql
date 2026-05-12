@@ -1,7 +1,3 @@
--- Fixes vs original migrations:
---   000003: REFERENCES categories(id) → REFERENCES category(id)
---   000006: ALTER TABLE ADD COLUMN is_auto_confirm merged into master_services definition
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
@@ -31,15 +27,13 @@ CREATE INDEX IF NOT EXISTS idx_user_email ON "user"(email);
 
 CREATE TABLE IF NOT EXISTS category (
     id          UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
-    parent_id   UUID         REFERENCES category(id) ON DELETE SET NULL,
     name        VARCHAR(255) NOT NULL,
     description TEXT,
+    avatar_url VARCHAR(255),
     is_active   BOOLEAN      DEFAULT TRUE,
     created_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE INDEX IF NOT EXISTS idx_category_parent_id ON category(parent_id);
 
 CREATE TRIGGER update_category_modtime
 BEFORE UPDATE ON category
@@ -205,7 +199,7 @@ CREATE TABLE IF NOT EXISTS clients (
     user_id    UUID         NOT NULL UNIQUE REFERENCES "user"(user_id) ON DELETE CASCADE,
     first_name VARCHAR(255) NOT NULL,
     phone      VARCHAR(20),
-    avatar_url VARCHAR(500),
+    avatar_url VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

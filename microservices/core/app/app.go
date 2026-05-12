@@ -3,9 +3,11 @@ package app
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gorilla/csrf"
@@ -64,6 +66,8 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	authRepository := authRepo.New(db)
 	authSvc := authService.New(authRepository, authRepository)
 
+	ensureAdmin(ctx, authSvc, appLogger)
+
 	minioClient, err := minioPkg.New(cfg.Minio)
 	if err != nil {
 		return nil, fmt.Errorf("failed to init minio client: %w", err)
@@ -73,7 +77,7 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	userHandler := userHttp.NewHandler(userSvc, jwtManager)
 
 	catalogRepository := catalogRepo.New(db)
-	catalogSvc := catalogService.New(catalogRepository, userSvc)
+	catalogSvc := catalogService.New(catalogRepository, userSvc, minioClient)
 	catalogHandler := catalogHttp.NewHandler(catalogSvc)
 
 	authHandler := authHtpp.NewHandler(authSvc, jwtManager)
@@ -182,4 +186,22 @@ func (a *App) Stop() error {
 
 	a.logger.Infof("Application stopped gracefully.")
 	return nil
+}
+
+func ensureAdmin(ctx context.Context, svc *authService.AuthService, log logger.Logger) {
+	email := os.Getenv("ADMIN_EMAIL")
+	password := os.Getenv("ADMIN_PASSWORD")
+	if email == "" || password == "" {
+		return
+	}
+
+	_, err := svc.CreateAccount(ctx, email, password, "admin")
+	if err == nil {
+		log.Infof("Admin account created: %s", email)
+		return
+	}
+	if errors.Is(err, authService.ErrConflict) {
+		return
+	}
+	log.Warnf("Failed to create admin account: %v", err)
 }

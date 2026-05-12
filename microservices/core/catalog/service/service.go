@@ -9,12 +9,14 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
 	usersDTO "github.com/RBS-Team/Okoshki/microservices/core/users/dto"
+	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 )
 
 //go:generate mockgen -destination=../../../../mocks/catalog/repository/repository_mock.go -package=mock_catalog_repo github.com/RBS-Team/Okoshki/microservices/core/catalog/service IRepository
 type IRepository interface {
 	GetCategoryByID(ctx context.Context, id uuid.UUID) (*model.Category, error)
 	GetAllCategories(ctx context.Context) ([]model.Category, error)
+	UpdateCategoryAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error
 
 	CreateServiceItem(ctx context.Context, item model.ServiceItem) error
 	GetServiceItemsByMasterID(ctx context.Context, masterID uuid.UUID) ([]model.ServiceItem, error)
@@ -37,14 +39,22 @@ type MasterProvider interface {
 	GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*usersDTO.Master, error)
 }
 
+type IStorage interface {
+	Upload(ctx context.Context, obj minioPkg.ObjectInfo) (string, error)
+	BuildObjectURL(bucket, objectName string) string
+	Remove(ctx context.Context, bucket, objectName string) error
+}
+
 type Service struct {
 	repo    IRepository
 	masters MasterProvider
+	storage IStorage
 }
 
-func New(repo IRepository, masters MasterProvider) *Service {
+func New(repo IRepository, masters MasterProvider, storage IStorage) *Service {
 	return &Service{
 		repo:    repo,
 		masters: masters,
+		storage: storage,
 	}
 }

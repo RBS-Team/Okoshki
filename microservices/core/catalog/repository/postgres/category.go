@@ -9,24 +9,42 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
+func (r *Repository) UpdateCategoryAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
+	const op = "catalog.repository.postgres.UpdateCategoryAvatarURL"
+
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE category SET avatar_url = $1 WHERE id = $2`,
+		objectName, id,
+	)
+	if err != nil {
+		return fmt.Errorf("[%s]: %w", op, err)
+	}
+
+	return nil
+}
+
 func (r *Repository) GetCategoryByID(ctx context.Context, id uuid.UUID) (*model.Category, error) {
 	const op = "catalog.repository.postgres.GetCategoryByID"
 
 	query := `
-		SELECT id, parent_id, name, description, is_active, created_at, updated_at
-		FROM category
-		WHERE id = $1 AND is_active = true
+		SELECT c.id, c.name, c.description, c.avatar_url, c.is_active, c.created_at, c.updated_at,
+		       COUNT(m.id) AS masters_count
+		FROM category c
+		LEFT JOIN masters m ON m.category_id = c.id AND m.is_blocked = false
+		WHERE c.id = $1 AND c.is_active = true
+		GROUP BY c.id
 	`
 
 	var cat model.Category
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&cat.ID,
-		&cat.ParentID,
 		&cat.Name,
 		&cat.Description,
+		&cat.AvatarURL,
 		&cat.IsActive,
 		&cat.CreatedAt,
 		&cat.UpdatedAt,
+		&cat.MastersCount,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, mapErrors(err))
@@ -39,10 +57,13 @@ func (r *Repository) GetAllCategories(ctx context.Context) ([]model.Category, er
 	const op = "catalog.repository.postgres.GetAllCategories"
 
 	query := `
-		SELECT id, parent_id, name, description, is_active, created_at, updated_at
-		FROM category
-		WHERE is_active = true
-		ORDER BY name ASC
+		SELECT c.id, c.name, c.description, c.avatar_url, c.is_active, c.created_at, c.updated_at,
+		       COUNT(m.id) AS masters_count
+		FROM category c
+		LEFT JOIN masters m ON m.category_id = c.id AND m.is_blocked = false
+		WHERE c.is_active = true
+		GROUP BY c.id
+		ORDER BY c.name ASC
 	`
 
 	rows, err := r.db.QueryContext(ctx, query)
@@ -56,12 +77,13 @@ func (r *Repository) GetAllCategories(ctx context.Context) ([]model.Category, er
 		var cat model.Category
 		if err := rows.Scan(
 			&cat.ID,
-			&cat.ParentID,
 			&cat.Name,
 			&cat.Description,
+			&cat.AvatarURL,
 			&cat.IsActive,
 			&cat.CreatedAt,
 			&cat.UpdatedAt,
+			&cat.MastersCount,
 		); err != nil {
 			return nil, fmt.Errorf("[%s]: scan failed: %w", op, err)
 		}

@@ -24,7 +24,6 @@ DROP INDEX IF EXISTS idx_masters_rating;
 DROP TABLE IF EXISTS masters;
 
 DROP TRIGGER IF EXISTS update_category_modtime ON category;
-DROP INDEX IF EXISTS idx_category_parent_id;
 DROP TABLE IF EXISTS category;
 
 DROP INDEX IF EXISTS idx_user_email;
