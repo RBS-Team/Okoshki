@@ -31,7 +31,7 @@ func (s *Service) CreateAppointment(ctx context.Context, clientID uuid.UUID, req
 		return nil, fmt.Errorf("[%s]: invalid master id in service: %w", op, err)
 	}
 
-	master, err := s.catalog.GetMasterByID(ctx, masterID)
+	master, err := s.user.GetMasterByID(ctx, masterID)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}

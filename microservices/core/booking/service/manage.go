@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/RBS-Team/Okoshki/internal/model"
-	authDTO "github.com/RBS-Team/Okoshki/microservices/core/auth/dto"
+	usersDTO "github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 	"github.com/RBS-Team/Okoshki/microservices/core/booking/dto"
 )
 
@@ -68,7 +68,7 @@ func (s *Service) UpdateAppointmentStatus(ctx context.Context, actorID uuid.UUID
 func (s *Service) CreateManualBlock(ctx context.Context, masterID uuid.UUID, req dto.CreateManualBlockRequest) (*dto.CreateManualBlockResponse, error) {
 	const op = "booking.service.CreateManualBlock"
 
-	master, err := s.catalog.GetMasterByID(ctx, masterID)
+	master, err := s.user.GetMasterByID(ctx, masterID)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
@@ -140,7 +140,7 @@ func (s *Service) GetClientAppointments(ctx context.Context, clientID uuid.UUID,
 
 	var views []dto.ClientAppointmentView
 	for _, a := range appts {
-		master, err := s.catalog.GetMasterByID(ctx, a.MasterID)
+		master, err := s.user.GetMasterByID(ctx, a.MasterID)
 		if err != nil {
 			continue
 		}
@@ -152,7 +152,7 @@ func (s *Service) GetClientAppointments(ctx context.Context, clientID uuid.UUID,
 		views = append(views, dto.ClientAppointmentView{
 			ID:            a.ID.String(),
 			MasterID:      a.MasterID.String(),
-			MasterName:    master.Name,
+			MasterName:    master.FirstName,
 			MasterAvatar:  master.AvatarURL,
 			MasterLat:     master.Lat,
 			MasterLon:     master.Lon,
@@ -190,12 +190,12 @@ func (s *Service) GetMasterAppointments(ctx context.Context, masterID uuid.UUID,
 		}
 	}
 
-	usersInfo, err := s.user.GetUsersInfo(ctx, clientIDs)
+	clients, err := s.user.GetClientsByIDs(ctx, clientIDs)
 	if err != nil {
-		usersInfo = []authDTO.UserInfo{}
+		clients = []usersDTO.Client{}
 	}
-	userMap := make(map[string]authDTO.UserInfo)
-	for _, u := range usersInfo {
+	userMap := make(map[string]usersDTO.Client)
+	for _, u := range clients {
 		userMap[u.ID] = u
 	}
 
@@ -218,8 +218,7 @@ func (s *Service) GetMasterAppointments(ctx context.Context, masterID uuid.UUID,
 			view.ServiceID = &sID
 
 			if ui, ok := userMap[cID]; ok {
-				view.ClientEmail = &ui.Email
-				view.ClientAvatar = &ui.AvatarURL
+				view.ClientAvatar = ui.AvatarURL
 			}
 
 			service, err := s.catalog.GetServiceItemByID(ctx, a.ServiceID)
@@ -237,7 +236,7 @@ func (s *Service) GetMasterAppointments(ctx context.Context, masterID uuid.UUID,
 }
 
 func (s *Service) GetMasterIDByUserID(ctx context.Context, userID uuid.UUID) (uuid.UUID, error) {
-	master, err := s.catalog.GetMasterByUserID(ctx, userID)
+	master, err := s.user.GetMasterByUserID(ctx, userID)
 	if err != nil {
 		return uuid.Nil, err
 	}

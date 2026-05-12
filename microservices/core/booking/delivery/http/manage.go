@@ -3,7 +3,6 @@ package http
 import (
 	"errors"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,18 +15,6 @@ import (
 )
 
 const dateFormat = "2006-01-02"
-
-func parsePagination(r *http.Request) (uint64, uint64) {
-	limit, err := strconv.ParseUint(r.URL.Query().Get("limit"), 10, 64)
-	if err != nil || limit == 0 {
-		limit = 20
-	}
-	offset, err := strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
-	if err != nil {
-		offset = 0
-	}
-	return limit, offset
-}
 
 func (h *Handler) getMasterID(r *http.Request) (uuid.UUID, error) {
 	userIDStr, ok := middleware.GetUserID(r.Context())

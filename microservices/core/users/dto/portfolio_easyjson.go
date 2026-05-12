@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson67a1f85eDecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(in *jlexer.Lexer, out *PortfolioPhoto) {
+func easyjson67a1f85eDecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(in *jlexer.Lexer, out *PortfolioPhoto) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -59,7 +59,7 @@ func easyjson67a1f85eDecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(in
 		in.Consumed()
 	}
 }
-func easyjson67a1f85eEncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(out *jwriter.Writer, in PortfolioPhoto) {
+func easyjson67a1f85eEncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(out *jwriter.Writer, in PortfolioPhoto) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -84,23 +84,23 @@ func easyjson67a1f85eEncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(ou
 // MarshalJSON supports json.Marshaler interface
 func (v PortfolioPhoto) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson67a1f85eEncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(&w, v)
+	easyjson67a1f85eEncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PortfolioPhoto) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson67a1f85eEncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(w, v)
+	easyjson67a1f85eEncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *PortfolioPhoto) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson67a1f85eDecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(&r, v)
+	easyjson67a1f85eDecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PortfolioPhoto) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson67a1f85eDecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(l, v)
+	easyjson67a1f85eDecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(l, v)
 }

@@ -12,26 +12,20 @@ import (
 func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 	public.HandleFunc("/categories", h.GetAllCategories).Methods(http.MethodGet, http.MethodOptions)
 	public.HandleFunc("/categories/{id}", h.GetCategoryByID).Methods(http.MethodGet, http.MethodOptions)
-	public.HandleFunc("/categories/{id}/masters", h.GetMastersByCategory).Methods(http.MethodGet, http.MethodOptions)
 	public.HandleFunc("/categories/{id}/services", h.GetServicesByCategory).Methods(http.MethodGet, http.MethodOptions)
 
-	public.HandleFunc("/masters", h.GetAllMasters).Methods(http.MethodGet, http.MethodOptions)
-	public.HandleFunc("/masters/{id}", h.GetMasterByID).Methods(http.MethodGet, http.MethodOptions)
 	public.HandleFunc("/masters/{id}/services", h.GetServiceItemsByMasterID).Methods(http.MethodGet, http.MethodOptions)
-	public.HandleFunc("/masters/{masterID}/portfolio", h.GetPortfolioPhotos).Methods(http.MethodGet, http.MethodOptions)
 
 	masterProtected := csrfProtected.PathPrefix("").Subrouter()
 	masterProtected.Use(middleware.RequireRole(string(model.RoleMaster)))
 
 	masterProtected.HandleFunc("/masters/{id}/services", h.CreateServiceItem).Methods(http.MethodPost, http.MethodOptions)
-	masterProtected.HandleFunc("/masters/{masterID}/portfolio", h.UploadPortfolioPhotos).Methods(http.MethodPost, http.MethodOptions)
-	masterProtected.HandleFunc("/masters/{masterID}/portfolio/{photoID}", h.DeletePortfolioPhoto).Methods(http.MethodDelete, http.MethodOptions)
 
-	masterProtected.HandleFunc("/working-hours", h.GetWorkingHours).Methods(http.MethodGet, http.MethodOptions)
-	masterProtected.HandleFunc("/working-hours", h.UpsertWorkingHours).Methods(http.MethodPut, http.MethodOptions)
+	masterProtected.HandleFunc("/masters/{masterID}/working-hours", h.GetWorkingHours).Methods(http.MethodGet, http.MethodOptions)
+	masterProtected.HandleFunc("/masters/{masterID}/working-hours", h.UpsertWorkingHours).Methods(http.MethodPut, http.MethodOptions)
 
-	masterProtected.HandleFunc("/schedule-exceptions", h.GetScheduleExceptions).Methods(http.MethodGet, http.MethodOptions)
-	masterProtected.HandleFunc("/schedule-exceptions", h.CreateScheduleException).Methods(http.MethodPost, http.MethodOptions)
-	masterProtected.HandleFunc("/schedule-exceptions/{id}", h.UpdateScheduleException).Methods(http.MethodPut, http.MethodOptions)
-	masterProtected.HandleFunc("/schedule-exceptions/{id}", h.DeleteScheduleException).Methods(http.MethodDelete, http.MethodOptions)
+	masterProtected.HandleFunc("/masters/{masterID}/schedule-exceptions", h.GetScheduleExceptions).Methods(http.MethodGet, http.MethodOptions)
+	masterProtected.HandleFunc("/masters/{masterID}/schedule-exceptions", h.CreateScheduleException).Methods(http.MethodPost, http.MethodOptions)
+	masterProtected.HandleFunc("/masters/{masterID}/schedule-exceptions/{id}", h.UpdateScheduleException).Methods(http.MethodPut, http.MethodOptions)
+	masterProtected.HandleFunc("/masters/{masterID}/schedule-exceptions/{id}", h.DeleteScheduleException).Methods(http.MethodDelete, http.MethodOptions)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/RBS-Team/Okoshki/internal/model"
-	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
+	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 )
 

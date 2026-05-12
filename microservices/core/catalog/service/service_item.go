@@ -9,6 +9,7 @@ import (
 
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
+	usersDTO "github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 )
 
 func (s *Service) CreateServiceItem(ctx context.Context, masterID uuid.UUID, req dto.CreateServiceItemRequest) (*dto.ServiceItem, error) {
@@ -94,12 +95,12 @@ func (s *Service) GetServicesByCategory(ctx context.Context, categoryID uuid.UUI
 		}
 	}
 
-	masters, err := s.repo.GetMastersByIDs(ctx, masterIDs)
+	masters, err := s.masters.GetMastersByIDs(ctx, masterIDs)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: failed to get masters for services: %w", op, mapError(err))
 	}
 
-	mastersMap := make(map[uuid.UUID]dto.Master, len(masters))
+	mastersMap := make(map[uuid.UUID]usersDTO.Master, len(masters))
 	for i := range masters {
 		mastersMap[masters[i].ID] = *mapMasterModelToDTO(&masters[i])
 	}
@@ -122,7 +123,18 @@ func (s *Service) GetServicesByCategory(ctx context.Context, categoryID uuid.UUI
 			BufferAfterMinutes:  srv.BufferAfterMinutes,
 			IsActive:            srv.IsActive,
 			IsAutoConfirm:       srv.IsAutoConfirm,
-			Master:              masterDTO,
+			MasterID:            masterDTO.ID,
+			FirstName:           masterDTO.FirstName,
+			LastName:            masterDTO.LastName,
+			Address:             masterDTO.Address,
+			City:                masterDTO.City,
+			Bio:                 masterDTO.Bio,
+			AvatarURL:           masterDTO.AvatarURL,
+			Timezone:            masterDTO.Timezone,
+			Lat:                 masterDTO.Lat,
+			Lon:                 masterDTO.Lon,
+			Rating:              masterDTO.Rating,
+			ReviewCount:         masterDTO.ReviewCount,
 		})
 	}
 
@@ -138,6 +150,25 @@ func (s *Service) GetServiceItemByID(ctx context.Context, id uuid.UUID) (*dto.Se
 	}
 
 	return mapServiceItemModelToDTO(itemModel), nil
+}
+
+func mapMasterModelToDTO(m *model.Master) *usersDTO.Master {
+	return &usersDTO.Master{
+		ID:          m.ID.String(),
+		UserID:      m.UserID.String(),
+		CategoryID:  m.CategoryID.String(),
+		FirstName:   m.FirstName,
+		LastName:    m.LastName,
+		Address:     m.Address,
+		City:        m.City,
+		Bio:         m.Bio,
+		AvatarURL:   m.AvatarURL,
+		Timezone:    m.Timezone,
+		Lat:         m.Lat,
+		Lon:         m.Lon,
+		Rating:      m.Rating,
+		ReviewCount: m.ReviewCount,
+	}
 }
 
 func mapServiceItemModelToDTO(m *model.ServiceItem) *dto.ServiceItem {

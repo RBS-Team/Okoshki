@@ -99,11 +99,109 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(in
 			} else {
 				out.IsAutoConfirm = bool(in.Bool())
 			}
-		case "master":
+		case "master_id":
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				(out.Master).UnmarshalEasyJSON(in)
+				out.MasterID = string(in.String())
+			}
+		case "first_name":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.FirstName = string(in.String())
+			}
+		case "last_name":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.LastName = string(in.String())
+			}
+		case "address":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Address = string(in.String())
+			}
+		case "city":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.City = string(in.String())
+			}
+		case "bio":
+			if in.IsNull() {
+				in.Skip()
+				out.Bio = nil
+			} else {
+				if out.Bio == nil {
+					out.Bio = new(string)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.Bio = string(in.String())
+				}
+			}
+		case "avatar_url":
+			if in.IsNull() {
+				in.Skip()
+				out.AvatarURL = nil
+			} else {
+				if out.AvatarURL == nil {
+					out.AvatarURL = new(string)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.AvatarURL = string(in.String())
+				}
+			}
+		case "timezone":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Timezone = string(in.String())
+			}
+		case "lat":
+			if in.IsNull() {
+				in.Skip()
+				out.Lat = nil
+			} else {
+				if out.Lat == nil {
+					out.Lat = new(float64)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.Lat = float64(in.Float64())
+				}
+			}
+		case "lon":
+			if in.IsNull() {
+				in.Skip()
+				out.Lon = nil
+			} else {
+				if out.Lon == nil {
+					out.Lon = new(float64)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.Lon = float64(in.Float64())
+				}
+			}
+		case "rating":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Rating = float64(in.Float64())
+			}
+		case "review_count":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.ReviewCount = int(in.Int())
 			}
 		default:
 			in.SkipRecursive()
@@ -170,9 +268,64 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(ou
 		out.Bool(bool(in.IsAutoConfirm))
 	}
 	{
-		const prefix string = ",\"master\":"
+		const prefix string = ",\"master_id\":"
 		out.RawString(prefix)
-		(in.Master).MarshalEasyJSON(out)
+		out.String(string(in.MasterID))
+	}
+	{
+		const prefix string = ",\"first_name\":"
+		out.RawString(prefix)
+		out.String(string(in.FirstName))
+	}
+	{
+		const prefix string = ",\"last_name\":"
+		out.RawString(prefix)
+		out.String(string(in.LastName))
+	}
+	{
+		const prefix string = ",\"address\":"
+		out.RawString(prefix)
+		out.String(string(in.Address))
+	}
+	{
+		const prefix string = ",\"city\":"
+		out.RawString(prefix)
+		out.String(string(in.City))
+	}
+	if in.Bio != nil {
+		const prefix string = ",\"bio\":"
+		out.RawString(prefix)
+		out.String(string(*in.Bio))
+	}
+	if in.AvatarURL != nil {
+		const prefix string = ",\"avatar_url\":"
+		out.RawString(prefix)
+		out.String(string(*in.AvatarURL))
+	}
+	{
+		const prefix string = ",\"timezone\":"
+		out.RawString(prefix)
+		out.String(string(in.Timezone))
+	}
+	if in.Lat != nil {
+		const prefix string = ",\"lat\":"
+		out.RawString(prefix)
+		out.Float64(float64(*in.Lat))
+	}
+	if in.Lon != nil {
+		const prefix string = ",\"lon\":"
+		out.RawString(prefix)
+		out.Float64(float64(*in.Lon))
+	}
+	{
+		const prefix string = ",\"rating\":"
+		out.RawString(prefix)
+		out.Float64(float64(in.Rating))
+	}
+	{
+		const prefix string = ",\"review_count\":"
+		out.RawString(prefix)
+		out.Int(int(in.ReviewCount))
 	}
 	out.RawByte('}')
 }

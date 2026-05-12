@@ -1,0 +1,205 @@
+package service
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
+
+	"github.com/RBS-Team/Okoshki/internal/model"
+	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
+)
+
+func (s *Service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequest) (*dto.RegisterMasterResponse, error) {
+	const op = "users.service.RegisterMaster"
+
+	categoryID, err := uuid.Parse(req.CategoryID)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: invalid category_id: %w", op, ErrInvalidInput)
+	}
+
+	tz := req.Timezone
+	if tz == "" {
+		tz = "Europe/Moscow"
+	}
+	if _, err := time.LoadLocation(tz); err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, ErrInvalidTimezone)
+	}
+
+	userID, err := s.auth.CreateAccount(ctx, req.Email, req.Password, string(model.RoleMaster))
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: create account: %w", op, err)
+	}
+
+	master := model.Master{
+		ID:           uuid.New(),
+		UserID:       userID,
+		CategoryID:   categoryID,
+		FirstName:    req.FirstName,
+		LastName:     req.LastName,
+		Address:      req.Address,
+		City:         req.City,
+		Bio:          req.Bio,
+		Timezone:     tz,
+		Lat:          req.Lat,
+		Lon:          req.Lon,
+		Rating:       0,
+		ReviewCount:  0,
+		ReportsCount: 0,
+		IsBlocked:    false,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+
+	if err := s.repo.CreateMaster(ctx, master); err != nil {
+		_ = s.auth.DeleteAccount(ctx, userID)
+		return nil, fmt.Errorf("[%s]: create master profile: %w", op, mapError(err))
+	}
+
+	return &dto.RegisterMasterResponse{
+		UserID:   userID.String(),
+		MasterID: master.ID.String(),
+		Email:    req.Email,
+		Role:     string(model.RoleMaster),
+	}, nil
+}
+
+func (s *Service) CreateMaster(ctx context.Context, userIDStr string, req dto.CreateMasterRequest) (*dto.Master, error) {
+	const op = "catalog.service.CreateMaster"
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: invalid user id: %w", op, err)
+	}
+
+	categoryID, err := uuid.Parse(req.CategoryID)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: invalid category id: %w", op, err)
+	}
+
+	tz := req.Timezone
+	if tz == "" {
+		tz = "Europe/Moscow"
+	}
+
+	if _, err := time.LoadLocation(tz); err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, ErrInvalidTimezone)
+	}
+
+	masterModel := model.Master{
+		ID:           uuid.New(),
+		UserID:       userID,
+		CategoryID:   categoryID,
+		FirstName:    req.FirstName,
+		LastName:     req.LastName,
+		Address:      req.Address,
+		City:         req.City,
+		Bio:          req.Bio,
+		// AvatarURL: 
+		Timezone:     tz,
+		Lat:          req.Lat,
+		Lon:          req.Lon,
+		Rating:       0,
+		ReviewCount:  0,
+		ReportsCount: 0,
+		IsBlocked:    false,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+
+	if err := s.repo.CreateMaster(ctx, masterModel); err != nil {
+		return nil, fmt.Errorf("[%s]: failed to create master: %w", op, mapError(err))
+	}
+
+	return mapMasterModelToDTO(&masterModel), nil
+}
+
+func (s *Service) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto.Master, error) {
+	const op = "catalog.service.GetMasterByUserID"
+
+	masterModel, err := s.repo.GetMasterByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: failed to get master by user id: %w", op, mapError(err))
+	}
+
+	return mapMasterModelToDTO(masterModel), nil
+}
+
+func (s *Service) GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error) {
+	const op = "catalog.service.GetMastersByCategory"
+
+	masterModels, err := s.repo.GetMastersByCategoryID(ctx, categoryID, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: failed to get masters by category: %w", op, mapError(err))
+	}
+
+	if len(masterModels) == 0 {
+		return []dto.Master{}, nil
+	}
+
+	masterDTOs := make([]dto.Master, 0, len(masterModels))
+	for i := range masterModels {
+		masterDTOs = append(masterDTOs, *mapMasterModelToDTO(&masterModels[i]))
+	}
+
+	return masterDTOs, nil
+}
+
+// GetMasterByID возвращает профиль мастера по ID как DTO (для HTTP-хендлеров).
+func (s *Service) GetMasterByID(ctx context.Context, id uuid.UUID) (*dto.Master, error) {
+	const op = "users.service.GetMasterByID"
+
+	m, err := s.repo.GetMasterByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, mapError(err))
+	}
+
+	return mapMasterModelToDTO(m), nil
+}
+
+// GetAllMasters возвращает страницу мастеров как DTO (для HTTP-хендлеров).
+func (s *Service) GetAllMasters(ctx context.Context, limit, offset uint64) ([]dto.Master, error) {
+	const op = "users.service.GetAllMasters"
+
+	masters, err := s.repo.GetAllMasters(ctx, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, mapError(err))
+	}
+
+	if len(masters) == 0 {
+		return []dto.Master{}, nil
+	}
+
+	result := make([]dto.Master, 0, len(masters))
+	for i := range masters {
+		result = append(result, *mapMasterModelToDTO(&masters[i]))
+	}
+
+	return result, nil
+}
+
+// Find* методы возвращают model.Master и реализуют catalog/service.MasterProvider (duck typing).
+// Названия отличаются от Get*, чтобы не конфликтовать с DTO-возвращающими методами.
+func (s *Service) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Master, error) {
+	return s.repo.GetMastersByIDs(ctx, ids)
+}
+
+func mapMasterModelToDTO(m *model.Master) *dto.Master {
+	return &dto.Master{
+		ID:          m.ID.String(),
+		UserID:      m.UserID.String(),
+		CategoryID:  m.CategoryID.String(),
+		FirstName:   m.FirstName,
+		LastName:    m.LastName,
+		Address:     m.Address,
+		City:        m.City,
+		Bio:         m.Bio,
+		AvatarURL:   m.AvatarURL,
+		Timezone:    m.Timezone,
+		Lat:         m.Lat,
+		Lon:         m.Lon,
+		Rating:      m.Rating,
+		ReviewCount: m.ReviewCount,
+	}
+}

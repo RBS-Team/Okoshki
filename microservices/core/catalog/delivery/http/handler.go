@@ -13,12 +13,6 @@ type IService interface {
 	GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Category, error)
 	GetAllCategories(ctx context.Context) ([]*dto.Category, error)
 
-	GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto.Master, error)
-	CreateMaster(ctx context.Context, userIDStr string, req dto.CreateMasterRequest) (*dto.Master, error)
-	GetMasterByID(ctx context.Context, id uuid.UUID) (*dto.Master, error)
-	GetAllMasters(ctx context.Context, limit, offset uint64) ([]dto.Master, error)
-	GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error)
-
 	CreateServiceItem(ctx context.Context, masterID uuid.UUID, req dto.CreateServiceItemRequest) (*dto.ServiceItem, error)
 	GetServiceItemsByMasterID(ctx context.Context, masterID uuid.UUID) ([]dto.ServiceItem, error)
 	GetServicesByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.ServiceWithMaster, error)
@@ -30,10 +24,7 @@ type IService interface {
 	UpdateScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID, req dto.UpdateScheduleExceptionRequest) error
 	DeleteScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID) error
 	GetScheduleExceptions(ctx context.Context, masterID uuid.UUID, startDateStr, endDateStr string) ([]dto.ScheduleException, error)
-
-	UploadPortfolioPhotos(ctx context.Context, userIDStr, masterIDStr string, files []dto.FileUpload) ([]dto.PortfolioPhoto, error)
-	GetPortfolioPhotos(ctx context.Context, masterIDStr string) ([]dto.PortfolioPhoto, error)
-	DeletePortfolioPhoto(ctx context.Context, userIDStr, masterIDStr, photoIDStr string) error
+	
 }
 
 type Handler struct {

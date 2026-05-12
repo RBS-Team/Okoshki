@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/RBS-Team/Okoshki/internal/model"
-	authDTO "github.com/RBS-Team/Okoshki/microservices/core/auth/dto"
 	catalogDTO "github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
+	usersDTO "github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 )
 
 type AppointmentRepository interface {
@@ -23,14 +23,14 @@ type AppointmentRepository interface {
 
 type CatalogProvider interface {
 	GetServiceItemByID(ctx context.Context, id uuid.UUID) (*catalogDTO.ServiceItem, error)
-	GetMasterByID(ctx context.Context, id uuid.UUID) (*catalogDTO.Master, error)
 	GetWorkingHours(ctx context.Context, masterID uuid.UUID) ([]catalogDTO.WorkingHours, error)
 	GetScheduleExceptions(ctx context.Context, masterID uuid.UUID, startDateStr, endDateStr string) ([]catalogDTO.ScheduleException, error)
-	GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*catalogDTO.Master, error)
 }
 
 type UserProvider interface {
-	GetUsersInfo(ctx context.Context, ids []uuid.UUID) ([]authDTO.UserInfo, error)
+	GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]usersDTO.Client, error)
+	GetMasterByID(ctx context.Context, id uuid.UUID) (*usersDTO.Master, error)
+	GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*usersDTO.Master, error)
 }
 
 type Service struct {

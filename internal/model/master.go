@@ -9,7 +9,11 @@ import (
 type Master struct {
 	ID           uuid.UUID
 	UserID       uuid.UUID
-	Name         string
+	CategoryID   uuid.UUID
+	FirstName    string
+	LastName     string
+	Address      string
+	City         string
 	Bio          *string
 	AvatarURL    *string
 	Timezone     string
@@ -22,4 +26,3 @@ type Master struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
-

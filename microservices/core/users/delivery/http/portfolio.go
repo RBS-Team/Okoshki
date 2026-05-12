@@ -7,8 +7,8 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
-	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
-	"github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
+	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
+	"github.com/RBS-Team/Okoshki/microservices/core/users/service"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 

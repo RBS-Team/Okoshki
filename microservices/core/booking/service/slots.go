@@ -46,7 +46,7 @@ func (s *Service) GetAvailableSlots(ctx context.Context, serviceID uuid.UUID, st
 	}
 
 	// По UID мастера мы получаем DTO мастера со всей инфой о нем
-	master, err := s.catalog.GetMasterByID(ctx, masterID)
+	master, err := s.user.GetMasterByID(ctx, masterID)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}

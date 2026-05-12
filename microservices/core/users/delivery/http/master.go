@@ -3,66 +3,73 @@ package http
 import (
 	"errors"
 	"net/http"
-	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/mailru/easyjson"
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
-	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
-	"github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
+	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
+	"github.com/RBS-Team/Okoshki/microservices/core/users/service"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
-// CreateMaster godoc
-// @Summary      Создание профиля мастера
-// @Description  Создаёт профиль мастера для текущего авторизованного пользователя. Доступно только для роли "master".
-// @Tags         masters
+// RegisterMaster godoc
+// @Summary      Регистрация мастера
+// @Description  Создаёт учётную запись и профиль мастера атомарно. Устанавливает httpOnly cookie с JWT.
+// @Tags         registration
 // @Accept       json
 // @Produce      json
-// @Param        request body dto.CreateMasterRequest true "Данные мастера"
-// @Success      201 {object} dto.Master "Мастер успешно создан"
-// @Failure      400 {object} response.ErrorResponse "Неверный формат запроса или отсутствуют обязательные поля"
-// @Failure      401 {object} response.ErrorResponse "Не авторизован"
-// @Failure      403 {object} response.ErrorResponse "Доступ запрещен (необходима роль master)"
-// @Failure      409 {object} response.ErrorResponse "У данного пользователя уже есть профиль мастера"
-// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
-// @Security     CookieAuth
-// @Router       /masters [post]
-func (h *Handler) CreateMaster(w http.ResponseWriter, r *http.Request) {
-	const op = "catalog.handler.CreateMaster"
-	log := middleware.LoggerFromContext(r.Context())
+// @Param        request body dto.RegisterMasterRequest true "Данные мастера"
+// @Success      201 {object} dto.RegisterMasterResponse
+// @Failure      400 {object} response.ErrorResponse
+// @Failure      409 {object} response.ErrorResponse
+// @Failure      500 {object} response.ErrorResponse
+// @Router       /master/register [post]
+func (h *Handler) RegisterMaster(w http.ResponseWriter, r *http.Request) {
+	const op = "users.handler.RegisterMaster"
 	defer r.Body.Close()
 
-	userIDStr, ok := middleware.GetUserID(r.Context())
-	if !ok || userIDStr == "" {
-		log.Errorf("[%s]: missing user id in context", op)
-		response.UnauthorizedJSON(w)
-		return
-	}
+	log := middleware.LoggerFromContext(r.Context())
 
-	var req dto.CreateMasterRequest
+	var req dto.RegisterMasterRequest
 	if err := easyjson.UnmarshalFromReader(r.Body, &req); err != nil {
-		log.Warnf("[%s]: failed to unmarshal request: %v", op, err)
+		log.Errorf("[%s]: invalid request body: %v", op, err)
 		response.BadRequestJSON(w)
 		return
 	}
 
-	if req.Name == "" {
-		log.Warnf("[%s]: missing required field: name", op)
+	if !isValidCredentials(req.Email, req.Password) ||
+		req.FirstName == "" || req.LastName == "" || req.CategoryID == "" {
 		response.BadRequestJSON(w)
 		return
 	}
 
-	master, err := h.service.CreateMaster(r.Context(), userIDStr, req)
+	result, err := h.service.RegisterMaster(r.Context(), req)
 	if err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
-		h.handleMasterError(w, err)
+		h.handleUsersError(w, err)
 		return
 	}
 
-	response.JSON(w, http.StatusCreated, master)
+	token, err := h.jwtManager.NewToken(result.UserID, result.Role)
+	if err != nil {
+		log.Errorf("[%s]: failed to generate token: %v", op, err)
+		response.InternalErrorJSON(w)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     sessionTokenCookie,
+		Value:    token,
+		Expires:  time.Now().Add(h.jwtManager.GetTTL()),
+		HttpOnly: true,
+		Path:     "/",
+	})
+
+	log.Infof("[%s]: master registered: userID=%s masterID=%s", op, result.UserID, result.MasterID)
+	response.JSON(w, http.StatusCreated, result)
 }
 
 // GetMasterByID godoc
@@ -78,7 +85,7 @@ func (h *Handler) CreateMaster(w http.ResponseWriter, r *http.Request) {
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /masters/{id} [get]
 func (h *Handler) GetMasterByID(w http.ResponseWriter, r *http.Request) {
-	const op = "catalog.handler.GetMasterByID"
+	const op = "users.handler.GetMasterByID"
 	log := middleware.LoggerFromContext(r.Context())
 
 	idStr, ok := mux.Vars(r)["id"]
@@ -119,7 +126,7 @@ func (h *Handler) GetMasterByID(w http.ResponseWriter, r *http.Request) {
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /masters [get]
 func (h *Handler) GetAllMasters(w http.ResponseWriter, r *http.Request) {
-	const op = "catalog.handler.GetAllMasters"
+	const op = "users.handler.GetAllMasters"
 	log := middleware.LoggerFromContext(r.Context())
 
 	limit, offset := parsePagination(r)
@@ -149,7 +156,7 @@ func (h *Handler) GetAllMasters(w http.ResponseWriter, r *http.Request) {
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /categories/{id}/masters [get]
 func (h *Handler) GetMastersByCategory(w http.ResponseWriter, r *http.Request) {
-	const op = "catalog.handler.GetMastersByCategory"
+	const op = "users.handler.GetMastersByCategory"
 	log := middleware.LoggerFromContext(r.Context())
 
 	idStr, ok := mux.Vars(r)["id"]
@@ -178,20 +185,4 @@ func (h *Handler) GetMastersByCategory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.JSON(w, http.StatusOK, masters)
-}
-
-func parsePagination(r *http.Request) (uint64, uint64) {
-	query := r.URL.Query()
-
-	limit, err := strconv.ParseUint(query.Get("limit"), 10, 64)
-	if err != nil || limit == 0 || limit > 100 {
-		limit = 20
-	}
-
-	offset, err := strconv.ParseUint(query.Get("offset"), 10, 64)
-	if err != nil {
-		offset = 0
-	}
-
-	return limit, offset
 }

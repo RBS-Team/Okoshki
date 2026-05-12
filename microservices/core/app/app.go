@@ -15,14 +15,16 @@ import (
 	_ "github.com/RBS-Team/Okoshki/docs" // сгенерированная документация
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/internal/server"
-	userHtpp "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
-	userRepo "github.com/RBS-Team/Okoshki/microservices/core/auth/repository/postgres"
-	userService "github.com/RBS-Team/Okoshki/microservices/core/auth/service"
+	authHtpp "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
+	authRepo "github.com/RBS-Team/Okoshki/microservices/core/auth/repository/postgres"
+	authService "github.com/RBS-Team/Okoshki/microservices/core/auth/service"
+	userHttp "github.com/RBS-Team/Okoshki/microservices/core/users/delivery/http"
+	userRepo "github.com/RBS-Team/Okoshki/microservices/core/users/repository/postgres"
+	userService "github.com/RBS-Team/Okoshki/microservices/core/users/service"
 	bookingHttp "github.com/RBS-Team/Okoshki/microservices/core/booking/delivery/http"
 	bookingRepo "github.com/RBS-Team/Okoshki/microservices/core/booking/repository/postgres"
 	bookingService "github.com/RBS-Team/Okoshki/microservices/core/booking/service"
 	catalogHttp "github.com/RBS-Team/Okoshki/microservices/core/catalog/delivery/http"
-	catalogDto "github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
 	catalogRepo "github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
 	catalogService "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
 	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
@@ -30,26 +32,6 @@ import (
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 	"github.com/RBS-Team/Okoshki/pkg/postgres"
 )
-
-// masterCreatorAdapter реализует userHtpp.MasterCreator через catalog.Service.
-// Изолирует auth домен от прямой зависимости на catalog.
-type masterCreatorAdapter struct {
-	svc *catalogService.Service
-}
-
-func (a *masterCreatorAdapter) CreateMasterProfile(ctx context.Context, userIDStr, name string, bio *string, timezone string, lat, lon *float64) (string, error) {
-	master, err := a.svc.CreateMaster(ctx, userIDStr, catalogDto.CreateMasterRequest{
-		Name:     name,
-		Bio:      bio,
-		Timezone: timezone,
-		Lat:      lat,
-		Lon:      lon,
-	})
-	if err != nil {
-		return "", err
-	}
-	return master.ID, nil
-}
 
 type App struct {
 	cfg        *Config
@@ -79,22 +61,25 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 
 	jwtManager := jwtmanager.NewManager(cfg.Auth.HTTP.Auth.JWT.SecretKey, cfg.Auth.HTTP.Auth.JWT.AccessTokenTTL)
 
-	userRepository := userRepo.NewUserRepository(db)
-	userService := userService.NewAuthService(userRepository, userRepository)
+	authRepository := authRepo.New(db)
+	authSvc := authService.New(authRepository, authRepository)
 
 	minioClient, err := minioPkg.New(cfg.Minio)
 	if err != nil {
 		return nil, fmt.Errorf("failed to init minio client: %w", err)
 	}
+	userRepository := userRepo.New(db)
+	userSvc := userService.New(authSvc, userRepository, minioClient)
+	userHandler := userHttp.NewHandler(userSvc, jwtManager)
 
 	catalogRepository := catalogRepo.New(db)
-	catalogSvc := catalogService.New(catalogRepository, minioClient)
+	catalogSvc := catalogService.New(catalogRepository, userSvc)
 	catalogHandler := catalogHttp.NewHandler(catalogSvc)
 
-	userHandler := userHtpp.NewHandler(userService, jwtManager, &masterCreatorAdapter{svc: catalogSvc})
+	authHandler := authHtpp.NewHandler(authSvc, jwtManager)
 
 	bookingRepository := bookingRepo.New(db)
-	bookingSvc := bookingService.New(bookingRepository, catalogSvc, userService)
+	bookingSvc := bookingService.New(bookingRepository, catalogSvc, userSvc)
 	bookingHandler := bookingHttp.NewHandler(bookingSvc)
 
 	requestLoggerMiddleware := middleware.RequestLoggerMiddleware(appLogger)
@@ -125,6 +110,7 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	// csrfProtected.Use(csrfMiddleware)
 	_ = csrfMiddleware
 	catalogHandler.RegisterRoutes(public, protected, csrfProtected)
+	authHandler.RegisterRoutes(public, protected, csrfProtected)
 	userHandler.RegisterRoutes(public, protected, csrfProtected)
 	bookingHandler.RegisterRoutes(public, protected, csrfProtected)
 
