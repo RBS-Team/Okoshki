@@ -16,7 +16,6 @@ type IService interface {
 	RegisterClient(ctx context.Context, req dto.RegisterClientRequest) (*dto.RegisterClientResponse, error)
 
 	GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto.Master, error)
-	CreateMaster(ctx context.Context, userIDStr string, req dto.CreateMasterRequest) (*dto.Master, error)
 	GetMasterByID(ctx context.Context, id uuid.UUID) (*dto.Master, error)
 	GetAllMasters(ctx context.Context, limit, offset uint64) ([]dto.Master, error)
 	GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error)

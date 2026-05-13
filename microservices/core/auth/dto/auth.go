@@ -24,4 +24,5 @@ type UserInfo struct {
 //easyjson:json
 type GuestSessionResponse struct {
 	GuestID string `json:"guest_id"`
+	Role string `json:"role"`
 }

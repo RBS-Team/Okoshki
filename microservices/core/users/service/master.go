@@ -27,7 +27,7 @@ func (s *Service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequ
 		return nil, fmt.Errorf("[%s]: %w", op, ErrInvalidTimezone)
 	}
 
-	userID, err := s.auth.CreateAccount(ctx, req.Email, req.Password, string(model.RoleMaster))
+	userID, err := s.auth.CreateUser(ctx, req.Email, req.Password, string(model.RoleMaster))
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: create account: %w", op, err)
 	}
@@ -54,66 +54,15 @@ func (s *Service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequ
 	}
 
 	if err := s.repo.CreateMaster(ctx, master); err != nil {
-		_ = s.auth.DeleteAccount(ctx, userID)
+		_ = s.auth.DeleteUserByID(ctx, userID)
 		return nil, fmt.Errorf("[%s]: create master profile: %w", op, mapError(err))
 	}
 
 	return &dto.RegisterMasterResponse{
 		UserID:   userID.String(),
 		MasterID: master.ID.String(),
-		Email:    req.Email,
 		Role:     string(model.RoleMaster),
 	}, nil
-}
-
-func (s *Service) CreateMaster(ctx context.Context, userIDStr string, req dto.CreateMasterRequest) (*dto.Master, error) {
-	const op = "catalog.service.CreateMaster"
-
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("[%s]: invalid user id: %w", op, err)
-	}
-
-	categoryID, err := uuid.Parse(req.CategoryID)
-	if err != nil {
-		return nil, fmt.Errorf("[%s]: invalid category id: %w", op, err)
-	}
-
-	tz := req.Timezone
-	if tz == "" {
-		tz = "Europe/Moscow"
-	}
-
-	if _, err := time.LoadLocation(tz); err != nil {
-		return nil, fmt.Errorf("[%s]: %w", op, ErrInvalidTimezone)
-	}
-
-	masterModel := model.Master{
-		ID:           uuid.New(),
-		UserID:       userID,
-		CategoryID:   categoryID,
-		FirstName:    req.FirstName,
-		LastName:     req.LastName,
-		Phone:        req.Phone,
-		Address:      req.Address,
-		City:         req.City,
-		Bio:          req.Bio,
-		Timezone:     tz,
-		Lat:          req.Lat,
-		Lon:          req.Lon,
-		Rating:       0,
-		ReviewCount:  0,
-		ReportsCount: 0,
-		IsBlocked:    false,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
-	}
-
-	if err := s.repo.CreateMaster(ctx, masterModel); err != nil {
-		return nil, fmt.Errorf("[%s]: failed to create master: %w", op, mapError(err))
-	}
-
-	return s.mapMasterToDTO(&masterModel), nil
 }
 
 func (s *Service) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto.Master, error) {

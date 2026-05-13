@@ -23,7 +23,7 @@ type RegisterClientRequest struct {
 
 //easyjson:json
 type RegisterClientResponse struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	UserID   string `json:"user_id"`
+	ClientID string `json:"client_id"`
+	Role     string `json:"role"`
 }

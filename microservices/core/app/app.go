@@ -195,7 +195,7 @@ func ensureAdmin(ctx context.Context, svc *authService.AuthService, log logger.L
 		return
 	}
 
-	_, err := svc.CreateAccount(ctx, email, password, "admin")
+	_, err := svc.CreateUser(ctx, email, password, "admin")
 	if err == nil {
 		log.Infof("Admin account created: %s", email)
 		return

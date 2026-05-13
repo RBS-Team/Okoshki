@@ -18,7 +18,7 @@ func (s *Service) RegisterClient(ctx context.Context, req dto.RegisterClientRequ
 		return nil, fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
 	}
 
-	userID, err := s.auth.CreateAccount(ctx, req.Email, req.Password, string(model.RoleClient))
+	userID, err := s.auth.CreateUser(ctx, req.Email, req.Password, string(model.RoleClient))
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: create account: %w", op, err)
 	}
@@ -34,14 +34,14 @@ func (s *Service) RegisterClient(ctx context.Context, req dto.RegisterClientRequ
 	}
 
 	if err := s.repo.CreateClient(ctx, client); err != nil {
-		_ = s.auth.DeleteAccount(ctx, userID)
+		_ = s.auth.DeleteUserByID(ctx, userID)
 		return nil, fmt.Errorf("[%s]: create client profile: %w", op, mapError(err))
 	}
 
 	return &dto.RegisterClientResponse{
-		ID:    userID.String(),
-		Email: req.Email,
-		Role:  string(model.RoleClient),
+		UserID:   userID.String(),
+		ClientID: client.ID.String(),
+		Role:     string(model.RoleClient),
 	}, nil
 }
 

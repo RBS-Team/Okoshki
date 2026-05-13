@@ -14,7 +14,7 @@ import (
 
 // CreateAccount хеширует пароль, создаёт запись user и возвращает новый userID.
 // Вызывается users/service при регистрации — auth не знает про профили.
-func (a *AuthService) CreateAccount(ctx context.Context, email, password, role string) (uuid.UUID, error) {
+func (a *AuthService) CreateUser(ctx context.Context, email, password, role string) (uuid.UUID, error) {
 	const op = "auth.service.CreateAccount"
 
 	passHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -38,11 +38,6 @@ func (a *AuthService) CreateAccount(ctx context.Context, email, password, role s
 	return user.ID, nil
 }
 
-// DeleteAccount удаляет учётку по ID. Используется как компенсирующая операция в users/service.
-func (a *AuthService) DeleteAccount(ctx context.Context, id uuid.UUID) error {
-	return a.usrSaver.DeleteUserByID(ctx, id)
-}
-
 func (a *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error) {
 	const op = "auth.service.Login"
 
@@ -61,13 +56,10 @@ func (a *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 	}, nil
 }
 
-func (a *AuthService) DeleteUser(ctx context.Context, userID string) error {
+// DeleteUser удаляет учётку по ID. Используется как компенсирующая операция в users/service.
+func (a *AuthService) DeleteUserByID(ctx context.Context, id uuid.UUID) error {
 	const op = "auth.service.DeleteUser"
 
-	id, err := uuid.Parse(userID)
-	if err != nil {
-		return fmt.Errorf("[%s]: invalid user id: %w", op, err)
-	}
 
 	return a.usrSaver.DeleteUserByID(ctx, id)
 }

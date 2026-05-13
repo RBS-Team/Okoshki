@@ -39,7 +39,7 @@ func (h *Handler) RegisterClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isValidCredentials(req.Email, req.Password) || req.FirstName == "" {
+	if !isValidCredentials(req.Email, req.Password) || req.FirstName == "" || req.LastName == "" {
 		response.BadRequestJSON(w)
 		return
 	}
@@ -51,7 +51,7 @@ func (h *Handler) RegisterClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.jwtManager.NewToken(result.ID, result.Role)
+	token, err := h.jwtManager.NewToken(result.UserID, result.Role)
 	if err != nil {
 		log.Errorf("[%s]: failed to generate token: %v", op, err)
 		response.InternalErrorJSON(w)
@@ -66,7 +66,7 @@ func (h *Handler) RegisterClient(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 	})
 
-	log.Infof("[%s]: client registered: userID=%s", op, result.ID)
+	log.Infof("[%s]: client registered: userID=%s", op, result.UserID)
 	response.JSON(w, http.StatusCreated, result)
 }
 

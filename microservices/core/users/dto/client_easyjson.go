@@ -31,17 +31,17 @@ func easyjsonC0e5e3f1DecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(in *
 		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		switch key {
-		case "id":
+		case "user_id":
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.ID = string(in.String())
+				out.UserID = string(in.String())
 			}
-		case "email":
+		case "client_id":
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.Email = string(in.String())
+				out.ClientID = string(in.String())
 			}
 		case "role":
 			if in.IsNull() {
@@ -64,14 +64,14 @@ func easyjsonC0e5e3f1EncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(out 
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"id\":"
+		const prefix string = ",\"user_id\":"
 		out.RawString(prefix[1:])
-		out.String(string(in.ID))
+		out.String(string(in.UserID))
 	}
 	{
-		const prefix string = ",\"email\":"
+		const prefix string = ",\"client_id\":"
 		out.RawString(prefix)
-		out.String(string(in.Email))
+		out.String(string(in.ClientID))
 	}
 	{
 		const prefix string = ",\"role\":"

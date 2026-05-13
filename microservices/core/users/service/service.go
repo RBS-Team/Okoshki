@@ -12,8 +12,9 @@ import (
 // AccountCreator определён здесь и реализуется модулем auth (duck typing).
 // users/service не импортирует auth/service — зависимость только через интерфейс.
 type AccountCreator interface {
-	CreateAccount(ctx context.Context, email, password, role string) (uuid.UUID, error)
-	DeleteAccount(ctx context.Context, id uuid.UUID) error
+	CreateUser(ctx context.Context, email, password, role string) (uuid.UUID, error)
+	DeleteUserByID(ctx context.Context, id uuid.UUID) error
+	
 }
 
 //go:generate mockgen -destination=../../../../mocks/users/repository/repository_mock.go -package=mock_users_repo github.com/RBS-Team/Okoshki/microservices/core/users/service IRepository

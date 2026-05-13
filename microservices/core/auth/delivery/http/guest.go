@@ -12,7 +12,7 @@ import (
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
-// GuestSession godoc
+// CreateGuestSession godoc
 // @Summary      Создание гостевой сессии
 // @Description  Выдаёт временный JWT с ролью "guest". Позволяет идентифицировать гостя. При попытке записи к мастеру возвращает 401 с кодом "registration_required".
 // @Tags         auth
@@ -20,14 +20,14 @@ import (
 // @Success      200 {object} dto.GuestSessionResponse
 // @Failure      500 {object} response.ErrorResponse
 // @Router       /guest/session [post]
-func (h *AuthHandler) GuestSession(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) CreateGuestSession(w http.ResponseWriter, r *http.Request) {
 	const op = "handler.GuestSession"
 	log := middleware.LoggerFromContext(r.Context())
 
 	// Если уже есть валидный гостевой токен — возвращаем тот же guest_id.
 	if cookie, err := r.Cookie(sessionTokenCookie); err == nil {
 		if claims, err := h.jwtManager.Validate(cookie.Value); err == nil && claims.Role == string(model.RoleGuest) {
-			response.JSON(w, http.StatusOK, dto.GuestSessionResponse{GuestID: claims.Subject})
+			response.JSON(w, http.StatusOK, dto.GuestSessionResponse{GuestID: claims.Subject, Role: claims.Role})
 			return
 		}
 	}
@@ -48,5 +48,5 @@ func (h *AuthHandler) GuestSession(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 	})
 
-	response.JSON(w, http.StatusOK, dto.GuestSessionResponse{GuestID: guestID})
+	response.JSON(w, http.StatusOK, dto.GuestSessionResponse{GuestID: guestID, Role: string(model.RoleGuest)})
 }

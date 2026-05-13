@@ -55,7 +55,6 @@ type RegisterMasterRequest struct {
 type RegisterMasterResponse struct {
 	UserID   string `json:"user_id"`
 	MasterID string `json:"master_id"`
-	Email    string `json:"email"`
 	Role     string `json:"role"`
 }
 
