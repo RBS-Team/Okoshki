@@ -43,7 +43,7 @@ func (s *Service) CreateServiceItem(ctx context.Context, masterID uuid.UUID, req
 	}
 
 	if err := s.repo.CreateServiceItem(ctx, itemModel); err != nil {
-		return nil, fmt.Errorf("[%s]: failed to create service item: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: failed to create service item: %w", op, err)
 	}
 
 	return mapServiceItemModelToDTO(&itemModel), nil
@@ -54,7 +54,7 @@ func (s *Service) GetServiceItemsByMasterID(ctx context.Context, masterID uuid.U
 
 	itemModels, err := s.repo.GetServiceItemsByMasterID(ctx, masterID)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: failed to get service items: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: failed to get service items: %w", op, err)
 	}
 
 	if len(itemModels) == 0 {
@@ -74,12 +74,12 @@ func (s *Service) GetServicesByCategory(ctx context.Context, categoryID uuid.UUI
 
 	_, err := s.repo.GetCategoryByID(ctx, categoryID)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: failed to validate category: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: failed to validate category: %w", op, err)
 	}
 
 	serviceModels, err := s.repo.GetServicesByCategoryID(ctx, categoryID, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: failed to get services: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: failed to get services: %w", op, err)
 	}
 
 	if len(serviceModels) == 0 {
@@ -97,7 +97,7 @@ func (s *Service) GetServicesByCategory(ctx context.Context, categoryID uuid.UUI
 
 	masters, err := s.masters.GetMastersByIDs(ctx, masterIDs)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: failed to get masters for services: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: failed to get masters for services: %w", op, err)
 	}
 
 	mastersMap := make(map[uuid.UUID]usersDTO.Master, len(masters))
@@ -146,7 +146,7 @@ func (s *Service) GetServiceItemByID(ctx context.Context, id uuid.UUID) (*dto.Se
 
 	itemModel, err := s.repo.GetServiceItemByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	return mapServiceItemModelToDTO(itemModel), nil

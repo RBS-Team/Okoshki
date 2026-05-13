@@ -8,7 +8,7 @@ import (
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
-	"github.com/RBS-Team/Okoshki/microservices/core/users/service"
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
@@ -203,11 +203,11 @@ func (h *Handler) DeletePortfolioPhoto(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) handlePortfolioError(w http.ResponseWriter, err error) {
 	switch {
-	case errors.Is(err, service.ErrForbidden):
+	case errors.Is(err, domain.ErrForbidden):
 		response.ForbiddenJSON(w)
-	case errors.Is(err, service.ErrNotFound):
+	case errors.Is(err, domain.ErrNotFound):
 		response.NotFoundJSON(w)
-	case errors.Is(err, service.ErrInvalidInput):
+	case errors.Is(err, domain.ErrInvalidInput):
 		response.BadRequestJSON(w)
 	default:
 		response.InternalErrorJSON(w)

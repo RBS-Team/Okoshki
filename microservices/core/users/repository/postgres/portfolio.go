@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
@@ -83,7 +84,7 @@ func (r *Repository) GetPortfolioPhotoByID(ctx context.Context, photoID uuid.UUI
 	`, photoID).Scan(&p.ID, &p.MasterID, &p.ObjectName, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrNotFound
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrNotFound)
 		}
 		return nil, fmt.Errorf("[%s]: query: %w", op, err)
 	}
@@ -106,7 +107,7 @@ func (r *Repository) DeletePortfolioPhotoByID(ctx context.Context, photoID uuid.
 		return fmt.Errorf("[%s]: rows affected: %w", op, err)
 	}
 	if n == 0 {
-		return ErrNotFound
+		return fmt.Errorf("[%s]: %w", op, domain.ErrNotFound)
 	}
 
 	return nil

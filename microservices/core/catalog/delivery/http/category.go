@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
-	"github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
@@ -87,7 +87,7 @@ func (h *Handler) UploadCategoryAvatar(w http.ResponseWriter, r *http.Request) {
 	defer fh.Close()
 
 	if err := h.service.UploadCategoryAvatar(r.Context(), categoryIDStr, fh, header.Size, ct); err != nil {
-		if !errors.Is(err, service.ErrNotFound) {
+		if !errors.Is(err, domain.ErrNotFound) {
 			log.Errorf("[%s]: service error: %v", op, err)
 		}
 		h.handleError(w, err)
@@ -152,7 +152,7 @@ func (h *Handler) GetCategoryByID(w http.ResponseWriter, r *http.Request) {
 
 	category, err := h.service.GetCategoryByID(r.Context(), id)
 	if err != nil {
-		if !errors.Is(err, service.ErrNotFound) {
+		if !errors.Is(err, domain.ErrNotFound) {
 			log.Errorf("[%s]: Service error: %v", op, err)
 		}
 		h.handleError(w, err)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 )
@@ -16,7 +17,7 @@ func (s *Service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequ
 
 	categoryID, err := uuid.Parse(req.CategoryID)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: invalid category_id: %w", op, ErrInvalidInput)
+		return nil, fmt.Errorf("[%s]: invalid category_id: %w", op, domain.ErrInvalidInput)
 	}
 
 	tz := req.Timezone
@@ -24,7 +25,7 @@ func (s *Service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequ
 		tz = "Europe/Moscow"
 	}
 	if _, err := time.LoadLocation(tz); err != nil {
-		return nil, fmt.Errorf("[%s]: %w", op, ErrInvalidTimezone)
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidTimezone)
 	}
 
 	userID, err := s.auth.CreateUser(ctx, req.Email, req.Password, string(model.RoleMaster))
@@ -55,7 +56,7 @@ func (s *Service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequ
 
 	if err := s.repo.CreateMaster(ctx, master); err != nil {
 		_ = s.auth.DeleteUserByID(ctx, userID)
-		return nil, fmt.Errorf("[%s]: create master profile: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: create master profile: %w", op, err)
 	}
 
 	return &dto.RegisterMasterResponse{
@@ -70,7 +71,7 @@ func (s *Service) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto
 
 	masterModel, err := s.repo.GetMasterByUserID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: failed to get master by user id: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: failed to get master by user id: %w", op, err)
 	}
 
 	return s.mapMasterToDTO(masterModel), nil
@@ -81,7 +82,7 @@ func (s *Service) GetMastersByCategory(ctx context.Context, categoryID uuid.UUID
 
 	masterModels, err := s.repo.GetMastersByCategoryID(ctx, categoryID, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: failed to get masters by category: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: failed to get masters by category: %w", op, err)
 	}
 
 	if len(masterModels) == 0 {
@@ -102,7 +103,7 @@ func (s *Service) GetMasterByID(ctx context.Context, id uuid.UUID) (*dto.Master,
 
 	m, err := s.repo.GetMasterByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	return s.mapMasterToDTO(m), nil
@@ -114,7 +115,7 @@ func (s *Service) GetAllMasters(ctx context.Context, limit, offset uint64) ([]dt
 
 	masters, err := s.repo.GetAllMasters(ctx, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	if len(masters) == 0 {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
@@ -17,21 +18,21 @@ func (s *Service) UploadMasterAvatar(ctx context.Context, userIDStr, masterIDStr
 
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		return "", fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+		return "", fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
 	masterID, err := uuid.Parse(masterIDStr)
 	if err != nil {
-		return "", fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+		return "", fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
 	master, err := s.repo.GetMasterByID(ctx, masterID)
 	if err != nil {
-		return "", fmt.Errorf("[%s]: get master: %w", op, mapError(err))
+		return "", fmt.Errorf("[%s]: get master: %w", op, err)
 	}
 
 	if master.UserID != userID {
-		return "", fmt.Errorf("[%s]: %w", op, ErrForbidden)
+		return "", fmt.Errorf("[%s]: %w", op, domain.ErrForbidden)
 	}
 
 	objectName, err := s.storage.Upload(ctx, minioPkg.ObjectInfo{
@@ -61,12 +62,12 @@ func (s *Service) UploadClientAvatar(ctx context.Context, userIDStr string, file
 
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		return "", fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+		return "", fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
 	client, err := s.repo.GetClientByUserID(ctx, userID)
 	if err != nil {
-		return "", fmt.Errorf("[%s]: get client: %w", op, mapError(err))
+		return "", fmt.Errorf("[%s]: get client: %w", op, err)
 	}
 
 	objectName, err := s.storage.Upload(ctx, minioPkg.ObjectInfo{

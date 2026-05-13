@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 )
@@ -15,7 +16,7 @@ func (s *Service) RegisterClient(ctx context.Context, req dto.RegisterClientRequ
 	const op = "users.service.RegisterClient"
 
 	if req.FirstName == "" {
-		return nil, fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
 	userID, err := s.auth.CreateUser(ctx, req.Email, req.Password, string(model.RoleClient))
@@ -35,7 +36,7 @@ func (s *Service) RegisterClient(ctx context.Context, req dto.RegisterClientRequ
 
 	if err := s.repo.CreateClient(ctx, client); err != nil {
 		_ = s.auth.DeleteUserByID(ctx, userID)
-		return nil, fmt.Errorf("[%s]: create client profile: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: create client profile: %w", op, err)
 	}
 
 	return &dto.RegisterClientResponse{

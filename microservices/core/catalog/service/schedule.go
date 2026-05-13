@@ -65,7 +65,7 @@ func (s *Service) UpsertWorkingHours(ctx context.Context, masterID uuid.UUID, re
 	}
 
 	if err := s.repo.UpsertWorkingHours(ctx, masterID, hoursModels); err != nil {
-		return fmt.Errorf("[%s]: %w", op, mapError(err))
+		return fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	return nil
@@ -76,7 +76,7 @@ func (s *Service) GetWorkingHours(ctx context.Context, masterID uuid.UUID) ([]dt
 
 	hours, err := s.repo.GetWorkingHoursByMasterID(ctx, masterID)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	dtos := make([]dto.WorkingHours, 0, len(hours))
@@ -132,7 +132,7 @@ func (s *Service) CreateScheduleException(ctx context.Context, masterID uuid.UUI
 	}
 
 	if err := s.repo.CreateScheduleException(ctx, excModel); err != nil {
-		return nil, fmt.Errorf("[%s]: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	return mapExceptionModelToDTO(&excModel), nil
@@ -143,7 +143,7 @@ func (s *Service) UpdateScheduleException(ctx context.Context, masterID, excepti
 
 	existing, err := s.repo.GetScheduleExceptionByID(ctx, masterID, exceptionID)
 	if err != nil {
-		return fmt.Errorf("[%s]: %w", op, mapError(err))
+		return fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	isWorking := existing.IsWorking
@@ -192,7 +192,7 @@ func (s *Service) UpdateScheduleException(ctx context.Context, masterID, excepti
 	}
 
 	if err := s.repo.UpdateScheduleException(ctx, masterID, exceptionID, upd); err != nil {
-		return fmt.Errorf("[%s]: %w", op, mapError(err))
+		return fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	return nil
@@ -202,7 +202,7 @@ func (s *Service) DeleteScheduleException(ctx context.Context, masterID, excepti
 	const op = "catalog.service.DeleteScheduleException"
 
 	if err := s.repo.DeleteScheduleException(ctx, masterID, exceptionID); err != nil {
-		return fmt.Errorf("[%s]: %w", op, mapError(err))
+		return fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	return nil
@@ -223,7 +223,7 @@ func (s *Service) GetScheduleExceptions(ctx context.Context, masterID uuid.UUID,
 
 	exceptions, err := s.repo.GetScheduleExceptions(ctx, masterID, startDate, endDate)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	dtos := make([]dto.ScheduleException, 0, len(exceptions))

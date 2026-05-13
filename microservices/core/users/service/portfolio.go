@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
@@ -23,21 +24,21 @@ func (s *Service) UploadPortfolioPhotos(
 
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
 	masterID, err := uuid.Parse(masterIDStr)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
 	authedMaster, err := s.repo.GetMasterByUserID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: get master: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: get master: %w", op, err)
 	}
 
 	if authedMaster.ID != masterID {
-		return nil, fmt.Errorf("[%s]: %w", op, ErrForbidden)
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrForbidden)
 	}
 
 	now := time.Now()
@@ -76,12 +77,12 @@ func (s *Service) GetPortfolioPhotos(ctx context.Context, masterIDStr string) ([
 
 	masterID, err := uuid.Parse(masterIDStr)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
 	photos, err := s.repo.GetPortfolioPhotosByMasterID(ctx, masterID)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: get photos: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: get photos: %w", op, err)
 	}
 
 	if len(photos) == 0 {
@@ -96,35 +97,35 @@ func (s *Service) DeletePortfolioPhoto(ctx context.Context, userIDStr, masterIDS
 
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		return fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+		return fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
 	masterID, err := uuid.Parse(masterIDStr)
 	if err != nil {
-		return fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+		return fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
 	photoID, err := uuid.Parse(photoIDStr)
 	if err != nil {
-		return fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+		return fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
 	authedMaster, err := s.repo.GetMasterByUserID(ctx, userID)
 	if err != nil {
-		return fmt.Errorf("[%s]: get master: %w", op, mapError(err))
+		return fmt.Errorf("[%s]: get master: %w", op, err)
 	}
 
 	if authedMaster.ID != masterID {
-		return fmt.Errorf("[%s]: %w", op, ErrForbidden)
+		return fmt.Errorf("[%s]: %w", op, domain.ErrForbidden)
 	}
 
 	photo, err := s.repo.GetPortfolioPhotoByID(ctx, photoID)
 	if err != nil {
-		return fmt.Errorf("[%s]: get photo: %w", op, mapError(err))
+		return fmt.Errorf("[%s]: get photo: %w", op, err)
 	}
 
 	if photo.MasterID != masterID {
-		return fmt.Errorf("[%s]: %w", op, ErrForbidden)
+		return fmt.Errorf("[%s]: %w", op, domain.ErrForbidden)
 	}
 
 	if err := s.storage.Remove(ctx, portfolioBucket, photo.ObjectName); err != nil {
@@ -132,7 +133,7 @@ func (s *Service) DeletePortfolioPhoto(ctx context.Context, userIDStr, masterIDS
 	}
 
 	if err := s.repo.DeletePortfolioPhotoByID(ctx, photoID); err != nil {
-		return fmt.Errorf("[%s]: delete from db: %w", op, mapError(err))
+		return fmt.Errorf("[%s]: delete from db: %w", op, err)
 	}
 
 	return nil

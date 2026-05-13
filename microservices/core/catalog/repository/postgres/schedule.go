@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
@@ -126,7 +127,7 @@ func (r *Repository) GetScheduleExceptionByID(ctx context.Context, masterID, exc
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrNotFound
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrNotFound)
 		}
 		return nil, fmt.Errorf("[%s]: scan failed: %w", op, err)
 	}
@@ -219,7 +220,7 @@ func (r *Repository) UpdateScheduleException(ctx context.Context, masterID, exce
 		return fmt.Errorf("[%s]: could not get rows affected: %w", op, err)
 	}
 	if rowsAffected == 0 {
-		return ErrNotFound
+		return fmt.Errorf("[%s]: %w", op, domain.ErrNotFound)
 	}
 
 	return nil
@@ -241,7 +242,7 @@ func (r *Repository) DeleteScheduleException(ctx context.Context, masterID, exce
 	}
 
 	if rowsAffected == 0 {
-		return ErrNotFound
+		return fmt.Errorf("[%s]: %w", op, domain.ErrNotFound)
 	}
 
 	return nil

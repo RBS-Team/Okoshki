@@ -15,6 +15,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	_ "github.com/RBS-Team/Okoshki/docs" // сгенерированная документация
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/internal/server"
 	authHtpp "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
@@ -200,7 +201,7 @@ func ensureAdmin(ctx context.Context, svc *authService.AuthService, log logger.L
 		log.Infof("Admin account created: %s", email)
 		return
 	}
-	if errors.Is(err, authService.ErrConflict) {
+	if errors.Is(err, domain.ErrConflict) {
 		return
 	}
 	log.Warnf("Failed to create admin account: %v", err)

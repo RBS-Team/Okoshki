@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
@@ -19,7 +20,7 @@ func (s *Service) GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Categ
 
 	catModel, err := s.repo.GetCategoryByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: failed to get category: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: failed to get category: %w", op, err)
 	}
 
 	return s.mapCategoryToDTO(catModel), nil
@@ -30,7 +31,7 @@ func (s *Service) GetAllCategories(ctx context.Context) ([]*dto.Category, error)
 
 	catModels, err := s.repo.GetAllCategories(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: failed to get categories from repo: %w", op, mapError(err))
+		return nil, fmt.Errorf("[%s]: failed to get categories from repo: %w", op, err)
 	}
 
 	categories := make([]*dto.Category, 0, len(catModels))
@@ -46,12 +47,12 @@ func (s *Service) UploadCategoryAvatar(ctx context.Context, categoryIDStr string
 
 	categoryID, err := uuid.Parse(categoryIDStr)
 	if err != nil {
-		return fmt.Errorf("[%s]: %w", op, ErrInvalidInput)
+		return fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
 	cat, err := s.repo.GetCategoryByID(ctx, categoryID)
 	if err != nil {
-		return fmt.Errorf("[%s]: get category: %w", op, mapError(err))
+		return fmt.Errorf("[%s]: get category: %w", op, err)
 	}
 
 	objectName, err := s.storage.Upload(ctx, minioPkg.ObjectInfo{

@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/auth/dto"
 )
@@ -32,7 +33,7 @@ func (a *AuthService) CreateUser(ctx context.Context, email, password, role stri
 	}
 
 	if err := a.usrSaver.CreateUser(ctx, user); err != nil {
-		return uuid.Nil, mapRepositoryError(err)
+		return uuid.Nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	return user.ID, nil
@@ -43,11 +44,11 @@ func (a *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 
 	user, err := a.usrProvider.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		return nil, mapRepositoryError(err)
+		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
-		return nil, fmt.Errorf("[%s]: invalid credentials: %w", op, ErrValidation)
+		return nil, fmt.Errorf("[%s]: invalid credentials: %w", op, domain.ErrUnauthorized)
 	}
 
 	return &dto.LoginResponse{
@@ -58,9 +59,5 @@ func (a *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 
 // DeleteUser удаляет учётку по ID. Используется как компенсирующая операция в users/service.
 func (a *AuthService) DeleteUserByID(ctx context.Context, id uuid.UUID) error {
-	const op = "auth.service.DeleteUser"
-
-
 	return a.usrSaver.DeleteUserByID(ctx, id)
 }
-

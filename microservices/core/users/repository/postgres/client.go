@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
@@ -46,7 +47,7 @@ func (r *Repository) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*
 	).Scan(&c.ID, &c.UserID, &c.FirstName, &c.Phone, &c.AvatarURL, &c.CreatedAt, &c.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrNotFound
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrNotFound)
 		}
 		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}

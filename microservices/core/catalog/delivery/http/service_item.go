@@ -10,7 +10,7 @@ import (
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
-	"github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
@@ -103,7 +103,7 @@ func (h *Handler) GetServiceItemsByMasterID(w http.ResponseWriter, r *http.Reque
 
 	items, err := h.service.GetServiceItemsByMasterID(r.Context(), masterID)
 	if err != nil {
-		if !errors.Is(err, service.ErrNotFound) {
+		if !errors.Is(err, domain.ErrNotFound) {
 			log.Errorf("[%s]: service error: %v", op, err)
 		}
 		h.handleServiceItemError(w, err)
@@ -146,7 +146,7 @@ func (h *Handler) GetServicesByCategory(w http.ResponseWriter, r *http.Request) 
 
 	items, err := h.service.GetServicesByCategory(r.Context(), categoryID, limit, offset)
 	if err != nil {
-		if !errors.Is(err, service.ErrNotFound) {
+		if !errors.Is(err, domain.ErrNotFound) {
 		}
 		h.handleServiceItemError(w, err)
 		return
