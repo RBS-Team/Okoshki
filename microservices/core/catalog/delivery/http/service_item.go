@@ -50,12 +50,12 @@ func (h *Handler) CreateServiceItem(w http.ResponseWriter, r *http.Request) {
 
 	var req dto.CreateServiceItemRequest
 	if err := easyjson.UnmarshalFromReader(r.Body, &req); err != nil {
-		log.Warnf("[%s]: failed to unmarshal request: %v", op, err)
+		log.Warnf("[%s]: failed to unmarshal request: %v", op, err) 
 		response.BadRequestJSON(w)
 		return
 	}
 
-	if req.Title == "" || req.CategoryID == "" || req.DurationMinutes <= 0 || req.Price < 0 || req.Address == ""{
+	if req.CategoryID == "" || req.Title == "" || req.Address == "" || req.City == "" || req.Price < 0  || req.DurationMinutes <= 0 {
 		log.Warnf("[%s]: invalid request fields", op)
 		response.BadRequestJSON(w)
 		return
