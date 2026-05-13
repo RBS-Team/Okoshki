@@ -43,6 +43,18 @@ func easyjsonC0e5e3f1DecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(in *
 			} else {
 				out.ClientID = string(in.String())
 			}
+		case "first_name":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.FirstName = string(in.String())
+			}
+		case "last_name":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.LastName = string(in.String())
+			}
 		case "role":
 			if in.IsNull() {
 				in.Skip()
@@ -72,6 +84,16 @@ func easyjsonC0e5e3f1EncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto(out 
 		const prefix string = ",\"client_id\":"
 		out.RawString(prefix)
 		out.String(string(in.ClientID))
+	}
+	{
+		const prefix string = ",\"first_name\":"
+		out.RawString(prefix)
+		out.String(string(in.FirstName))
+	}
+	{
+		const prefix string = ",\"last_name\":"
+		out.RawString(prefix)
+		out.String(string(in.LastName))
 	}
 	{
 		const prefix string = ",\"role\":"

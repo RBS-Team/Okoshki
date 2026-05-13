@@ -25,5 +25,7 @@ type RegisterClientRequest struct {
 type RegisterClientResponse struct {
 	UserID   string `json:"user_id"`
 	ClientID string `json:"client_id"`
+	FirstName string  `json:"first_name"`
+	LastName  string  `json:"last_name"`
 	Role     string `json:"role"`
 }

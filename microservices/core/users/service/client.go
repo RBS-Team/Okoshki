@@ -40,9 +40,11 @@ func (s *Service) RegisterClient(ctx context.Context, req dto.RegisterClientRequ
 	}
 
 	return &dto.RegisterClientResponse{
-		UserID:   userID.String(),
-		ClientID: client.ID.String(),
-		Role:     string(model.RoleClient),
+		UserID:    userID.String(),
+		ClientID:  client.ID.String(),
+		FirstName: client.FirstName,
+		LastName:  client.LastName,
+		Role:      string(model.RoleClient),
 	}, nil
 }
 

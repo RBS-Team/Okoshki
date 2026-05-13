@@ -53,9 +53,11 @@ type RegisterMasterRequest struct {
 
 //easyjson:json
 type RegisterMasterResponse struct {
-	UserID   string `json:"user_id"`
-	MasterID string `json:"master_id"`
-	Role     string `json:"role"`
+	UserID    string `json:"user_id"`
+	MasterID  string `json:"master_id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Role      string `json:"role"`
 }
 
 //easyjson:json

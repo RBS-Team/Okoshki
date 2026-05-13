@@ -333,6 +333,18 @@ func easyjsonB30beec6DecodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto1(in 
 			} else {
 				out.MasterID = string(in.String())
 			}
+		case "first_name":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.FirstName = string(in.String())
+			}
+		case "last_name":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.LastName = string(in.String())
+			}
 		case "role":
 			if in.IsNull() {
 				in.Skip()
@@ -362,6 +374,16 @@ func easyjsonB30beec6EncodeGithubComRBSTeamOkoshkiMicroservicesCoreUsersDto1(out
 		const prefix string = ",\"master_id\":"
 		out.RawString(prefix)
 		out.String(string(in.MasterID))
+	}
+	{
+		const prefix string = ",\"first_name\":"
+		out.RawString(prefix)
+		out.String(string(in.FirstName))
+	}
+	{
+		const prefix string = ",\"last_name\":"
+		out.RawString(prefix)
+		out.String(string(in.LastName))
 	}
 	{
 		const prefix string = ",\"role\":"

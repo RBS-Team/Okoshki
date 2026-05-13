@@ -60,9 +60,11 @@ func (s *Service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequ
 	}
 
 	return &dto.RegisterMasterResponse{
-		UserID:   userID.String(),
-		MasterID: master.ID.String(),
-		Role:     string(model.RoleMaster),
+		UserID:    userID.String(),
+		MasterID:  master.ID.String(),
+		FirstName: master.FirstName,
+		LastName:  master.LastName,
+		Role:      string(model.RoleMaster),
 	}, nil
 }
 
