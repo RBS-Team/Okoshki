@@ -87,6 +87,34 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(in
 			} else {
 				out.DurationMinutes = int(in.Int())
 			}
+		case "lat":
+			if in.IsNull() {
+				in.Skip()
+				out.Lat = nil
+			} else {
+				if out.Lat == nil {
+					out.Lat = new(float64)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.Lat = float64(in.Float64())
+				}
+			}
+		case "lon":
+			if in.IsNull() {
+				in.Skip()
+				out.Lon = nil
+			} else {
+				if out.Lon == nil {
+					out.Lon = new(float64)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.Lon = float64(in.Float64())
+				}
+			}
 		case "is_active":
 			if in.IsNull() {
 				in.Skip()
@@ -169,32 +197,32 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(in
 			} else {
 				out.Timezone = string(in.String())
 			}
-		case "lat":
+		case "master_lat":
 			if in.IsNull() {
 				in.Skip()
-				out.Lat = nil
+				out.MasterLat = nil
 			} else {
-				if out.Lat == nil {
-					out.Lat = new(float64)
+				if out.MasterLat == nil {
+					out.MasterLat = new(float64)
 				}
 				if in.IsNull() {
 					in.Skip()
 				} else {
-					*out.Lat = float64(in.Float64())
+					*out.MasterLat = float64(in.Float64())
 				}
 			}
-		case "lon":
+		case "master_lon":
 			if in.IsNull() {
 				in.Skip()
-				out.Lon = nil
+				out.MasterLon = nil
 			} else {
-				if out.Lon == nil {
-					out.Lon = new(float64)
+				if out.MasterLon == nil {
+					out.MasterLon = new(float64)
 				}
 				if in.IsNull() {
 					in.Skip()
 				} else {
-					*out.Lon = float64(in.Float64())
+					*out.MasterLon = float64(in.Float64())
 				}
 			}
 		case "rating":
@@ -263,6 +291,16 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(ou
 		out.RawString(prefix)
 		out.Int(int(in.DurationMinutes))
 	}
+	if in.Lat != nil {
+		const prefix string = ",\"lat\":"
+		out.RawString(prefix)
+		out.Float64(float64(*in.Lat))
+	}
+	if in.Lon != nil {
+		const prefix string = ",\"lon\":"
+		out.RawString(prefix)
+		out.Float64(float64(*in.Lon))
+	}
 	{
 		const prefix string = ",\"is_active\":"
 		out.RawString(prefix)
@@ -318,15 +356,15 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(ou
 		out.RawString(prefix)
 		out.String(string(in.Timezone))
 	}
-	if in.Lat != nil {
-		const prefix string = ",\"lat\":"
+	if in.MasterLat != nil {
+		const prefix string = ",\"master_lat\":"
 		out.RawString(prefix)
-		out.Float64(float64(*in.Lat))
+		out.Float64(float64(*in.MasterLat))
 	}
-	if in.Lon != nil {
-		const prefix string = ",\"lon\":"
+	if in.MasterLon != nil {
+		const prefix string = ",\"master_lon\":"
 		out.RawString(prefix)
-		out.Float64(float64(*in.Lon))
+		out.Float64(float64(*in.MasterLon))
 	}
 	{
 		const prefix string = ",\"rating\":"
@@ -440,6 +478,34 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto1(i
 			} else {
 				out.DurationMinutes = int(in.Int())
 			}
+		case "lat":
+			if in.IsNull() {
+				in.Skip()
+				out.Lat = nil
+			} else {
+				if out.Lat == nil {
+					out.Lat = new(float64)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.Lat = float64(in.Float64())
+				}
+			}
+		case "lon":
+			if in.IsNull() {
+				in.Skip()
+				out.Lon = nil
+			} else {
+				if out.Lon == nil {
+					out.Lon = new(float64)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.Lon = float64(in.Float64())
+				}
+			}
 		case "is_active":
 			if in.IsNull() {
 				in.Skip()
@@ -510,6 +576,16 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto1(o
 		const prefix string = ",\"duration_minutes\":"
 		out.RawString(prefix)
 		out.Int(int(in.DurationMinutes))
+	}
+	if in.Lat != nil {
+		const prefix string = ",\"lat\":"
+		out.RawString(prefix)
+		out.Float64(float64(*in.Lat))
+	}
+	if in.Lon != nil {
+		const prefix string = ",\"lon\":"
+		out.RawString(prefix)
+		out.Float64(float64(*in.Lon))
 	}
 	{
 		const prefix string = ",\"is_active\":"
@@ -611,6 +687,34 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(i
 			} else {
 				out.DurationMinutes = int(in.Int())
 			}
+		case "lat":
+			if in.IsNull() {
+				in.Skip()
+				out.Lat = nil
+			} else {
+				if out.Lat == nil {
+					out.Lat = new(float64)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.Lat = float64(in.Float64())
+				}
+			}
+		case "lon":
+			if in.IsNull() {
+				in.Skip()
+				out.Lon = nil
+			} else {
+				if out.Lon == nil {
+					out.Lon = new(float64)
+				}
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					*out.Lon = float64(in.Float64())
+				}
+			}
 		case "is_auto_confirm":
 			if in.IsNull() {
 				in.Skip()
@@ -673,6 +777,16 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(o
 		const prefix string = ",\"duration_minutes\":"
 		out.RawString(prefix)
 		out.Int(int(in.DurationMinutes))
+	}
+	if in.Lat != nil {
+		const prefix string = ",\"lat\":"
+		out.RawString(prefix)
+		out.Float64(float64(*in.Lat))
+	}
+	if in.Lon != nil {
+		const prefix string = ",\"lon\":"
+		out.RawString(prefix)
+		out.Float64(float64(*in.Lon))
 	}
 	if in.IsAutoConfirm != nil {
 		const prefix string = ",\"is_auto_confirm\":"

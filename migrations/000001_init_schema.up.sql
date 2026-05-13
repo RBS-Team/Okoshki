@@ -72,19 +72,21 @@ FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 -- master_services
 
 CREATE TABLE IF NOT EXISTS master_services (
-    id                    UUID           PRIMARY KEY DEFAULT uuid_generate_v4(),
-    master_id             UUID           NOT NULL REFERENCES masters(id) ON DELETE CASCADE,
-    category_id           UUID           NOT NULL REFERENCES category(id) ON DELETE RESTRICT,
-    title                 VARCHAR(255)   NOT NULL,
-    address               TEXT           NOT NULL,
-    city                  TEXT           NOT NULL,
-    description           TEXT,
-    price                 BIGINT NOT NULL,
-    duration_minutes      INT            NOT NULL,
-    is_active             BOOLEAN        DEFAULT TRUE,
-    is_auto_confirm       BOOLEAN        DEFAULT TRUE,
-    created_at            TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at            TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    id               UUID           PRIMARY KEY DEFAULT uuid_generate_v4(),
+    master_id        UUID           NOT NULL REFERENCES masters(id) ON DELETE CASCADE,
+    category_id      UUID           NOT NULL REFERENCES category(id) ON DELETE RESTRICT,
+    title            VARCHAR(255)   NOT NULL,
+    address          TEXT           NOT NULL,
+    city             TEXT           NOT NULL,
+    description      TEXT,
+    price            BIGINT         NOT NULL,
+    duration_minutes INT            NOT NULL,
+    lat              DOUBLE PRECISION,
+    lon              DOUBLE PRECISION,
+    is_active        BOOLEAN        DEFAULT TRUE,
+    is_auto_confirm  BOOLEAN        DEFAULT TRUE,
+    created_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TRIGGER update_master_services_modtime

@@ -16,6 +16,8 @@ type ServiceItem struct {
 	Description     *string
 	Price           int64
 	DurationMinutes int
+	Lat             *float64
+	Lon             *float64
 	IsActive        bool
 	IsAutoConfirm   bool
 	CreatedAt       time.Time
