@@ -46,7 +46,7 @@ func (h *Handler) UpsertWorkingHours(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.service.UpsertWorkingHours(r.Context(), masterID, req); err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
-		h.handleScheduleError(w, err)
+		h.handleError(w, err)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (h *Handler) GetWorkingHours(w http.ResponseWriter, r *http.Request) {
 	hours, err := h.service.GetWorkingHours(r.Context(), masterID)
 	if err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
-		h.handleScheduleError(w, err)
+		h.handleError(w, err)
 		return
 	}
 
@@ -110,7 +110,7 @@ func (h *Handler) CreateScheduleException(w http.ResponseWriter, r *http.Request
 	exc, err := h.service.CreateScheduleException(r.Context(), masterID, req)
 	if err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
-		h.handleScheduleError(w, err)
+		h.handleError(w, err)
 		return
 	}
 
@@ -153,7 +153,7 @@ func (h *Handler) UpdateScheduleException(w http.ResponseWriter, r *http.Request
 
 	if err := h.service.UpdateScheduleException(r.Context(), masterID, exceptionID, req); err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
-		h.handleScheduleError(w, err)
+		h.handleError(w, err)
 		return
 	}
 
@@ -186,7 +186,7 @@ func (h *Handler) DeleteScheduleException(w http.ResponseWriter, r *http.Request
 
 	if err := h.service.DeleteScheduleException(r.Context(), masterID, exceptionID); err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
-		h.handleScheduleError(w, err)
+		h.handleError(w, err)
 		return
 	}
 
@@ -223,7 +223,7 @@ func (h *Handler) GetScheduleExceptions(w http.ResponseWriter, r *http.Request) 
 	exceptions, err := h.service.GetScheduleExceptions(r.Context(), masterID, startDate, endDate)
 	if err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
-		h.handleScheduleError(w, err)
+		h.handleError(w, err)
 		return
 	}
 

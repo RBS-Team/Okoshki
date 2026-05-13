@@ -49,6 +49,18 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(in
 			} else {
 				out.Title = string(in.String())
 			}
+		case "address":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.Address = string(in.String())
+			}
+		case "city":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.City = string(in.String())
+			}
 		case "description":
 			if in.IsNull() {
 				in.Skip()
@@ -67,25 +79,13 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(in
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.Price = float64(in.Float64())
+				out.Price = int64(in.Int64())
 			}
 		case "duration_minutes":
 			if in.IsNull() {
 				in.Skip()
 			} else {
 				out.DurationMinutes = int(in.Int())
-			}
-		case "buffer_before_minutes":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				out.BufferBeforeMinutes = int(in.Int())
-			}
-		case "buffer_after_minutes":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				out.BufferAfterMinutes = int(in.Int())
 			}
 		case "is_active":
 			if in.IsNull() {
@@ -117,17 +117,23 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(in
 			} else {
 				out.LastName = string(in.String())
 			}
-		case "address":
+		case "phone":
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.Address = string(in.String())
+				out.Phone = string(in.String())
 			}
-		case "city":
+		case "master_address":
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.City = string(in.String())
+				out.MasterAddress = string(in.String())
+			}
+		case "master_city":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.MasterCity = string(in.String())
 			}
 		case "bio":
 			if in.IsNull() {
@@ -232,6 +238,16 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(ou
 		out.RawString(prefix)
 		out.String(string(in.Title))
 	}
+	{
+		const prefix string = ",\"address\":"
+		out.RawString(prefix)
+		out.String(string(in.Address))
+	}
+	{
+		const prefix string = ",\"city\":"
+		out.RawString(prefix)
+		out.String(string(in.City))
+	}
 	if in.Description != nil {
 		const prefix string = ",\"description\":"
 		out.RawString(prefix)
@@ -240,22 +256,12 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(ou
 	{
 		const prefix string = ",\"price\":"
 		out.RawString(prefix)
-		out.Float64(float64(in.Price))
+		out.Int64(int64(in.Price))
 	}
 	{
 		const prefix string = ",\"duration_minutes\":"
 		out.RawString(prefix)
 		out.Int(int(in.DurationMinutes))
-	}
-	{
-		const prefix string = ",\"buffer_before_minutes\":"
-		out.RawString(prefix)
-		out.Int(int(in.BufferBeforeMinutes))
-	}
-	{
-		const prefix string = ",\"buffer_after_minutes\":"
-		out.RawString(prefix)
-		out.Int(int(in.BufferAfterMinutes))
 	}
 	{
 		const prefix string = ",\"is_active\":"
@@ -283,14 +289,19 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto(ou
 		out.String(string(in.LastName))
 	}
 	{
-		const prefix string = ",\"address\":"
+		const prefix string = ",\"phone\":"
 		out.RawString(prefix)
-		out.String(string(in.Address))
+		out.String(string(in.Phone))
 	}
 	{
-		const prefix string = ",\"city\":"
+		const prefix string = ",\"master_address\":"
 		out.RawString(prefix)
-		out.String(string(in.City))
+		out.String(string(in.MasterAddress))
+	}
+	{
+		const prefix string = ",\"master_city\":"
+		out.RawString(prefix)
+		out.String(string(in.MasterCity))
 	}
 	if in.Bio != nil {
 		const prefix string = ",\"bio\":"
@@ -397,6 +408,12 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto1(i
 			} else {
 				out.Address = string(in.String())
 			}
+		case "city":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.City = string(in.String())
+			}
 		case "description":
 			if in.IsNull() {
 				in.Skip()
@@ -415,25 +432,13 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto1(i
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.Price = float64(in.Float64())
+				out.Price = int64(in.Int64())
 			}
 		case "duration_minutes":
 			if in.IsNull() {
 				in.Skip()
 			} else {
 				out.DurationMinutes = int(in.Int())
-			}
-		case "buffer_before_minutes":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				out.BufferBeforeMinutes = int(in.Int())
-			}
-		case "buffer_after_minutes":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				out.BufferAfterMinutes = int(in.Int())
 			}
 		case "is_active":
 			if in.IsNull() {
@@ -486,6 +491,11 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto1(o
 		out.RawString(prefix)
 		out.String(string(in.Address))
 	}
+	{
+		const prefix string = ",\"city\":"
+		out.RawString(prefix)
+		out.String(string(in.City))
+	}
 	if in.Description != nil {
 		const prefix string = ",\"description\":"
 		out.RawString(prefix)
@@ -494,22 +504,12 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto1(o
 	{
 		const prefix string = ",\"price\":"
 		out.RawString(prefix)
-		out.Float64(float64(in.Price))
+		out.Int64(int64(in.Price))
 	}
 	{
 		const prefix string = ",\"duration_minutes\":"
 		out.RawString(prefix)
 		out.Int(int(in.DurationMinutes))
-	}
-	{
-		const prefix string = ",\"buffer_before_minutes\":"
-		out.RawString(prefix)
-		out.Int(int(in.BufferBeforeMinutes))
-	}
-	{
-		const prefix string = ",\"buffer_after_minutes\":"
-		out.RawString(prefix)
-		out.Int(int(in.BufferAfterMinutes))
 	}
 	{
 		const prefix string = ",\"is_active\":"
@@ -579,6 +579,12 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(i
 			} else {
 				out.Address = string(in.String())
 			}
+		case "city":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.City = string(in.String())
+			}
 		case "description":
 			if in.IsNull() {
 				in.Skip()
@@ -597,25 +603,13 @@ func easyjson1717d861DecodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(i
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.Price = float64(in.Float64())
+				out.Price = int64(in.Int64())
 			}
 		case "duration_minutes":
 			if in.IsNull() {
 				in.Skip()
 			} else {
 				out.DurationMinutes = int(in.Int())
-			}
-		case "buffer_before_minutes":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				out.BufferBeforeMinutes = int(in.Int())
-			}
-		case "buffer_after_minutes":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				out.BufferAfterMinutes = int(in.Int())
 			}
 		case "is_auto_confirm":
 			if in.IsNull() {
@@ -660,6 +654,11 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(o
 		out.RawString(prefix)
 		out.String(string(in.Address))
 	}
+	{
+		const prefix string = ",\"city\":"
+		out.RawString(prefix)
+		out.String(string(in.City))
+	}
 	if in.Description != nil {
 		const prefix string = ",\"description\":"
 		out.RawString(prefix)
@@ -668,22 +667,12 @@ func easyjson1717d861EncodeGithubComRBSTeamOkoshkiMicroservicesCoreCatalogDto2(o
 	{
 		const prefix string = ",\"price\":"
 		out.RawString(prefix)
-		out.Float64(float64(in.Price))
+		out.Int64(int64(in.Price))
 	}
 	{
 		const prefix string = ",\"duration_minutes\":"
 		out.RawString(prefix)
 		out.Int(int(in.DurationMinutes))
-	}
-	if in.BufferBeforeMinutes != 0 {
-		const prefix string = ",\"buffer_before_minutes\":"
-		out.RawString(prefix)
-		out.Int(int(in.BufferBeforeMinutes))
-	}
-	if in.BufferAfterMinutes != 0 {
-		const prefix string = ",\"buffer_after_minutes\":"
-		out.RawString(prefix)
-		out.Int(int(in.BufferAfterMinutes))
 	}
 	if in.IsAutoConfirm != nil {
 		const prefix string = ",\"is_auto_confirm\":"

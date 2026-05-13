@@ -14,7 +14,7 @@ type ClientAppointmentView struct {
 	MasterLon     *float64  `json:"master_lon,omitempty"`
 	ServiceID     string    `json:"service_id"`
 	ServiceTitle  string    `json:"service_title"`
-	Price         float64   `json:"price"`
+	Price         int64     `json:"price"`
 	Duration      int       `json:"duration_minutes"`
 	StartAt       time.Time `json:"start_at"`
 	EndAt         time.Time `json:"end_at"`
@@ -31,7 +31,7 @@ type MasterAppointmentView struct {
 	ClientAvatar  *string   `json:"client_avatar,omitempty"`
 	ServiceID     *string   `json:"service_id,omitempty"`
 	ServiceTitle  *string   `json:"service_title,omitempty"`
-	Price         *float64  `json:"price,omitempty"`
+	Price         *int64    `json:"price,omitempty"`
 	Duration      *int      `json:"duration_minutes,omitempty"`
 	StartAt       time.Time `json:"start_at"`
 	EndAt         time.Time `json:"end_at"`

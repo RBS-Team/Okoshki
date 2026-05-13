@@ -103,9 +103,7 @@ func (s *Service) GetAvailableSlots(ctx context.Context, serviceID uuid.UUID, st
 		apptsByDate[dateStr] = append(apptsByDate[dateStr], a)
 	}
 	
-	// Расчитываем полную длительность Слота с учетом Buffers - время на уборку/подготовку к следующему клиенту
-	totalDuration := time.Duration(serviceItem.BufferBeforeMinutes+serviceItem.DurationMinutes+serviceItem.BufferAfterMinutes) * time.Minute
-	bufferBeforeDuration := time.Duration(serviceItem.BufferBeforeMinutes) * time.Minute
+	totalDuration := time.Duration(serviceItem.DurationMinutes) * time.Minute
 
 	// Мапа для складирования доступных слотов
 	result := &dto.GetAvailableSlotsResponse{
@@ -169,8 +167,7 @@ func (s *Service) GetAvailableSlots(ctx context.Context, serviceID uuid.UUID, st
 			}
 
 			if !hasIntersection {
-				clientArrivalTime := slotStart.Add(bufferBeforeDuration)
-				result.Slots[dateStr] = append(result.Slots[dateStr], clientArrivalTime.Format(timeFormat))
+				result.Slots[dateStr] = append(result.Slots[dateStr], slotStart.Format(timeFormat))
 
 				currentTime = slotEnd
 			}

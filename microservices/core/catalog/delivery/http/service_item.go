@@ -8,9 +8,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mailru/easyjson"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
-	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
@@ -55,7 +55,13 @@ func (h *Handler) CreateServiceItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.CategoryID == "" || req.Title == "" || req.Address == "" || req.City == "" || req.Price < 0  || req.DurationMinutes <= 0 {
+	if _, err := uuid.Parse(req.CategoryID); err != nil {
+		log.Warnf("[%s]: invalid category id format: %v", op, err)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	if req.Title == "" || req.Address == "" || req.City == "" || req.Price < 0 || req.DurationMinutes <= 0 {
 		log.Warnf("[%s]: invalid request fields", op)
 		response.BadRequestJSON(w)
 		return
@@ -64,7 +70,7 @@ func (h *Handler) CreateServiceItem(w http.ResponseWriter, r *http.Request) {
 	item, err := h.service.CreateServiceItem(r.Context(), masterID, req)
 	if err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
-		h.handleServiceItemError(w, err)
+		h.handleError(w, err)
 		return
 	}
 
@@ -106,7 +112,7 @@ func (h *Handler) GetServiceItemsByMasterID(w http.ResponseWriter, r *http.Reque
 		if !errors.Is(err, domain.ErrNotFound) {
 			log.Errorf("[%s]: service error: %v", op, err)
 		}
-		h.handleServiceItemError(w, err)
+		h.handleError(w, err)
 		return
 	}
 
@@ -129,15 +135,18 @@ func (h *Handler) GetServiceItemsByMasterID(w http.ResponseWriter, r *http.Reque
 // @Router       /categories/{id}/services [get]
 func (h *Handler) GetServicesByCategory(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetServicesByCategory"
+	log := middleware.LoggerFromContext(r.Context())
 
 	idStr, ok := mux.Vars(r)["id"]
 	if !ok {
+		log.Errorf("[%s]: category id is missing in URL vars", op)
 		response.BadRequestJSON(w)
 		return
 	}
 
 	categoryID, err := uuid.Parse(idStr)
 	if err != nil {
+		log.Warnf("[%s]: invalid category id format: %v", op, err)
 		response.BadRequestJSON(w)
 		return
 	}
@@ -147,8 +156,9 @@ func (h *Handler) GetServicesByCategory(w http.ResponseWriter, r *http.Request) 
 	items, err := h.service.GetServicesByCategory(r.Context(), categoryID, limit, offset)
 	if err != nil {
 		if !errors.Is(err, domain.ErrNotFound) {
+			log.Errorf("[%s]: service error: %v", op, err)
 		}
-		h.handleServiceItemError(w, err)
+		h.handleError(w, err)
 		return
 	}
 

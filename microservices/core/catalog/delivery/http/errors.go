@@ -12,29 +12,11 @@ func (h *Handler) handleError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, domain.ErrNotFound):
 		response.NotFoundJSON(w)
-	default:
-		response.InternalErrorJSON(w)
-	}
-}
-
-func (h *Handler) handleServiceItemError(w http.ResponseWriter, err error) {
-	switch {
-	case errors.Is(err, domain.ErrNotFound):
-		response.NotFoundJSON(w)
 	case errors.Is(err, domain.ErrConflict):
 		response.ConflictJSON(w)
-	default:
-		response.InternalErrorJSON(w)
-	}
-}
-
-func (h *Handler) handleScheduleError(w http.ResponseWriter, err error) {
-	switch {
-	case errors.Is(err, domain.ErrNotFound):
-		response.NotFoundJSON(w)
-	case errors.Is(err, domain.ErrConflict):
-		response.ConflictJSON(w)
-	default:
+	case errors.Is(err, domain.ErrInvalidInput):
 		response.BadRequestJSON(w)
+	default:
+		response.InternalErrorJSON(w)
 	}
 }

@@ -46,8 +46,8 @@ func (s *Service) CreateAppointment(ctx context.Context, clientID uuid.UUID, req
 		return nil, fmt.Errorf("[%s]: invalid start_at format (expected YYYY-MM-DD HH:MM): %w", op, err)
 	}
 
-	dbStartAt := clientArrivalTime.Add(-time.Duration(serviceItem.BufferBeforeMinutes) * time.Minute).UTC()
-	dbEndAt := clientArrivalTime.Add(time.Duration(serviceItem.DurationMinutes+serviceItem.BufferAfterMinutes) * time.Minute).UTC()
+	dbStartAt := clientArrivalTime.UTC()
+	dbEndAt := clientArrivalTime.Add(time.Duration(serviceItem.DurationMinutes) * time.Minute).UTC()
 
 	now := time.Now().UTC()
 	if dbStartAt.Before(now) {

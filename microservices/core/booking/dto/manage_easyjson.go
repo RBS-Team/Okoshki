@@ -197,12 +197,12 @@ func easyjsonF3eb2881DecodeGithubComRBSTeamOkoshkiMicroservicesCoreBookingDto1(i
 				out.Price = nil
 			} else {
 				if out.Price == nil {
-					out.Price = new(float64)
+					out.Price = new(int64)
 				}
 				if in.IsNull() {
 					in.Skip()
 				} else {
-					*out.Price = float64(in.Float64())
+					*out.Price = int64(in.Int64())
 				}
 			}
 		case "duration_minutes":
@@ -322,7 +322,7 @@ func easyjsonF3eb2881EncodeGithubComRBSTeamOkoshkiMicroservicesCoreBookingDto1(o
 	if in.Price != nil {
 		const prefix string = ",\"price\":"
 		out.RawString(prefix)
-		out.Float64(float64(*in.Price))
+		out.Int64(int64(*in.Price))
 	}
 	if in.Duration != nil {
 		const prefix string = ",\"duration_minutes\":"
@@ -680,7 +680,7 @@ func easyjsonF3eb2881DecodeGithubComRBSTeamOkoshkiMicroservicesCoreBookingDto4(i
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.Price = float64(in.Float64())
+				out.Price = int64(in.Int64())
 			}
 		case "duration_minutes":
 			if in.IsNull() {
@@ -795,7 +795,7 @@ func easyjsonF3eb2881EncodeGithubComRBSTeamOkoshkiMicroservicesCoreBookingDto4(o
 	{
 		const prefix string = ",\"price\":"
 		out.RawString(prefix)
-		out.Float64(float64(in.Price))
+		out.Int64(int64(in.Price))
 	}
 	{
 		const prefix string = ",\"duration_minutes\":"
