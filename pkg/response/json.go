@@ -65,3 +65,8 @@ func ConflictJSON(w http.ResponseWriter) {
 func InternalErrorJSON(w http.ResponseWriter) {
 	JSON(w, http.StatusInternalServerError, ErrInternalServer)
 }
+
+// 401 Registration Required (guest tries to access auth-only endpoint)
+func RegistrationRequiredJSON(w http.ResponseWriter) {
+	JSON(w, http.StatusUnauthorized, ErrRegistrationRequired)
+}

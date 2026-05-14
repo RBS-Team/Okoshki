@@ -49,6 +49,11 @@ func BindViperEnv(v *viper.Viper) error {
 
 		"auth.http.auth.jwt.secretKey":  "JWT_SECRET",
 		"auth.http.auth.csrf.secretKey": "CSRF_SECRET",
+
+		"minio.accessKey": "MINIO_ACCESS_KEY",
+		"minio.secretKey": "MINIO_SECRET_KEY",
+		"minio.endpoint":  "MINIO_ENDPOINT",
+		"minio.publicURL": "MINIO_PUBLIC_URL",
 	}
 
 	for configKey, envKey := range bindings {

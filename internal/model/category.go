@@ -7,11 +7,12 @@ import (
 )
 
 type Category struct {
-	ID          uuid.UUID
-	ParentID    *uuid.UUID
-	Name        string
-	Description *string
-	IsActive    bool
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID           uuid.UUID
+	Name         string
+	Description  *string
+	AvatarURL    *string
+	MastersCount int
+	IsActive     bool
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }

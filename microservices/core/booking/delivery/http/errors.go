@@ -1,0 +1,30 @@
+package http
+
+import (
+	"errors"
+	"net/http"
+
+	"github.com/RBS-Team/Okoshki/internal/domain"
+	"github.com/RBS-Team/Okoshki/microservices/core/booking/repository/postgres"
+	"github.com/RBS-Team/Okoshki/pkg/response"
+)
+
+func (h *Handler) handleError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, domain.ErrNotFound),
+		errors.Is(err, postgres.ErrNotFound):
+		response.NotFoundJSON(w)
+	case errors.Is(err, domain.ErrConflict),
+		errors.Is(err, domain.ErrSlotNotAvailable),
+		errors.Is(err, postgres.ErrTimeConflict):
+		response.ConflictJSON(w)
+	case errors.Is(err, domain.ErrInvalidInput),
+		errors.Is(err, domain.ErrLeadTimeViolation),
+		errors.Is(err, domain.ErrInvalidTimezone):
+		response.BadRequestJSON(w)
+	case errors.Is(err, domain.ErrForbidden):
+		response.ForbiddenJSON(w)
+	default:
+		response.InternalErrorJSON(w)
+	}
+}

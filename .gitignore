@@ -26,9 +26,10 @@ go.work.sum
 
 # env file
 .env.prod
-
+CLAUDE.md
 # Editor/IDE
 # .idea/
 # .vscode/
 bin/
 docs/
+nginx/certs/accounts/

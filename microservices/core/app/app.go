@@ -3,9 +3,11 @@ package app
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gorilla/csrf"
@@ -13,16 +15,24 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	_ "github.com/RBS-Team/Okoshki/docs" // сгенерированная документация
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/internal/server"
-	userHtpp "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
-	userRepo "github.com/RBS-Team/Okoshki/microservices/core/auth/repository/postgres"
-	userService "github.com/RBS-Team/Okoshki/microservices/core/auth/service"
+	authHtpp "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
+	authRepo "github.com/RBS-Team/Okoshki/microservices/core/auth/repository/postgres"
+	authService "github.com/RBS-Team/Okoshki/microservices/core/auth/service"
+	userHttp "github.com/RBS-Team/Okoshki/microservices/core/users/delivery/http"
+	userRepo "github.com/RBS-Team/Okoshki/microservices/core/users/repository/postgres"
+	userService "github.com/RBS-Team/Okoshki/microservices/core/users/service"
+	bookingHttp "github.com/RBS-Team/Okoshki/microservices/core/booking/delivery/http"
+	bookingRepo "github.com/RBS-Team/Okoshki/microservices/core/booking/repository/postgres"
+	bookingService "github.com/RBS-Team/Okoshki/microservices/core/booking/service"
 	catalogHttp "github.com/RBS-Team/Okoshki/microservices/core/catalog/delivery/http"
 	catalogRepo "github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
 	catalogService "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
 	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
 	"github.com/RBS-Team/Okoshki/pkg/logger"
+	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 	"github.com/RBS-Team/Okoshki/pkg/postgres"
 )
 
@@ -54,13 +64,28 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 
 	jwtManager := jwtmanager.NewManager(cfg.Auth.HTTP.Auth.JWT.SecretKey, cfg.Auth.HTTP.Auth.JWT.AccessTokenTTL)
 
-	userRepository := userRepo.NewUserRepository(db)
-	userService := userService.NewAuthService(userRepository, userRepository)
-	userHandler := userHtpp.NewHandler(userService, jwtManager)
+	authRepository := authRepo.New(db)
+	authSvc := authService.New(authRepository, authRepository)
+
+	ensureAdmin(ctx, authSvc, appLogger)
+
+	minioClient, err := minioPkg.New(cfg.Minio)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init minio client: %w", err)
+	}
+	userRepository := userRepo.New(db)
+	userSvc := userService.New(authSvc, userRepository, minioClient)
+	userHandler := userHttp.NewHandler(userSvc, jwtManager)
 
 	catalogRepository := catalogRepo.New(db)
-	catalogService := catalogService.New(catalogRepository)
-	catalogHandler := catalogHttp.NewHandler(catalogService)
+	catalogSvc := catalogService.New(catalogRepository, userSvc, minioClient)
+	catalogHandler := catalogHttp.NewHandler(catalogSvc)
+
+	authHandler := authHtpp.NewHandler(authSvc, jwtManager)
+
+	bookingRepository := bookingRepo.New(db)
+	bookingSvc := bookingService.New(bookingRepository, catalogSvc, userSvc)
+	bookingHandler := bookingHttp.NewHandler(bookingSvc)
 
 	requestLoggerMiddleware := middleware.RequestLoggerMiddleware(appLogger)
 	corsMiddleware := middleware.CORS(cfg.Auth.HTTP.CORS)
@@ -74,29 +99,28 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 
 	router := mux.NewRouter()
 
-	// Swagger (без CSRF, без аутентификации)
 	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
-	// API v1
 	api := router.PathPrefix("/api/v1").Subrouter()
 
-	// Глобальные middleware для ВСЕГО API
 	api.Use(requestLoggerMiddleware)
 	api.Use(corsMiddleware)
-	// УБРАЛИ ОТСЮДА api.Use(csrfMiddleware)
 
 	public := api.PathPrefix("").Subrouter()
 
 	protected := api.PathPrefix("").Subrouter()
 	protected.Use(authMiddleware.AuthMiddleware)
 
-	// Создаем отдельный роутер для изменения состояния (POST/PUT/DELETE)
 	csrfProtected := protected.PathPrefix("").Subrouter()
-	csrfProtected.Use(csrfMiddleware)
+	// csrfProtected.Use(csrfMiddleware)
+	_ = csrfMiddleware
 
-	// Прокидываем 3 роутера в обработчики
-	catalogHandler.RegisterRoutes(public, protected, csrfProtected)
+	masterCtx := middleware.MasterContext(userSvc)
+
+	catalogHandler.RegisterRoutes(public, protected, csrfProtected, masterCtx)
+	authHandler.RegisterRoutes(public, protected, csrfProtected)
 	userHandler.RegisterRoutes(public, protected, csrfProtected)
+	bookingHandler.RegisterRoutes(public, protected, csrfProtected)
 
 	httpServer := server.NewHTTPServer(&cfg.Auth.HTTP, router, appLogger)
 
@@ -166,4 +190,22 @@ func (a *App) Stop() error {
 
 	a.logger.Infof("Application stopped gracefully.")
 	return nil
+}
+
+func ensureAdmin(ctx context.Context, svc *authService.AuthService, log logger.Logger) {
+	email := os.Getenv("ADMIN_EMAIL")
+	password := os.Getenv("ADMIN_PASSWORD")
+	if email == "" || password == "" {
+		return
+	}
+
+	_, err := svc.CreateUser(ctx, email, password, "admin")
+	if err == nil {
+		log.Infof("Admin account created: %s", email)
+		return
+	}
+	if errors.Is(err, domain.ErrConflict) {
+		return
+	}
+	log.Warnf("Failed to create admin account: %v", err)
 }

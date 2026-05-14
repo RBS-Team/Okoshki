@@ -3,13 +3,6 @@ package dto
 //go:generate easyjson $GOFILE
 
 //easyjson:json
-type RegisterRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
-}
-
-//easyjson:json
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -22,8 +15,14 @@ type LoginResponse struct {
 }
 
 //easyjson:json
-type RegisterResponse struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
-	Role  string `json:"role"`
+type UserInfo struct {
+	ID        string `json:"id"`
+	Email     string `json:"email"`
+	AvatarURL string `json:"avatar_url"`
+}
+
+//easyjson:json
+type GuestSessionResponse struct {
+	GuestID string `json:"guest_id"`
+	Role string `json:"role"`
 }

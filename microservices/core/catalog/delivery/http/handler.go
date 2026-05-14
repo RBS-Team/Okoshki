@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"io"
 
 	"github.com/google/uuid"
 
@@ -12,15 +13,19 @@ import (
 type IService interface {
 	GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Category, error)
 	GetAllCategories(ctx context.Context) ([]*dto.Category, error)
-
-	CreateMaster(ctx context.Context, userIDStr string, req dto.CreateMasterRequest) (*dto.Master, error)
-	GetMasterByID(ctx context.Context, id uuid.UUID) (*dto.Master, error)
-	GetAllMasters(ctx context.Context, limit, offset uint64) ([]dto.Master, error)
-	GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error)
+	UploadCategoryAvatar(ctx context.Context, categoryIDStr string, file io.Reader, size int64, contentType string) error
 
 	CreateServiceItem(ctx context.Context, masterID uuid.UUID, req dto.CreateServiceItemRequest) (*dto.ServiceItem, error)
 	GetServiceItemsByMasterID(ctx context.Context, masterID uuid.UUID) ([]dto.ServiceItem, error)
 	GetServicesByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.ServiceWithMaster, error)
+
+	GetMasterSettings(ctx context.Context, masterID uuid.UUID) (*dto.MasterSettings, error)
+	UpsertMasterSettings(ctx context.Context, masterID uuid.UUID, req dto.UpsertMasterSettingsRequest) error
+
+	CreateWorkInterval(ctx context.Context, masterID uuid.UUID, req dto.CreateWorkIntervalRequest) (*dto.WorkInterval, error)
+	DeleteWorkInterval(ctx context.Context, masterID, intervalID uuid.UUID) error
+	ListWorkIntervals(ctx context.Context, masterID uuid.UUID, fromStr, toStr string) ([]dto.WorkInterval, error)
+	ReplaceWorkIntervalsForDate(ctx context.Context, masterID uuid.UUID, req dto.ReplaceWorkIntervalsForDateRequest) error
 }
 
 type Handler struct {

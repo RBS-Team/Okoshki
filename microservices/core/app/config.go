@@ -7,12 +7,14 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/RBS-Team/Okoshki/internal/app"
+	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 	"github.com/RBS-Team/Okoshki/pkg/postgres"
 )
 
 type Config struct {
-	Auth AuthConfig      `mapstructure:"auth"`
-	DB   postgres.Config `mapstructure:"db"`
+	Auth  AuthConfig      `mapstructure:"auth"`
+	DB    postgres.Config `mapstructure:"db"`
+	Minio minioPkg.Config `mapstructure:"minio"`
 }
 
 type AuthConfig struct {

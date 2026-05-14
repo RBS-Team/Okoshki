@@ -4,27 +4,23 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
 func (h *Handler) handleError(w http.ResponseWriter, err error) {
 	switch {
-	case errors.Is(err, service.ErrNotFound):
+	case errors.Is(err, domain.ErrNotFound):
 		response.NotFoundJSON(w)
-	default:
-		response.InternalErrorJSON(w)
-	}
-}
-
-func (h *Handler) handleMasterError(w http.ResponseWriter, err error) {
-	switch {
-	case errors.Is(err, service.ErrNotFound):
-		response.NotFoundJSON(w)
-	case errors.Is(err, service.ErrConflict):
+	case errors.Is(err, domain.ErrConflict),
+		errors.Is(err, domain.ErrIntervalOverlap),
+		errors.Is(err, domain.ErrIntervalHasAppointments):
 		response.ConflictJSON(w)
-	case errors.Is(err, service.ErrInvalidTimezone):
+	case errors.Is(err, domain.ErrInvalidInput),
+		errors.Is(err, domain.ErrInvalidTimezone):
 		response.BadRequestJSON(w)
+	case errors.Is(err, domain.ErrForbidden):
+		response.ForbiddenJSON(w)
 	default:
 		response.InternalErrorJSON(w)
 	}

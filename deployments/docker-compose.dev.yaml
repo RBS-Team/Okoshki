@@ -1,0 +1,132 @@
+# Settings and configurations that are common for all containers
+x-minio-common: &minio-common
+  image: minio/minio:latest
+  command: server --console-address ":9001" http://minio{1...4}/data{1...2}
+  expose:
+    - "9000"
+    - "9001"
+  environment:
+    MINIO_ROOT_USER: ${MINIO_ACCESSKEY:-minioadmin}
+    MINIO_ROOT_PASSWORD: ${MINIO_SECRETKEY:-minioadmin}
+  healthcheck:
+    test: ["CMD", "mc", "ready", "local"]
+    interval: 5s
+    timeout: 5s
+    retries: 5
+
+services:
+  core:
+    build:
+      context: ../
+      dockerfile: docker/core.Dockerfile
+    container_name: okoshki-core-service
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - ../.env.${APP_ENV:-dev}
+    environment:
+      - CONFIG_FILE=config.${APP_ENV:-dev}
+    volumes:
+      - ../config:/config:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  db:
+    image: postgres:15-alpine
+    container_name: okoshki-postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-dev_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev_password}
+      POSTGRES_DB: ${DB_NAME:-okoshki_db}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-dev_user} -d ${DB_NAME:-okoshki_db}"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    image: migrate/migrate
+    container_name: okoshki-migrate
+    volumes:
+      - ../migrations:/migrations
+    command: [ "-path", "/migrations", "-database", "postgres://${DB_USER:-dev_user}:${DB_PASSWORD:-dev_password}@db:5432/${DB_NAME:-okoshki_db}?sslmode=disable", "up" ]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.30.0-alpine
+    container_name: okoshki-nginx-frontend
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "9000:9000"
+      - "9001:9001"
+    env_file:
+      - ../.env.${APP_ENV:-dev}
+    volumes:
+      - ${FRONT_PATH}:/usr/share/nginx/html:ro
+      - ../nginx/certs:/etc/letsencrypt:ro               # Здесь будут лежать ключи
+      - ../nginx/www:/var/www/certbot:ro                 # Папка для проверки домена
+      - ../nginx/nginx.dev.conf:/etc/nginx/nginx.conf    # Монтируем конфиг для работы nginx на локалке без HTTPS
+    
+    depends_on:
+      - core
+      - minio1
+      - minio2
+      - minio3
+      - minio4
+
+  # starts 4 docker containers running minio server instances.
+  # using nginx reverse proxy, load balancing, you can access
+  # it through port 9000.
+  minio1:
+    <<: *minio-common
+    container_name: okoshki-minio-1
+    hostname: minio1
+    volumes:
+      - min_data1-1:/data1
+      - min_data1-2:/data2
+
+  minio2:
+    <<: *minio-common
+    container_name: okoshki-minio-2
+    hostname: minio2
+    volumes:
+      - min_data2-1:/data1
+      - min_data2-2:/data2
+
+  minio3:
+    <<: *minio-common
+    container_name: okoshki-minio-3
+    hostname: minio3
+    volumes:
+      - min_data3-1:/data1
+      - min_data3-2:/data2
+
+  minio4:
+    <<: *minio-common
+    container_name: okoshki-minio-4
+    hostname: minio4
+    volumes:
+      - min_data4-1:/data1
+      - min_data4-2:/data2
+    
+volumes:
+  pg_data:
+  min_data1-1:
+  min_data1-2:
+  min_data2-1:
+  min_data2-2:
+  min_data3-1:
+  min_data3-2:
+  min_data4-1:
+  min_data4-2:
