@@ -12,4 +12,10 @@ var (
 	ErrInvalidInput    = errors.New("invalid input")
 	ErrInvalidTimezone = errors.New("invalid timezone provided")
 	ErrInternal        = errors.New("internal")
+
+	// Расписание и слоты.
+	ErrSlotNotAvailable      = errors.New("requested slot is not available")
+	ErrLeadTimeViolation     = errors.New("lead time violation: too close to start")
+	ErrIntervalOverlap       = errors.New("work interval overlaps with existing one")
+	ErrIntervalHasAppointments = errors.New("work interval contains existing appointments")
 )

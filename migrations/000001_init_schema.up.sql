@@ -93,52 +93,51 @@ CREATE TRIGGER update_master_services_modtime
 BEFORE UPDATE ON master_services
 FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
--- master_working_hours
+-- master_settings
 
-CREATE TABLE IF NOT EXISTS master_working_hours (
-    id          UUID    PRIMARY KEY DEFAULT uuid_generate_v4(),
-    master_id   UUID    NOT NULL REFERENCES masters(id) ON DELETE CASCADE,
-    day_of_week INT     NOT NULL CHECK (day_of_week >= 0 AND day_of_week <= 6),
-    start_time  TIME,
-    end_time    TIME,
-    is_day_off  BOOLEAN DEFAULT false,
-    created_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_working_time_order CHECK (
-        (is_day_off = true  AND start_time IS NULL     AND end_time IS NULL) OR
-        (is_day_off = false AND start_time IS NOT NULL AND end_time IS NOT NULL AND start_time < end_time)
-    ),
-    UNIQUE(master_id, day_of_week)
+CREATE TABLE IF NOT EXISTS master_settings (
+    master_id         UUID PRIMARY KEY REFERENCES masters(id) ON DELETE CASCADE,
+    slot_step_minutes INT  NOT NULL DEFAULT 30
+        CHECK (slot_step_minutes IN (5, 10, 15, 20, 30, 60)),
+    lead_time_minutes INT  NOT NULL DEFAULT 0
+        CHECK (lead_time_minutes >= 0),
+    created_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_working_hours_master_id ON master_working_hours(master_id);
-
-CREATE TRIGGER update_working_hours_modtime
-BEFORE UPDATE ON master_working_hours
+CREATE TRIGGER update_master_settings_modtime
+BEFORE UPDATE ON master_settings
 FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
--- master_schedule_exceptions
+-- master_work_intervals
 
-CREATE TABLE IF NOT EXISTS master_schedule_exceptions (
-    id             UUID    PRIMARY KEY DEFAULT uuid_generate_v4(),
-    master_id      UUID    NOT NULL REFERENCES masters(id) ON DELETE CASCADE,
-    exception_date DATE    NOT NULL,
-    start_time     TIME,
-    end_time       TIME,
-    is_working     BOOLEAN NOT NULL,
-    created_at     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_exception_time_order CHECK (
-        (is_working = false AND start_time IS NULL     AND end_time IS NULL) OR
-        (is_working = true  AND start_time IS NOT NULL AND end_time IS NOT NULL AND start_time < end_time)
-    ),
-    UNIQUE(master_id, exception_date)
+CREATE TABLE IF NOT EXISTS master_work_intervals (
+    id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    master_id  UUID NOT NULL REFERENCES masters(id) ON DELETE CASCADE,
+    work_date  DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time   TIME NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_work_interval_time_order CHECK (start_time < end_time),
+
+    -- Запрещаем пересечение интервалов одного мастера.
+    -- Конец одного и начало следующего могут совпадать (правая граница tsrange эксклюзивна).
+    CONSTRAINT exclude_overlapping_work_intervals EXCLUDE USING gist (
+        master_id WITH =,
+        tsrange(
+            (work_date + start_time)::timestamp,
+            (work_date + end_time)::timestamp
+        ) WITH &&
+    )
 );
 
-CREATE INDEX IF NOT EXISTS idx_schedule_exceptions_master_date ON master_schedule_exceptions(master_id, exception_date);
+CREATE INDEX IF NOT EXISTS idx_work_intervals_master_date
+    ON master_work_intervals(master_id, work_date);
 
-CREATE TRIGGER update_schedule_exceptions_modtime
-BEFORE UPDATE ON master_schedule_exceptions
+CREATE TRIGGER update_work_intervals_modtime
+BEFORE UPDATE ON master_work_intervals
 FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
 -- appointments

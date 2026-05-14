@@ -17,8 +17,13 @@ func mapErrors(err error) error {
 		return domain.ErrNotFound
 	}
 	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-		return domain.ErrConflict
+	if errors.As(err, &pgErr) {
+		switch pgErr.Code {
+		case "23505": // unique_violation
+			return domain.ErrConflict
+		case "23P01": // exclusion_violation (EXCLUDE-констрейнт пересечения интервалов)
+			return domain.ErrIntervalOverlap
+		}
 	}
 	return err
 }

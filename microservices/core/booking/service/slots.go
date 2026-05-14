@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/booking/dto"
 	catalogDTO "github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
@@ -17,162 +18,167 @@ const (
 	timeFormat = "15:04"
 )
 
-func (s *Service) GetAvailableSlots(ctx context.Context, serviceID uuid.UUID, startDateStr, endDateStr string) (*dto.GetAvailableSlotsResponse, error) {
+// GetAvailableSlots — основной алгоритм генерации доступных слотов записи на услугу.
+//
+// Источник истины:
+//   - master_work_intervals (несколько интервалов на день; "выходной" = отсутствие интервалов).
+//   - master_settings.slot_step_minutes (шаг сетки) и lead_time_minutes.
+//   - appointments (активные: pending/confirmed) — занимают пересекающиеся слоты.
+//
+// Длительность услуги НЕ обязана быть кратной шагу сетки. Слот валиден, если:
+//   - помещается целиком в один из рабочих интервалов;
+//   - не пересекается ни с одной активной записью;
+//   - его начало (UTC) >= now + lead_time.
+func (s *Service) GetAvailableSlots(ctx context.Context, serviceID uuid.UUID, fromStr, toStr string) (*dto.GetAvailableSlotsResponse, error) {
 	const op = "booking.service.GetAvailableSlots"
 
-	// Проверка корректности дат и валидности диапазона
-	startDate, err := time.Parse(dateFormat, startDateStr)
+	from, err := time.Parse(dateFormat, fromStr)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: invalid start_date: %w", op, err)
+		return nil, fmt.Errorf("[%s]: invalid from date: %w", op, domain.ErrInvalidInput)
 	}
-	endDate, err := time.Parse(dateFormat, endDateStr)
+	to, err := time.Parse(dateFormat, toStr)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: invalid end_date: %w", op, err)
+		return nil, fmt.Errorf("[%s]: invalid to date: %w", op, domain.ErrInvalidInput)
 	}
-	if endDate.Before(startDate) {
-		return nil, fmt.Errorf("[%s]: end_date must be after start_date", op)
+	if to.Before(from) {
+		return nil, fmt.Errorf("[%s]: to must be >= from: %w", op, domain.ErrInvalidInput)
 	}
 
-	// Идет в сервис catalog в service_item и по UID сервиса получаем serviceItem
 	serviceItem, err := s.catalog.GetServiceItemByID(ctx, serviceID)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
-	// Достаем из нашего serviceItem UID мастера
 	masterID, err := uuid.Parse(serviceItem.MasterID)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: invalid master id in service: %w", op, err)
 	}
 
-	// По UID мастера мы получаем DTO мастера со всей инфой о нем
 	master, err := s.user.GetMasterByID(ctx, masterID)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
-	// Достаем из DTO инфу о тайм зоне мастера и получаем инфу о часовом поясе мастера это нужно для синхронизации часов с разных таймзон
 	masterLoc, err := time.LoadLocation(master.Timezone)
 	if err != nil {
 		masterLoc = time.UTC
 	}
 
-	// Получаем рабочие часы мастера, это слайс из 7 дней, в которых прописан диапазон работы мастера или является ли день выходным
-	workingHours, err := s.catalog.GetWorkingHours(ctx, masterID)
+	settings, err := s.catalog.GetMasterSettings(ctx, masterID)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
-	// МАПА РАБОЧИХ ЧАСОВ. Преобразовываем полученный слайс в мапу. типа  0: и сам этот workingHour со всеми полями
-	whMap := make(map[int]catalogDTO.WorkingHours)
-	for _, wh := range workingHours {
-		whMap[wh.DayOfWeek] = wh
-	}
-
-	// Получаем слайс исключений расписания мастера за интересующий нас период 
-	exceptions, err := s.catalog.GetScheduleExceptions(ctx, masterID, startDateStr, endDateStr)
+	intervals, err := s.catalog.ListWorkIntervals(ctx, masterID, fromStr, toStr)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
-	// МАПА ИСКЛЮЧЕНИЙ. Преобразовываем полученный слайс в мапу. Типа "2026-04-21" : и само исключение со своими полями. 
-	excMap := make(map[string]catalogDTO.ScheduleException)
-	for _, exc := range exceptions {
-		excMap[exc.ExceptionDate] = exc
-	}
+	queryStartUTC := time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, masterLoc).UTC()
+	queryEndUTC := time.Date(to.Year(), to.Month(), to.Day(), 0, 0, 0, 0, masterLoc).Add(24 * time.Hour).UTC()
 
-	// Подготовка временных границ с 00:00:00 по  23:59:59
-	// Границы создаются с интерпретацией временной локации мастера, после чего перевод в UTC для запроса в БД
-	queryStart := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, masterLoc).UTC()
-	queryEnd := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 0, masterLoc).UTC()
-	
-	// Получаем слайс всех встречи мастера в нашем временном диапазоне
-	appointments, err := s.repo.GetActiveAppointmentsByMaster(ctx, masterID, queryStart, queryEnd)
+	appointments, err := s.repo.GetActiveAppointmentsByMaster(ctx, masterID, queryStartUTC, queryEndUTC)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
-	// Создаем мапу записей. Мы локализуем в часовой пояс мастера время. Ключ дата "2006-01-02" : значения это записи Appointment на эту дату 
-	apptsByDate := make(map[string][]model.Appointment)
-	for _, a := range appointments {
-		a.StartAt = a.StartAt.In(masterLoc)
-		a.EndAt = a.EndAt.In(masterLoc)
-		// Приводим дату начала записи к формату такого шаблона "2006-01-02"
-		dateStr := a.StartAt.Format(dateFormat)
-		// Засовывает запись(a типа Appointment)  на какую то дату 
-		apptsByDate[dateStr] = append(apptsByDate[dateStr], a)
-	}
-	
-	totalDuration := time.Duration(serviceItem.DurationMinutes) * time.Minute
+	stepDur := time.Duration(settings.SlotStepMinutes) * time.Minute
+	leadDur := time.Duration(settings.LeadTimeMinutes) * time.Minute
+	serviceDur := time.Duration(serviceItem.DurationMinutes) * time.Minute
+	leadCutoffUTC := time.Now().UTC().Add(leadDur)
 
-	// Мапа для складирования доступных слотов
-	result := &dto.GetAvailableSlotsResponse{
-		Slots: make(map[string][]string),
-	}
-	
-	// Цикл по датам. Шаг итерации ровно 1 день.
-	for d := startDate; !d.After(endDate); d = d.AddDate(0, 0, 1) {
+	intervalsByDate := groupIntervalsByDate(intervals)
+	apptsByDate := groupAppointmentsByDate(appointments, masterLoc)
+
+	result := &dto.GetAvailableSlotsResponse{Slots: make(map[string][]string)}
+
+	for d := from; !d.After(to); d = d.AddDate(0, 0, 1) {
 		dateStr := d.Format(dateFormat)
-		// Инициализация слайса для конкретной даты dateStr в мапе result.Slots
-		result.Slots[dateStr] = []string{}
 
-		var workStartStr, workEndStr string
-		var isWorking bool
-		// Проверяем есть ли исключения в мапе excMap на проверяемую дату
-		if exc, ok := excMap[dateStr]; ok {
-			
-			// Зайдем внутрь если в исключение мы работаем и заданы старт и конец исключения
-			if exc.IsWorking && exc.StartTime != nil && exc.EndTime != nil {
-				isWorking = true
-				workStartStr = *exc.StartTime
-				workEndStr = *exc.EndTime
-			}
-		// Если нет исключений на проверяемую дату
-		} else {
-			// Превращаем день недели в число, помним что 0 - воскресенье, 1 понедельник и тд
-			dayOfWeek := int(d.Weekday())
-			// Проверка настроек мастера
-			if wh, ok := whMap[dayOfWeek]; ok && !wh.IsDayOff && wh.StartTime != nil && wh.EndTime != nil {
-				isWorking = true
-				workStartStr = *wh.StartTime
-				workEndStr = *wh.EndTime
-			}
-		}
-
-		// Пропускаем нерабочие дни
-		if !isWorking {
+		dayIntervals, ok := intervalsByDate[dateStr]
+		if !ok {
 			continue
 		}
-		
-		// Конкатинируем к дате dateStr, по которой итерируемся, еще время часов с учетом локации мастера
-		workStart, _ := time.ParseInLocation("2006-01-02 15:04", dateStr+" "+workStartStr, masterLoc)
-		workEnd, _ := time.ParseInLocation("2006-01-02 15:04", dateStr+" "+workEndStr, masterLoc)
-
-		// Тут лежат записи Appointment на дату dateStr
 		dayAppts := apptsByDate[dateStr]
-		currentTime := workStart
 
-		// Пытаемся втиснуть услугу totalDuration в оставшееся рабочее время
-		for currentTime.Add(totalDuration).Before(workEnd) || currentTime.Add(totalDuration).Equal(workEnd) {
-			slotStart := currentTime
-			slotEnd := currentTime.Add(totalDuration)
+		var daySlots []string
+		for _, wi := range dayIntervals {
+			daySlots = append(daySlots, generateSlotsForInterval(d, wi, dayAppts, serviceDur, stepDur, masterLoc, leadCutoffUTC)...)
+		}
 
-			hasIntersection := false
-			for _, appt := range dayAppts {
-				if slotStart.Before(appt.EndAt) && appt.StartAt.Before(slotEnd) {
-					hasIntersection = true
-					currentTime = appt.EndAt
-					break
-				}
-			}
-
-			if !hasIntersection {
-				result.Slots[dateStr] = append(result.Slots[dateStr], slotStart.Format(timeFormat))
-
-				currentTime = slotEnd
-			}
+		if len(daySlots) > 0 {
+			result.Slots[dateStr] = daySlots
 		}
 	}
 
 	return result, nil
+}
+
+// generateSlotsForInterval перебирает кандидатные слоты внутри одного интервала с шагом step.
+// Возвращает HH:MM в локальной таймзоне мастера.
+func generateSlotsForInterval(date time.Time, wi catalogDTO.WorkInterval, dayAppts []model.Appointment, serviceDur, step time.Duration, loc *time.Location, leadCutoffUTC time.Time) []string {
+	intervalStart, intervalEnd, ok := parseIntervalLocal(date, wi.StartTime, wi.EndTime, loc)
+	if !ok {
+		return nil
+	}
+
+	slots := make([]string, 0)
+	for cur := intervalStart; !cur.Add(serviceDur).After(intervalEnd); cur = cur.Add(step) {
+		slotStartUTC := cur.UTC()
+		slotEndUTC := cur.Add(serviceDur).UTC()
+
+		if slotStartUTC.Before(leadCutoffUTC) {
+			continue
+		}
+		if intersectsAny(slotStartUTC, slotEndUTC, dayAppts) {
+			continue
+		}
+		slots = append(slots, cur.Format(timeFormat))
+	}
+	return slots
+}
+
+// intersectsAny — true, если [start, end) пересекается хотя бы с одной записью.
+func intersectsAny(startUTC, endUTC time.Time, appts []model.Appointment) bool {
+	for _, a := range appts {
+		if startUTC.Before(a.EndAt) && a.StartAt.Before(endUTC) {
+			return true
+		}
+	}
+	return false
+}
+
+// parseIntervalLocal превращает (date, "HH:MM", "HH:MM", loc) в локальные time.Time границы интервала.
+func parseIntervalLocal(date time.Time, startStr, endStr string, loc *time.Location) (time.Time, time.Time, bool) {
+	st, err := time.Parse(timeFormat, startStr)
+	if err != nil {
+		return time.Time{}, time.Time{}, false
+	}
+	en, err := time.Parse(timeFormat, endStr)
+	if err != nil {
+		return time.Time{}, time.Time{}, false
+	}
+	start := time.Date(date.Year(), date.Month(), date.Day(), st.Hour(), st.Minute(), 0, 0, loc)
+	end := time.Date(date.Year(), date.Month(), date.Day(), en.Hour(), en.Minute(), 0, 0, loc)
+	return start, end, true
+}
+
+func groupIntervalsByDate(intervals []catalogDTO.WorkInterval) map[string][]catalogDTO.WorkInterval {
+	out := make(map[string][]catalogDTO.WorkInterval, len(intervals))
+	for _, wi := range intervals {
+		out[wi.Date] = append(out[wi.Date], wi)
+	}
+	return out
+}
+
+// groupAppointmentsByDate раскладывает записи по датам в локальной таймзоне мастера.
+// Считаем, что одна запись лежит в одном дне (start_at). Это допустимо — записи не должны
+// пересекать полночь. Если такое произойдёт, end будет учтён при пересечении в соседнем дне.
+func groupAppointmentsByDate(appts []model.Appointment, loc *time.Location) map[string][]model.Appointment {
+	out := make(map[string][]model.Appointment, len(appts))
+	for _, a := range appts {
+		dateStr := a.StartAt.In(loc).Format(dateFormat)
+		out[dateStr] = append(out[dateStr], a)
+	}
+	return out
 }

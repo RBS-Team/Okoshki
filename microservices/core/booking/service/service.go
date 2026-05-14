@@ -23,8 +23,8 @@ type AppointmentRepository interface {
 
 type CatalogProvider interface {
 	GetServiceItemByID(ctx context.Context, id uuid.UUID) (*catalogDTO.ServiceItem, error)
-	GetWorkingHours(ctx context.Context, masterID uuid.UUID) ([]catalogDTO.WorkingHours, error)
-	GetScheduleExceptions(ctx context.Context, masterID uuid.UUID, startDateStr, endDateStr string) ([]catalogDTO.ScheduleException, error)
+	GetMasterSettings(ctx context.Context, masterID uuid.UUID) (*catalogDTO.MasterSettings, error)
+	ListWorkIntervals(ctx context.Context, masterID uuid.UUID, fromStr, toStr string) ([]catalogDTO.WorkInterval, error)
 }
 
 type UserProvider interface {

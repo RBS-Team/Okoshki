@@ -9,11 +9,12 @@ DROP TABLE IF EXISTS master_portfolio_photos;
 DROP TRIGGER IF EXISTS update_appointments_modtime ON appointments;
 DROP TABLE IF EXISTS appointments;
 
-DROP TRIGGER IF EXISTS update_schedule_exceptions_modtime ON master_schedule_exceptions;
-DROP TABLE IF EXISTS master_schedule_exceptions;
+DROP TRIGGER IF EXISTS update_work_intervals_modtime ON master_work_intervals;
+DROP INDEX IF EXISTS idx_work_intervals_master_date;
+DROP TABLE IF EXISTS master_work_intervals;
 
-DROP TRIGGER IF EXISTS update_working_hours_modtime ON master_working_hours;
-DROP TABLE IF EXISTS master_working_hours;
+DROP TRIGGER IF EXISTS update_master_settings_modtime ON master_settings;
+DROP TABLE IF EXISTS master_settings;
 
 DROP TRIGGER IF EXISTS update_master_services_modtime ON master_services;
 DROP TABLE IF EXISTS master_services;

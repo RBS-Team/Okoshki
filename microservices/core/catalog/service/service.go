@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/RBS-Team/Okoshki/internal/model"
-	"github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
 	usersDTO "github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 )
@@ -23,14 +22,15 @@ type IRepository interface {
 	GetServicesByCategoryID(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]model.ServiceItem, error)
 	GetServiceItemByID(ctx context.Context, id uuid.UUID) (*model.ServiceItem, error)
 
-	UpsertWorkingHours(ctx context.Context, masterID uuid.UUID, hours []model.WorkingHours) error
-	GetWorkingHoursByMasterID(ctx context.Context, masterID uuid.UUID) ([]model.WorkingHours, error)
+	GetMasterSettings(ctx context.Context, masterID uuid.UUID) (*model.MasterSettings, error)
+	UpsertMasterSettings(ctx context.Context, masterID uuid.UUID, slotStep, leadTime *int) error
 
-	CreateScheduleException(ctx context.Context, exc model.ScheduleException) error
-	GetScheduleExceptionByID(ctx context.Context, masterID, exceptionID uuid.UUID) (*model.ScheduleException, error)
-	GetScheduleExceptions(ctx context.Context, masterID uuid.UUID, startDate, endDate time.Time) ([]model.ScheduleException, error)
-	UpdateScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID, upd postgres.UpdateScheduleExceptionInput) error
-	DeleteScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID) error
+	CreateWorkInterval(ctx context.Context, wi model.WorkInterval) error
+	DeleteWorkInterval(ctx context.Context, masterID, intervalID uuid.UUID) error
+	GetWorkIntervalByID(ctx context.Context, masterID, intervalID uuid.UUID) (*model.WorkInterval, error)
+	GetWorkIntervalsByMasterRange(ctx context.Context, masterID uuid.UUID, from, to time.Time) ([]model.WorkInterval, error)
+	ReplaceWorkIntervalsForDate(ctx context.Context, masterID uuid.UUID, workDate time.Time, intervals []model.WorkInterval) error
+	HasActiveAppointmentsInRange(ctx context.Context, masterID uuid.UUID, startUTC, endUTC time.Time) (bool, error)
 }
 
 type MasterProvider interface {

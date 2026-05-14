@@ -114,7 +114,10 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	csrfProtected := protected.PathPrefix("").Subrouter()
 	// csrfProtected.Use(csrfMiddleware)
 	_ = csrfMiddleware
-	catalogHandler.RegisterRoutes(public, protected, csrfProtected)
+
+	masterCtx := middleware.MasterContext(userSvc)
+
+	catalogHandler.RegisterRoutes(public, protected, csrfProtected, masterCtx)
 	authHandler.RegisterRoutes(public, protected, csrfProtected)
 	userHandler.RegisterRoutes(public, protected, csrfProtected)
 	bookingHandler.RegisterRoutes(public, protected, csrfProtected)

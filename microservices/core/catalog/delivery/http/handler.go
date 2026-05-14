@@ -19,13 +19,13 @@ type IService interface {
 	GetServiceItemsByMasterID(ctx context.Context, masterID uuid.UUID) ([]dto.ServiceItem, error)
 	GetServicesByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.ServiceWithMaster, error)
 
-	UpsertWorkingHours(ctx context.Context, masterID uuid.UUID, req dto.UpdateWorkingHoursBulkRequest) error
-	GetWorkingHours(ctx context.Context, masterID uuid.UUID) ([]dto.WorkingHours, error)
+	GetMasterSettings(ctx context.Context, masterID uuid.UUID) (*dto.MasterSettings, error)
+	UpsertMasterSettings(ctx context.Context, masterID uuid.UUID, req dto.UpsertMasterSettingsRequest) error
 
-	CreateScheduleException(ctx context.Context, masterID uuid.UUID, req dto.CreateScheduleExceptionRequest) (*dto.ScheduleException, error)
-	UpdateScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID, req dto.UpdateScheduleExceptionRequest) error
-	DeleteScheduleException(ctx context.Context, masterID, exceptionID uuid.UUID) error
-	GetScheduleExceptions(ctx context.Context, masterID uuid.UUID, startDateStr, endDateStr string) ([]dto.ScheduleException, error)
+	CreateWorkInterval(ctx context.Context, masterID uuid.UUID, req dto.CreateWorkIntervalRequest) (*dto.WorkInterval, error)
+	DeleteWorkInterval(ctx context.Context, masterID, intervalID uuid.UUID) error
+	ListWorkIntervals(ctx context.Context, masterID uuid.UUID, fromStr, toStr string) ([]dto.WorkInterval, error)
+	ReplaceWorkIntervalsForDate(ctx context.Context, masterID uuid.UUID, req dto.ReplaceWorkIntervalsForDateRequest) error
 }
 
 type Handler struct {

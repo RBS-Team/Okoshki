@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/booking/dto"
 )
@@ -18,7 +20,7 @@ func (s *Service) CreateAppointment(ctx context.Context, clientID uuid.UUID, req
 
 	serviceID, err := uuid.Parse(req.ServiceID)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: invalid service id: %w", op, err)
+		return nil, fmt.Errorf("[%s]: invalid service id: %w", op, domain.ErrInvalidInput)
 	}
 
 	serviceItem, err := s.catalog.GetServiceItemByID(ctx, serviceID)
@@ -41,39 +43,34 @@ func (s *Service) CreateAppointment(ctx context.Context, clientID uuid.UUID, req
 		masterLoc = time.UTC
 	}
 
-	clientArrivalTime, err := time.ParseInLocation(dateTimeFormat, req.StartAt, masterLoc)
+	settings, err := s.catalog.GetMasterSettings(ctx, masterID)
 	if err != nil {
-		return nil, fmt.Errorf("[%s]: invalid start_at format (expected YYYY-MM-DD HH:MM): %w", op, err)
+		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}
 
-	dbStartAt := clientArrivalTime.UTC()
-	dbEndAt := clientArrivalTime.Add(time.Duration(serviceItem.DurationMinutes) * time.Minute).UTC()
-
-	now := time.Now().UTC()
-	if dbStartAt.Before(now) {
-		return nil, fmt.Errorf("[%s]: cannot book an appointment in the past: %w", op, ErrValidation)
+	clientArrival, err := time.ParseInLocation(dateTimeFormat, req.StartAt, masterLoc)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: invalid start_at format (expected YYYY-MM-DD HH:MM): %w", op, domain.ErrInvalidInput)
 	}
 
-	dateStr := clientArrivalTime.Format(dateFormat)
-	timeStr := clientArrivalTime.Format("15:04")
+	startUTC := clientArrival.UTC()
+	endUTC := clientArrival.Add(time.Duration(serviceItem.DurationMinutes) * time.Minute).UTC()
 
-	availableSlotsResp, err := s.GetAvailableSlots(ctx, serviceID, dateStr, dateStr)
+	leadCutoffUTC := time.Now().UTC().Add(time.Duration(settings.LeadTimeMinutes) * time.Minute)
+	if startUTC.Before(leadCutoffUTC) {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrLeadTimeViolation)
+	}
+
+	dateStr := clientArrival.Format(dateFormat)
+	timeStr := clientArrival.Format(timeFormat)
+
+	availableSlots, err := s.GetAvailableSlots(ctx, serviceID, dateStr, dateStr)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: failed to validate schedule: %w", op, err)
 	}
 
-	isValidSlot := false
-	if slots, ok := availableSlotsResp.Slots[dateStr]; ok {
-		for _, slot := range slots {
-			if slot == timeStr {
-				isValidSlot = true
-				break
-			}
-		}
-	}
-
-	if !isValidSlot {
-		return nil, fmt.Errorf("[%s]: time slot %s is not available in master schedule: %w", op, timeStr, ErrValidation)
+	if !slices.Contains(availableSlots.Slots[dateStr], timeStr) {
+		return nil, fmt.Errorf("[%s]: time slot %s: %w", op, timeStr, domain.ErrSlotNotAvailable)
 	}
 
 	status := model.StatusPending
@@ -81,13 +78,14 @@ func (s *Service) CreateAppointment(ctx context.Context, clientID uuid.UUID, req
 		status = model.StatusConfirmed
 	}
 
+	now := time.Now().UTC()
 	appt := model.Appointment{
 		ID:            uuid.New(),
 		ClientID:      clientID,
 		MasterID:      masterID,
 		ServiceID:     serviceID,
-		StartAt:       dbStartAt,
-		EndAt:         dbEndAt,
+		StartAt:       startUTC,
+		EndAt:         endUTC,
 		Status:        status,
 		IsManualBlock: false,
 		ClientComment: req.ClientComment,
@@ -104,9 +102,10 @@ func (s *Service) CreateAppointment(ctx context.Context, clientID uuid.UUID, req
 		ClientID:      appt.ClientID.String(),
 		MasterID:      appt.MasterID.String(),
 		ServiceID:     appt.ServiceID.String(),
-		StartAt:       clientArrivalTime,
-		EndAt:         clientArrivalTime.Add(time.Duration(serviceItem.DurationMinutes) * time.Minute),
+		StartAt:       clientArrival,
+		EndAt:         clientArrival.Add(time.Duration(serviceItem.DurationMinutes) * time.Minute),
 		Status:        string(appt.Status),
 		ClientComment: appt.ClientComment,
 	}, nil
 }
+

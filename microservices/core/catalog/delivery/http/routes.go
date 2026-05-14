@@ -9,12 +9,16 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
-func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
+// RegisterRoutes регистрирует маршруты каталога.
+// masterCtx — middleware, который резолвит master_id из JWT и кладёт в контекст.
+// Применяется к эндпоинтам /me/..., где мастер действует над собственными ресурсами.
+func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router, masterCtx mux.MiddlewareFunc) {
 	public.HandleFunc("/categories", h.GetAllCategories).Methods(http.MethodGet, http.MethodOptions)
 	public.HandleFunc("/categories/{id}", h.GetCategoryByID).Methods(http.MethodGet, http.MethodOptions)
 	public.HandleFunc("/categories/{id}/services", h.GetServicesByCategory).Methods(http.MethodGet, http.MethodOptions)
 
 	public.HandleFunc("/masters/{id}/services", h.GetServiceItemsByMasterID).Methods(http.MethodGet, http.MethodOptions)
+	public.HandleFunc("/masters/{masterID}/work-intervals", h.ListWorkIntervals).Methods(http.MethodGet, http.MethodOptions)
 
 	adminProtected := csrfProtected.PathPrefix("").Subrouter()
 	adminProtected.Use(middleware.RequireRole(string(model.RoleAdmin)))
@@ -25,11 +29,14 @@ func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 
 	masterProtected.HandleFunc("/masters/{id}/services", h.CreateServiceItem).Methods(http.MethodPost, http.MethodOptions)
 
-	masterProtected.HandleFunc("/masters/{masterID}/working-hours", h.GetWorkingHours).Methods(http.MethodGet, http.MethodOptions)
-	masterProtected.HandleFunc("/masters/{masterID}/working-hours", h.UpsertWorkingHours).Methods(http.MethodPut, http.MethodOptions)
+	// /me/... — собственные ресурсы мастера. master_id берётся из контекста, не из URL.
+	me := masterProtected.PathPrefix("/me").Subrouter()
+	me.Use(masterCtx)
 
-	masterProtected.HandleFunc("/masters/{masterID}/schedule-exceptions", h.GetScheduleExceptions).Methods(http.MethodGet, http.MethodOptions)
-	masterProtected.HandleFunc("/masters/{masterID}/schedule-exceptions", h.CreateScheduleException).Methods(http.MethodPost, http.MethodOptions)
-	masterProtected.HandleFunc("/masters/{masterID}/schedule-exceptions/{id}", h.UpdateScheduleException).Methods(http.MethodPut, http.MethodOptions)
-	masterProtected.HandleFunc("/masters/{masterID}/schedule-exceptions/{id}", h.DeleteScheduleException).Methods(http.MethodDelete, http.MethodOptions)
+	me.HandleFunc("/settings", h.GetMasterSettings).Methods(http.MethodGet, http.MethodOptions)
+	me.HandleFunc("/settings", h.UpsertMasterSettings).Methods(http.MethodPut, http.MethodOptions)
+
+	me.HandleFunc("/work-intervals", h.CreateWorkInterval).Methods(http.MethodPost, http.MethodOptions)
+	me.HandleFunc("/work-intervals", h.ReplaceWorkIntervalsForDate).Methods(http.MethodPut, http.MethodOptions)
+	me.HandleFunc("/work-intervals/{intervalID}", h.DeleteWorkInterval).Methods(http.MethodDelete, http.MethodOptions)
 }

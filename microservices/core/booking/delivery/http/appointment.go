@@ -1,7 +1,6 @@
 package http
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -9,8 +8,6 @@ import (
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/microservices/core/booking/dto"
-	"github.com/RBS-Team/Okoshki/microservices/core/booking/repository/postgres"
-	"github.com/RBS-Team/Okoshki/microservices/core/booking/service"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
@@ -52,7 +49,7 @@ func (h *Handler) GetAvailableSlots(w http.ResponseWriter, r *http.Request) {
 	slots, err := h.service.GetAvailableSlots(r.Context(), serviceID, startDateStr, endDateStr)
 	if err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
-		response.InternalErrorJSON(w)
+		h.handleError(w, err)
 		return
 	}
 
@@ -102,18 +99,7 @@ func (h *Handler) CreateAppointment(w http.ResponseWriter, r *http.Request) {
 	appt, err := h.service.CreateAppointment(r.Context(), clientID, req)
 	if err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
-
-		if errors.Is(err, postgres.ErrTimeConflict) {
-			response.JSON(w, http.StatusConflict, response.ErrorResponse{Error: "time slot is already booked"})
-			return
-		}
-
-		if errors.Is(err, service.ErrValidation) {
-			response.BadRequestJSON(w)
-			return
-		}
-
-		response.InternalErrorJSON(w)
+		h.handleError(w, err)
 		return
 	}
 
