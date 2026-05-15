@@ -29,4 +29,7 @@ func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 	clientProtected.Use(middleware.RequireRole(string(model.RoleClient)))
 
 	clientProtected.HandleFunc("/clients/me/avatar", h.UploadClientAvatar).Methods(http.MethodPut, http.MethodOptions)
+
+	protected.HandleFunc("/clients/user/{userID}", h.GetClientByUserID).Methods(http.MethodGet, http.MethodOptions)
+	protected.HandleFunc("/masters/user/{userID}", h.GetMasterByUserID).Methods(http.MethodGet, http.MethodOptions)
 }

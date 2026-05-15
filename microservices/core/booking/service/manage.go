@@ -171,10 +171,10 @@ func (s *Service) GetClientAppointments(ctx context.Context, clientID uuid.UUID,
 	return views, nil
 }
 
-func (s *Service) GetMasterAppointments(ctx context.Context, masterID uuid.UUID, start, end time.Time) ([]dto.MasterAppointmentView, error) {
+func (s *Service) GetMasterAppointments(ctx context.Context, masterID uuid.UUID, start, end time.Time, status model.AppointmentStatus) ([]dto.MasterAppointmentView, error) {
 	const op = "booking.service.GetMasterAppointments"
 
-	appts, err := s.repo.GetAppointmentsByMasterID(ctx, masterID, start, end)
+	appts, err := s.repo.GetAppointmentsByMasterID(ctx, masterID, start, end, status)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, err)
 	}

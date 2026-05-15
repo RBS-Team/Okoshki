@@ -16,14 +16,15 @@ func (r *Repository) CreateClient(ctx context.Context, client model.Client) erro
 	const op = "users.repository.postgres.CreateClient"
 
 	query := `
-		INSERT INTO clients (id, user_id, first_name, phone, avatar_url, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO clients (id, user_id, first_name, last_name, phone, avatar_url, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
 		client.ID,
 		client.UserID,
 		client.FirstName,
+		client.LastName,
 		client.Phone,
 		client.AvatarURL,
 		client.CreatedAt,
@@ -41,10 +42,10 @@ func (r *Repository) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*
 
 	var c model.Client
 	err := r.db.QueryRowContext(ctx,
-		`SELECT id, user_id, first_name, phone, avatar_url, created_at, updated_at
+		`SELECT id, user_id, first_name, last_name, phone, avatar_url, created_at, updated_at
 		 FROM clients WHERE user_id = $1`,
 		userID,
-	).Scan(&c.ID, &c.UserID, &c.FirstName, &c.Phone, &c.AvatarURL, &c.CreatedAt, &c.UpdatedAt)
+	).Scan(&c.ID, &c.UserID, &c.FirstName, &c.LastName, &c.Phone, &c.AvatarURL, &c.CreatedAt, &c.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrNotFound)

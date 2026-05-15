@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/booking/dto"
 )
 
@@ -15,7 +16,7 @@ type IService interface {
 
 	GetMasterIDByUserID(ctx context.Context, userID uuid.UUID) (uuid.UUID, error)
 	GetClientAppointments(ctx context.Context, clientID uuid.UUID, limit, offset uint64) ([]dto.ClientAppointmentView, error)
-	GetMasterAppointments(ctx context.Context, masterID uuid.UUID, start, end time.Time) ([]dto.MasterAppointmentView, error)
+	GetMasterAppointments(ctx context.Context, masterID uuid.UUID, start, end time.Time, status model.AppointmentStatus) ([]dto.MasterAppointmentView, error)
 	UpdateAppointmentStatus(ctx context.Context, actorID uuid.UUID, appointmentID uuid.UUID, req dto.UpdateAppointmentStatusRequest, isClient bool) error
 	CreateManualBlock(ctx context.Context, masterID uuid.UUID, req dto.CreateManualBlockRequest) (*dto.CreateManualBlockResponse, error)
 	DeleteManualBlock(ctx context.Context, masterID, blockID uuid.UUID) error

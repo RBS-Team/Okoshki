@@ -114,6 +114,48 @@ func (h *Handler) GetMasterByID(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, master)
 }
 
+// GetMasterByUserID godoc
+// @Summary      Получение мастера по userID
+// @Description  Возвращает профиль мастера по UUID пользователя
+// @Tags         masters
+// @Accept       json
+// @Produce      json
+// @Param        userID path string true "UUID пользователя" format(uuid)
+// @Success      200 {object} dto.Master "Мастер найден"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат ID"
+// @Failure      404 {object} response.ErrorResponse "Мастер не найден"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router       /masters/user/{userID} [get]
+func (h *Handler) GetMasterByUserID(w http.ResponseWriter, r *http.Request) {
+	const op = "users.handler.GetMasterByUserID"
+	log := middleware.LoggerFromContext(r.Context())
+
+	idStr, ok := mux.Vars(r)["userID"]
+	if !ok {
+		log.Errorf("[%s]: userID is missing in URL vars", op)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	userID, err := uuid.Parse(idStr)
+	if err != nil {
+		log.Warnf("[%s]: failed to parse userID from URL: %v", op, err)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	master, err := h.service.GetMasterByUserID(r.Context(), userID)
+	if err != nil {
+		if !errors.Is(err, domain.ErrNotFound) {
+			log.Errorf("[%s]: service error: %v", op, err)
+		}
+		h.handleMasterError(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, master)
+}
+
 // GetAllMasters godoc
 // @Summary      Получение списка мастеров
 // @Description  Возвращает список всех мастеров с пагинацией

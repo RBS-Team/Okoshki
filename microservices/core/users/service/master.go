@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 
@@ -12,8 +14,34 @@ import (
 	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 )
 
+var emailRe = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
+
 func (s *Service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequest) (*dto.RegisterMasterResponse, error) {
 	const op = "users.service.RegisterMaster"
+
+	if !emailRe.MatchString(req.Email) {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+	}
+	if pwdLen := utf8.RuneCountInString(req.Password); pwdLen < 6 || pwdLen > 100 {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+	}
+	if fnLen := utf8.RuneCountInString(req.FirstName); fnLen < 2 || fnLen > 70 {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+	}
+	if lnLen := utf8.RuneCountInString(req.LastName); lnLen < 2 || lnLen > 70 {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+	}
+	if req.Bio != nil {
+		if bioLen := utf8.RuneCountInString(*req.Bio); bioLen < 10 || bioLen > 500 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if cityLen := utf8.RuneCountInString(req.City); cityLen < 2 || cityLen > 100 {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+	}
+	if addrLen := utf8.RuneCountInString(req.Address); addrLen < 2 || addrLen > 300 {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+	}
 
 	categoryID, err := uuid.Parse(req.CategoryID)
 	if err != nil {
