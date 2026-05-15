@@ -111,20 +111,25 @@ func (r *Repository) GetAppointmentsByClientID(ctx context.Context, clientID uui
 	return appointments, nil
 }
 
-func (r *Repository) GetAppointmentsByMasterID(ctx context.Context, masterID uuid.UUID, start, end time.Time) ([]model.Appointment, error) {
+func (r *Repository) GetAppointmentsByMasterID(ctx context.Context, masterID uuid.UUID, start, end time.Time, status model.AppointmentStatus) ([]model.Appointment, error) {
 	const op = "booking.repository.postgres.GetAppointmentsByMasterID"
 
 	query := `
-		SELECT id, client_id, master_id, service_id, start_at, end_at, 
+		SELECT id, client_id, master_id, service_id, start_at, end_at,
 		       status, is_manual_block, client_comment, master_note, created_at, updated_at
 		FROM appointments
-		WHERE master_id = $1 
-		  AND start_at >= $2 
+		WHERE master_id = $1
+		  AND start_at >= $2
 		  AND start_at <= $3
-		ORDER BY start_at ASC
 	`
+	args := []any{masterID, start, end}
+	if status != "" {
+		query += " AND status = $4"
+		args = append(args, status)
+	}
+	query += " ORDER BY start_at ASC"
 
-	rows, err := r.db.QueryContext(ctx, query, masterID, start, end)
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: query failed: %w", op, err)
 	}

@@ -10,9 +10,18 @@ import (
 	"github.com/mailru/easyjson"
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
+	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/booking/dto"
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
+
+var allowedMasterAppointmentStatuses = map[model.AppointmentStatus]struct{}{
+	model.StatusPending:   {},
+	model.StatusConfirmed: {},
+	model.StatusRejected:  {},
+	model.StatusCancelled: {},
+	model.StatusCompleted: {},
+}
 
 const dateFormat = "2006-01-02"
 
@@ -115,14 +124,15 @@ func (h *Handler) CancelAppointment(w http.ResponseWriter, r *http.Request) {
 
 // GetMasterAppointments godoc
 // @Summary      Получение записей мастера за период
-// @Description  Возвращает список всех записей мастера в заданном диапазоне дат. Включает записи клиентов и ручные блокировки. Требуется роль master и наличие созданного профиля мастера.
+// @Description  Возвращает список записей мастера в заданном диапазоне дат с фильтрацией по статусу. Значение "all" возвращает все записи независимо от статуса. Включает записи клиентов и ручные блокировки. Требуется роль master и наличие созданного профиля мастера.
 // @Tags         appointments
 // @Accept       json
 // @Produce      json
 // @Param        start_date query string true "Начальная дата периода в формате YYYY-MM-DD (например 2026-04-21)"
 // @Param        end_date   query string true "Конечная дата периода в формате YYYY-MM-DD (например 2026-04-28)"
+// @Param        status     query string true "Статус записи: pending, confirmed, rejected, cancelled, completed или all (все записи)"
 // @Success      200 {array} dto.MasterAppointmentView "Список записей мастера"
-// @Failure      400 {object} response.ErrorResponse "Отсутствуют обязательные query параметры или неверный формат даты"
+// @Failure      400 {object} response.ErrorResponse "Отсутствуют обязательные query параметры, неверный формат даты или неизвестный статус"
 // @Failure      401 {object} response.ErrorResponse "Пользователь не авторизован"
 // @Failure      403 {object} response.ErrorResponse "Профиль мастера не создан или недостаточно прав"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
@@ -140,8 +150,9 @@ func (h *Handler) GetMasterAppointments(w http.ResponseWriter, r *http.Request) 
 
 	startStr := r.URL.Query().Get("start_date")
 	endStr := r.URL.Query().Get("end_date")
+	statusStr := r.URL.Query().Get("status")
 
-	if startStr == "" || endStr == "" {
+	if startStr == "" || endStr == "" || statusStr == "" {
 		response.BadRequestJSON(w)
 		return
 	}
@@ -158,7 +169,16 @@ func (h *Handler) GetMasterAppointments(w http.ResponseWriter, r *http.Request) 
 	}
 	end = time.Date(end.Year(), end.Month(), end.Day(), 23, 59, 59, 0, end.Location())
 
-	appts, err := h.service.GetMasterAppointments(r.Context(), masterID, start, end)
+	var status model.AppointmentStatus
+	if statusStr != "all" {
+		status = model.AppointmentStatus(statusStr)
+		if _, ok := allowedMasterAppointmentStatuses[status]; !ok {
+			response.BadRequestJSON(w)
+			return
+		}
+	}
+
+	appts, err := h.service.GetMasterAppointments(r.Context(), masterID, start, end, status)
 	if err != nil {
 		log.Errorf("[%s]: service error: %v", op, err)
 		response.InternalErrorJSON(w)
