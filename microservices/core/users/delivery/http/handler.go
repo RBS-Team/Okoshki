@@ -20,6 +20,8 @@ type IService interface {
 	GetAllMasters(ctx context.Context, limit, offset uint64) ([]dto.Master, error)
 	GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error)
 
+	GetClientByUserID(ctx context.Context, userID uuid.UUID) (*dto.Client, error)
+
 	UploadMasterAvatar(ctx context.Context, userIDStr, masterIDStr string, file io.Reader, size int64, contentType string) (string, error)
 	UploadClientAvatar(ctx context.Context, userIDStr string, file io.Reader, size int64, contentType string) (string, error)
 

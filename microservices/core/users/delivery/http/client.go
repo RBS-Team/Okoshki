@@ -1,12 +1,16 @@
 package http
 
 import (
+	"errors"
 	"net/http"
 	"regexp"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/mailru/easyjson"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 	"github.com/RBS-Team/Okoshki/pkg/response"
@@ -68,6 +72,48 @@ func (h *Handler) RegisterClient(w http.ResponseWriter, r *http.Request) {
 
 	log.Infof("[%s]: client registered: userID=%s", op, result.UserID)
 	response.JSON(w, http.StatusCreated, result)
+}
+
+// GetClientByUserID godoc
+// @Summary      Получение клиента по userID
+// @Description  Возвращает профиль клиента по UUID пользователя
+// @Tags         clients
+// @Accept       json
+// @Produce      json
+// @Param        userID path string true "UUID пользователя" format(uuid)
+// @Success      200 {object} dto.Client "Клиент найден"
+// @Failure      400 {object} response.ErrorResponse "Неверный формат ID"
+// @Failure      404 {object} response.ErrorResponse "Клиент не найден"
+// @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router       /clients/user/{userID} [get]
+func (h *Handler) GetClientByUserID(w http.ResponseWriter, r *http.Request) {
+	const op = "users.handler.GetClientByUserID"
+	log := middleware.LoggerFromContext(r.Context())
+
+	idStr, ok := mux.Vars(r)["userID"]
+	if !ok {
+		log.Errorf("[%s]: userID is missing in URL vars", op)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	userID, err := uuid.Parse(idStr)
+	if err != nil {
+		log.Warnf("[%s]: failed to parse userID from URL: %v", op, err)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	client, err := h.service.GetClientByUserID(r.Context(), userID)
+	if err != nil {
+		if !errors.Is(err, domain.ErrNotFound) {
+			log.Errorf("[%s]: service error: %v", op, err)
+		}
+		h.handleUsersError(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, client)
 }
 
 func isValidCredentials(email, pass string) bool {

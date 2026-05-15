@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 
@@ -15,7 +16,13 @@ import (
 func (s *Service) RegisterClient(ctx context.Context, req dto.RegisterClientRequest) (*dto.RegisterClientResponse, error) {
 	const op = "users.service.RegisterClient"
 
-	if req.FirstName == "" {
+	if !emailRe.MatchString(req.Email) {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+	}
+	if pwdLen := utf8.RuneCountInString(req.Password); pwdLen < 6 || pwdLen > 100 {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+	}
+	if fnLen := utf8.RuneCountInString(req.FirstName); fnLen < 2 || fnLen > 70 {
 		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 
@@ -46,6 +53,18 @@ func (s *Service) RegisterClient(ctx context.Context, req dto.RegisterClientRequ
 		LastName:  client.LastName,
 		Role:      string(model.RoleClient),
 	}, nil
+}
+
+func (s *Service) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*dto.Client, error) {
+	const op = "users.service.GetClientByUserID"
+
+	client, err := s.repo.GetClientByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, err)
+	}
+
+	result := s.mapClientToDTO(client)
+	return &result, nil
 }
 
 func (s *Service) GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]dto.Client, error) {

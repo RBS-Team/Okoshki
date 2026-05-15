@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
 	usersDTO "github.com/RBS-Team/Okoshki/microservices/core/users/dto"
@@ -14,6 +16,16 @@ import (
 
 func (s *Service) CreateServiceItem(ctx context.Context, masterID uuid.UUID, req dto.CreateServiceItemRequest) (*dto.ServiceItem, error) {
 	const op = "catalog.service.CreateServiceItem"
+
+	if titleLen := utf8.RuneCountInString(req.Title); titleLen < 10 || titleLen > 50 {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+	}
+	if addrLen := utf8.RuneCountInString(req.Address); addrLen < 2 || addrLen > 300 {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+	}
+	if cityLen := utf8.RuneCountInString(req.City); cityLen < 2 || cityLen > 100 {
+		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+	}
 
 	categoryID, err := uuid.Parse(req.CategoryID)
 	if err != nil {
