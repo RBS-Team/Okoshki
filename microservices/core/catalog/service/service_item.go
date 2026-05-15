@@ -17,7 +17,7 @@ import (
 func (s *Service) CreateServiceItem(ctx context.Context, masterID uuid.UUID, req dto.CreateServiceItemRequest) (*dto.ServiceItem, error) {
 	const op = "catalog.service.CreateServiceItem"
 
-	if titleLen := utf8.RuneCountInString(req.Title); titleLen < 10 || titleLen > 50 {
+	if titleLen := utf8.RuneCountInString(req.Title); titleLen < 3 || titleLen > 50 {
 		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 	}
 	if addrLen := utf8.RuneCountInString(req.Address); addrLen < 2 || addrLen > 300 {

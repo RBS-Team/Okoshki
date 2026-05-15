@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS master_services (
     id               UUID           PRIMARY KEY DEFAULT uuid_generate_v4(),
     master_id        UUID           NOT NULL REFERENCES masters(id) ON DELETE CASCADE,
     category_id      UUID           NOT NULL REFERENCES category(id) ON DELETE RESTRICT,
-    title            VARCHAR(50)    NOT NULL CHECK (char_length(title) BETWEEN 10 AND 50),
+    title            VARCHAR(50)    NOT NULL CHECK (char_length(title) BETWEEN 3 AND 50),
     address          VARCHAR(300)   NOT NULL CHECK (char_length(address) >= 2),
     city             VARCHAR(100)   NOT NULL CHECK (char_length(city) >= 2),
     description      TEXT,
