@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
@@ -199,7 +200,7 @@ func (r *Repository) UpdateAppointmentStatus(ctx context.Context, id uuid.UUID, 
 		return fmt.Errorf("[%s]: could not check rows affected: %w", op, err)
 	}
 	if rowsAffected == 0 {
-		return ErrNotFound
+		return domain.ErrNotFound
 	}
 
 	return nil
@@ -220,7 +221,7 @@ func (r *Repository) DeleteManualBlock(ctx context.Context, id uuid.UUID, master
 		return fmt.Errorf("[%s]: could not check rows affected: %w", op, err)
 	}
 	if rowsAffected == 0 {
-		return ErrNotFound
+		return domain.ErrNotFound
 	}
 
 	return nil
