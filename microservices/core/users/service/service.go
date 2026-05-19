@@ -33,7 +33,7 @@ type IRepository interface {
 	CreateClient(ctx context.Context, client model.Client) error
 	GetClientByUserID(ctx context.Context, userID uuid.UUID) (*model.Client, error)
 	GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Client, error)
-	
+
 	UpdateClientAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error
 
 	SavePortfolioPhotos(ctx context.Context, photos []model.PortfolioPhoto) error
