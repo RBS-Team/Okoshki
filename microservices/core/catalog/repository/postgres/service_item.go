@@ -9,7 +9,7 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
-func (r *Repository) CreateServiceItem(ctx context.Context, item model.ServiceItem) error {
+func (r *repository) CreateServiceItem(ctx context.Context, item model.ServiceItem) error {
 	const op = "catalog.repository.postgres.CreateServiceItem"
 
 	query := `
@@ -44,7 +44,7 @@ func (r *Repository) CreateServiceItem(ctx context.Context, item model.ServiceIt
 	return nil
 }
 
-func (r *Repository) GetServiceItemsByMasterID(ctx context.Context, masterID uuid.UUID) ([]model.ServiceItem, error) {
+func (r *repository) GetServiceItemsByMasterID(ctx context.Context, masterID uuid.UUID) ([]model.ServiceItem, error) {
 	const op = "catalog.repository.postgres.GetServiceItemsByMasterID"
 
 	query := `
@@ -81,7 +81,7 @@ func (r *Repository) GetServiceItemsByMasterID(ctx context.Context, masterID uui
 	return items, nil
 }
 
-func (r *Repository) GetServicesByCategoryID(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]model.ServiceItem, error) {
+func (r *repository) GetServicesByCategoryID(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]model.ServiceItem, error) {
 	const op = "catalog.repository.postgres.GetServicesByCategoryID"
 
 	query := `
@@ -119,7 +119,7 @@ func (r *Repository) GetServicesByCategoryID(ctx context.Context, categoryID uui
 	return items, nil
 }
 
-func (r *Repository) GetServiceItemByID(ctx context.Context, id uuid.UUID) (*model.ServiceItem, error) {
+func (r *repository) GetServiceItemByID(ctx context.Context, id uuid.UUID) (*model.ServiceItem, error) {
 	const op = "catalog.repository.postgres.GetServiceItemByID"
 
 	query := `

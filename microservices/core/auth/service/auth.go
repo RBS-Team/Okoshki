@@ -15,7 +15,7 @@ import (
 
 // CreateAccount хеширует пароль, создаёт запись user и возвращает новый userID.
 // Вызывается users/service при регистрации — auth не знает про профили.
-func (a *AuthService) CreateUser(ctx context.Context, email, password, role string) (uuid.UUID, error) {
+func (a *service) CreateUser(ctx context.Context, email, password, role string) (uuid.UUID, error) {
 	const op = "auth.service.CreateAccount"
 
 	passHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -39,7 +39,7 @@ func (a *AuthService) CreateUser(ctx context.Context, email, password, role stri
 	return user.ID, nil
 }
 
-func (a *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error) {
+func (a *service) Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error) {
 	const op = "auth.service.Login"
 
 	user, err := a.usrProvider.GetUserByEmail(ctx, req.Email)
@@ -58,6 +58,6 @@ func (a *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 }
 
 // DeleteUser удаляет учётку по ID. Используется как компенсирующая операция в users/service.
-func (a *AuthService) DeleteUserByID(ctx context.Context, id uuid.UUID) error {
+func (a *service) DeleteUserByID(ctx context.Context, id uuid.UUID) error {
 	return a.usrSaver.DeleteUserByID(ctx, id)
 }

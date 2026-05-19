@@ -11,7 +11,7 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
-func (r *Repository) CreateAppointment(ctx context.Context, appt model.Appointment) error {
+func (r *repository) CreateAppointment(ctx context.Context, appt model.Appointment) error {
 	const op = "booking.repository.postgres.CreateAppointment"
 
 	query := `
@@ -34,7 +34,7 @@ func (r *Repository) CreateAppointment(ctx context.Context, appt model.Appointme
 	return nil
 }
 
-func (r *Repository) GetActiveAppointmentsByMaster(ctx context.Context, masterID uuid.UUID, start, end time.Time) ([]model.Appointment, error) {
+func (r *repository) GetActiveAppointmentsByMaster(ctx context.Context, masterID uuid.UUID, start, end time.Time) ([]model.Appointment, error) {
 	const op = "booking.repository.postgres.GetActiveAppointmentsByMaster"
 
 	query := `
@@ -74,7 +74,7 @@ func (r *Repository) GetActiveAppointmentsByMaster(ctx context.Context, masterID
 	return appointments, nil
 }
 
-func (r *Repository) GetAppointmentsByClientID(ctx context.Context, clientID uuid.UUID, limit, offset uint64) ([]model.Appointment, error) {
+func (r *repository) GetAppointmentsByClientID(ctx context.Context, clientID uuid.UUID, limit, offset uint64) ([]model.Appointment, error) {
 	const op = "booking.repository.postgres.GetAppointmentsByClientID"
 
 	query := `
@@ -112,7 +112,7 @@ func (r *Repository) GetAppointmentsByClientID(ctx context.Context, clientID uui
 	return appointments, nil
 }
 
-func (r *Repository) GetAppointmentsByMasterID(ctx context.Context, masterID uuid.UUID, start, end time.Time, status model.AppointmentStatus) ([]model.Appointment, error) {
+func (r *repository) GetAppointmentsByMasterID(ctx context.Context, masterID uuid.UUID, start, end time.Time, status model.AppointmentStatus) ([]model.Appointment, error) {
 	const op = "booking.repository.postgres.GetAppointmentsByMasterID"
 
 	query := `
@@ -156,7 +156,7 @@ func (r *Repository) GetAppointmentsByMasterID(ctx context.Context, masterID uui
 	return appointments, nil
 }
 
-func (r *Repository) GetAppointmentByID(ctx context.Context, id uuid.UUID) (*model.Appointment, error) {
+func (r *repository) GetAppointmentByID(ctx context.Context, id uuid.UUID) (*model.Appointment, error) {
 	const op = "booking.repository.postgres.GetAppointmentByID"
 
 	query := `
@@ -179,7 +179,7 @@ func (r *Repository) GetAppointmentByID(ctx context.Context, id uuid.UUID) (*mod
 	return &a, nil
 }
 
-func (r *Repository) UpdateAppointmentStatus(ctx context.Context, id uuid.UUID, status model.AppointmentStatus, masterNote *string) error {
+func (r *repository) UpdateAppointmentStatus(ctx context.Context, id uuid.UUID, status model.AppointmentStatus, masterNote *string) error {
 	const op = "booking.repository.postgres.UpdateAppointmentStatus"
 
 	query := `
@@ -206,7 +206,7 @@ func (r *Repository) UpdateAppointmentStatus(ctx context.Context, id uuid.UUID, 
 	return nil
 }
 
-func (r *Repository) DeleteManualBlock(ctx context.Context, id uuid.UUID, masterID uuid.UUID) error {
+func (r *repository) DeleteManualBlock(ctx context.Context, id uuid.UUID, masterID uuid.UUID) error {
 	const op = "booking.repository.postgres.DeleteManualBlock"
 
 	query := `DELETE FROM appointments WHERE id = $1 AND master_id = $2 AND is_manual_block = true`

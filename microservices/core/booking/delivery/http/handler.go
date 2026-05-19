@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/google/uuid"
 
 	"github.com/RBS-Team/Okoshki/internal/model"
@@ -22,12 +23,16 @@ type IService interface {
 	DeleteManualBlock(ctx context.Context, masterID, blockID uuid.UUID) error
 }
 
-type Handler struct {
+type Handler interface {
+	RegisterRoutes(public, protected, csrfProtected *mux.Router)
+}
+
+type handler struct {
 	service IService
 }
 
-func NewHandler(service IService) *Handler {
-	return &Handler{
+func NewHandler(service IService) Handler {
+	return &handler{
 		service: service,
 	}
 }

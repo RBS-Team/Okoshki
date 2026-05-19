@@ -15,7 +15,7 @@ import (
 
 const categoryBucket = "okoshki-categories"
 
-func (s *Service) GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Category, error) {
+func (s *service) GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Category, error) {
 	const op = "catalog.service.GetCategoryByID"
 
 	catModel, err := s.repo.GetCategoryByID(ctx, id)
@@ -26,7 +26,7 @@ func (s *Service) GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Categ
 	return s.mapCategoryToDTO(catModel), nil
 }
 
-func (s *Service) GetAllCategories(ctx context.Context) ([]*dto.Category, error) {
+func (s *service) GetAllCategories(ctx context.Context) ([]*dto.Category, error) {
 	const op = "catalog.service.GetAllCategories"
 
 	catModels, err := s.repo.GetAllCategories(ctx)
@@ -42,7 +42,7 @@ func (s *Service) GetAllCategories(ctx context.Context) ([]*dto.Category, error)
 	return categories, nil
 }
 
-func (s *Service) UploadCategoryAvatar(ctx context.Context, categoryIDStr string, file io.Reader, size int64, contentType string) error {
+func (s *service) UploadCategoryAvatar(ctx context.Context, categoryIDStr string, file io.Reader, size int64, contentType string) error {
 	const op = "catalog.service.UploadCategoryAvatar"
 
 	categoryID, err := uuid.Parse(categoryIDStr)
@@ -77,7 +77,7 @@ func (s *Service) UploadCategoryAvatar(ctx context.Context, categoryIDStr string
 	return nil
 }
 
-func (s *Service) mapCategoryToDTO(cat *model.Category) *dto.Category {
+func (s *service) mapCategoryToDTO(cat *model.Category) *dto.Category {
 	d := &dto.Category{
 		ID:           cat.ID.String(),
 		Name:         cat.Name,

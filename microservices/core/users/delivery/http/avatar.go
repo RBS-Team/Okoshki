@@ -33,7 +33,7 @@ type avatarResponse struct {
 // @Failure      500 {object} response.ErrorResponse
 // @Security     CookieAuth
 // @Router       /masters/{masterID}/avatar [put]
-func (h *Handler) UploadMasterAvatar(w http.ResponseWriter, r *http.Request) {
+func (h *handler) UploadMasterAvatar(w http.ResponseWriter, r *http.Request) {
 	const op = "users.handler.UploadMasterAvatar"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -112,7 +112,7 @@ func (h *Handler) UploadMasterAvatar(w http.ResponseWriter, r *http.Request) {
 // @Failure      500 {object} response.ErrorResponse
 // @Security     CookieAuth
 // @Router       /clients/me/avatar [put]
-func (h *Handler) UploadClientAvatar(w http.ResponseWriter, r *http.Request) {
+func (h *handler) UploadClientAvatar(w http.ResponseWriter, r *http.Request) {
 	const op = "users.handler.UploadClientAvatar"
 	log := middleware.LoggerFromContext(r.Context())
 

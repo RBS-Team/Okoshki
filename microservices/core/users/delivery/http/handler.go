@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/gorilla/mux"
 	"github.com/google/uuid"
 
 	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
@@ -30,13 +31,17 @@ type IService interface {
 	DeletePortfolioPhoto(ctx context.Context, userIDStr, masterIDStr, photoIDStr string) error
 }
 
-type Handler struct {
+type Handler interface {
+	RegisterRoutes(public, protected, csrfProtected *mux.Router)
+}
+
+type handler struct {
 	service    IService
 	jwtManager *jwtmanager.Manager
 }
 
-func NewHandler(service IService, jwtManager *jwtmanager.Manager) *Handler {
-	return &Handler{
+func NewHandler(service IService, jwtManager *jwtmanager.Manager) Handler {
+	return &handler{
 		service:    service,
 		jwtManager: jwtManager,
 	}

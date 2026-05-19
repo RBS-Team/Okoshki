@@ -15,7 +15,7 @@ import (
 
 // CreateWorkInterval вставляет один интервал.
 // При пересечении с существующим возвращает domain.ErrIntervalOverlap (через mapErrors).
-func (r *Repository) CreateWorkInterval(ctx context.Context, wi model.WorkInterval) error {
+func (r *repository) CreateWorkInterval(ctx context.Context, wi model.WorkInterval) error {
 	const op = "catalog.repository.postgres.CreateWorkInterval"
 
 	query := `
@@ -32,7 +32,7 @@ func (r *Repository) CreateWorkInterval(ctx context.Context, wi model.WorkInterv
 
 // DeleteWorkInterval удаляет интервал по id, проверяя принадлежность мастеру.
 // Если интервал не найден — domain.ErrNotFound.
-func (r *Repository) DeleteWorkInterval(ctx context.Context, masterID, intervalID uuid.UUID) error {
+func (r *repository) DeleteWorkInterval(ctx context.Context, masterID, intervalID uuid.UUID) error {
 	const op = "catalog.repository.postgres.DeleteWorkInterval"
 
 	res, err := r.db.ExecContext(ctx, `DELETE FROM master_work_intervals WHERE id = $1 AND master_id = $2`, intervalID, masterID)
@@ -52,7 +52,7 @@ func (r *Repository) DeleteWorkInterval(ctx context.Context, masterID, intervalI
 }
 
 // GetWorkIntervalByID возвращает интервал по id с проверкой мастера.
-func (r *Repository) GetWorkIntervalByID(ctx context.Context, masterID, intervalID uuid.UUID) (*model.WorkInterval, error) {
+func (r *repository) GetWorkIntervalByID(ctx context.Context, masterID, intervalID uuid.UUID) (*model.WorkInterval, error) {
 	const op = "catalog.repository.postgres.GetWorkIntervalByID"
 
 	query := `
@@ -75,7 +75,7 @@ func (r *Repository) GetWorkIntervalByID(ctx context.Context, masterID, interval
 
 // GetWorkIntervalsByMasterRange возвращает все интервалы мастера в [from, to] включительно.
 // Сортировка: дата ASC, затем start_time ASC.
-func (r *Repository) GetWorkIntervalsByMasterRange(ctx context.Context, masterID uuid.UUID, from, to time.Time) ([]model.WorkInterval, error) {
+func (r *repository) GetWorkIntervalsByMasterRange(ctx context.Context, masterID uuid.UUID, from, to time.Time) ([]model.WorkInterval, error) {
 	const op = "catalog.repository.postgres.GetWorkIntervalsByMasterRange"
 
 	query := `
@@ -109,7 +109,7 @@ func (r *Repository) GetWorkIntervalsByMasterRange(ctx context.Context, masterID
 
 // ReplaceWorkIntervalsForDate атомарно заменяет все интервалы мастера на дату workDate.
 // Пустой intervals = удалить все существующие на эту дату (мастер не работает).
-func (r *Repository) ReplaceWorkIntervalsForDate(ctx context.Context, masterID uuid.UUID, workDate time.Time, intervals []model.WorkInterval) error {
+func (r *repository) ReplaceWorkIntervalsForDate(ctx context.Context, masterID uuid.UUID, workDate time.Time, intervals []model.WorkInterval) error {
 	const op = "catalog.repository.postgres.ReplaceWorkIntervalsForDate"
 
 	tx, err := r.db.BeginTx(ctx, nil)
@@ -149,7 +149,7 @@ func (r *Repository) ReplaceWorkIntervalsForDate(ctx context.Context, masterID u
 // HasActiveAppointmentsInRange проверяет, есть ли активные (pending/confirmed) записи мастера,
 // которые целиком или частично попадают в [startUTC, endUTC).
 // Используется перед удалением/заменой интервала, чтобы не оставить «висящие» записи.
-func (r *Repository) HasActiveAppointmentsInRange(ctx context.Context, masterID uuid.UUID, startUTC, endUTC time.Time) (bool, error) {
+func (r *repository) HasActiveAppointmentsInRange(ctx context.Context, masterID uuid.UUID, startUTC, endUTC time.Time) (bool, error) {
 	const op = "catalog.repository.postgres.HasActiveAppointmentsInRange"
 
 	query := `

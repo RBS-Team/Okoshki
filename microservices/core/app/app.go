@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -14,32 +13,17 @@ import (
 	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	_ "github.com/RBS-Team/Okoshki/docs" // сгенерированная документация
+	_ "github.com/RBS-Team/Okoshki/docs"
 	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/internal/server"
-	authHtpp "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
-	authRepo "github.com/RBS-Team/Okoshki/microservices/core/auth/repository/postgres"
-	authService "github.com/RBS-Team/Okoshki/microservices/core/auth/service"
-	userHttp "github.com/RBS-Team/Okoshki/microservices/core/users/delivery/http"
-	userRepo "github.com/RBS-Team/Okoshki/microservices/core/users/repository/postgres"
-	userService "github.com/RBS-Team/Okoshki/microservices/core/users/service"
-	bookingHttp "github.com/RBS-Team/Okoshki/microservices/core/booking/delivery/http"
-	bookingRepo "github.com/RBS-Team/Okoshki/microservices/core/booking/repository/postgres"
-	bookingService "github.com/RBS-Team/Okoshki/microservices/core/booking/service"
-	catalogHttp "github.com/RBS-Team/Okoshki/microservices/core/catalog/delivery/http"
-	catalogRepo "github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
-	catalogService "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
-	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
 	"github.com/RBS-Team/Okoshki/pkg/logger"
-	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
-	"github.com/RBS-Team/Okoshki/pkg/postgres"
 )
 
 type App struct {
 	cfg        *Config
 	logger     logger.Logger
-	db         *sql.DB
+	di         *diContainer
 	httpServer *server.Server
 }
 
@@ -53,56 +37,67 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to init logger: %w", err)
 	}
-	appLogger.Infof("Logger initialized for Auth service")
 
-	db, err := postgres.New(ctx, cfg.DB)
-	if err != nil {
-		appLogger.Errorf("failed to connect to db: %v", err)
-		return nil, fmt.Errorf("failed to connect to db: %w", err)
+	a := &App{
+		cfg:    cfg,
+		logger: appLogger,
+		di:     newDIContainer(ctx, cfg, appLogger),
 	}
-	appLogger.Infof("Database connection established")
 
-	jwtManager := jwtmanager.NewManager(cfg.Auth.HTTP.Auth.JWT.SecretKey, cfg.Auth.HTTP.Auth.JWT.AccessTokenTTL)
-
-	authRepository := authRepo.New(db)
-	authSvc := authService.New(authRepository, authRepository)
-
-	ensureAdmin(ctx, authSvc, appLogger)
-
-	minioClient, err := minioPkg.New(cfg.Minio)
-	if err != nil {
-		return nil, fmt.Errorf("failed to init minio client: %w", err)
+	if err := a.initDeps(ctx); err != nil {
+		return nil, err
 	}
-	userRepository := userRepo.New(db)
-	userSvc := userService.New(authSvc, userRepository, minioClient)
-	userHandler := userHttp.NewHandler(userSvc, jwtManager)
 
-	catalogRepository := catalogRepo.New(db)
-	catalogSvc := catalogService.New(catalogRepository, userSvc, minioClient)
-	catalogHandler := catalogHttp.NewHandler(catalogSvc)
+	return a, nil
+}
 
-	authHandler := authHtpp.NewHandler(authSvc, jwtManager)
+func (a *App) initDeps(ctx context.Context) error {
+	inits := []func() error{
+		func() error { return a.initEnsureAdmin(ctx) },
+		a.initHTTPServer,
+	}
+	for _, fn := range inits {
+		if err := fn(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	bookingRepository := bookingRepo.New(db)
-	bookingSvc := bookingService.New(bookingRepository, catalogSvc, userSvc)
-	bookingHandler := bookingHttp.NewHandler(bookingSvc)
+func (a *App) initEnsureAdmin(ctx context.Context) error {
+	email := os.Getenv("ADMIN_EMAIL")
+	password := os.Getenv("ADMIN_PASSWORD")
+	if email == "" || password == "" {
+		return nil
+	}
 
-	requestLoggerMiddleware := middleware.RequestLoggerMiddleware(appLogger)
-	corsMiddleware := middleware.CORS(cfg.Auth.HTTP.CORS)
+	_, err := a.di.AuthSvc().CreateUser(ctx, email, password, "admin")
+	if err == nil {
+		a.logger.Infof("Admin account created: %s", email)
+		return nil
+	}
+	if errors.Is(err, domain.ErrConflict) {
+		return nil
+	}
+	a.logger.Warnf("Failed to create admin account: %v", err)
+	return nil
+}
+
+func (a *App) initHTTPServer() error {
+	requestLoggerMiddleware := middleware.RequestLoggerMiddleware(a.logger)
+	corsMiddleware := middleware.CORS(a.cfg.Auth.HTTP.CORS)
 
 	csrfMiddleware := csrf.Protect(
-		[]byte(cfg.Auth.HTTP.Auth.CSRF.SecretKey),
-		csrf.Secure(cfg.Auth.HTTP.Auth.CSRF.Secure),
-		csrf.TrustedOrigins(cfg.Auth.HTTP.Auth.CSRF.TrustedOrigins),
+		[]byte(a.cfg.Auth.HTTP.Auth.CSRF.SecretKey),
+		csrf.Secure(a.cfg.Auth.HTTP.Auth.CSRF.Secure),
+		csrf.TrustedOrigins(a.cfg.Auth.HTTP.Auth.CSRF.TrustedOrigins),
 	)
-	authMiddleware := middleware.NewAuthMiddleware(jwtManager)
+	authMiddleware := middleware.NewAuthMiddleware(a.di.JWTManager())
 
 	router := mux.NewRouter()
-
 	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	api := router.PathPrefix("/api/v1").Subrouter()
-
 	api.Use(requestLoggerMiddleware)
 	api.Use(corsMiddleware)
 
@@ -115,21 +110,15 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	// csrfProtected.Use(csrfMiddleware)
 	_ = csrfMiddleware
 
-	masterCtx := middleware.MasterContext(userSvc)
+	masterCtx := middleware.MasterContext(a.di.UserSvc())
 
-	catalogHandler.RegisterRoutes(public, protected, csrfProtected, masterCtx)
-	authHandler.RegisterRoutes(public, protected, csrfProtected)
-	userHandler.RegisterRoutes(public, protected, csrfProtected)
-	bookingHandler.RegisterRoutes(public, protected, csrfProtected)
+	a.di.CatalogHandler().RegisterRoutes(public, protected, csrfProtected, masterCtx)
+	a.di.AuthHandler().RegisterRoutes(public, protected, csrfProtected)
+	a.di.UserHandler().RegisterRoutes(public, protected, csrfProtected)
+	a.di.BookingHandler().RegisterRoutes(public, protected, csrfProtected)
 
-	httpServer := server.NewHTTPServer(&cfg.Auth.HTTP, router, appLogger)
-
-	return &App{
-		cfg:        cfg,
-		logger:     appLogger,
-		db:         db,
-		httpServer: httpServer,
-	}, nil
+	a.httpServer = server.NewHTTPServer(&a.cfg.Auth.HTTP, router, a.logger)
+	return nil
 }
 
 func (a *App) Run(ctx context.Context) error {
@@ -143,14 +132,6 @@ func (a *App) Run(ctx context.Context) error {
 			serverErrors <- fmt.Errorf("http server error: %w", err)
 		}
 	}()
-
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	if err := a.grpcServer.Run(); err != nil {
-	// 		serverErrors <- fmt.Errorf("grpc server error: %w", err)
-	// 	}
-	// }()
 
 	a.logger.Infof("Auth microservice is running...")
 
@@ -175,9 +156,7 @@ func (a *App) Stop() error {
 	defer cancel()
 
 	errHTTP := a.httpServer.Shutdown(shutdownCtx)
-	// a.grpcServer.Stop()
-
-	errDB := a.db.Close()
+	errDB := a.di.db.Close()
 
 	errLog := a.logger.Sync()
 	if errLog != nil {
@@ -190,22 +169,4 @@ func (a *App) Stop() error {
 
 	a.logger.Infof("Application stopped gracefully.")
 	return nil
-}
-
-func ensureAdmin(ctx context.Context, svc *authService.AuthService, log logger.Logger) {
-	email := os.Getenv("ADMIN_EMAIL")
-	password := os.Getenv("ADMIN_PASSWORD")
-	if email == "" || password == "" {
-		return
-	}
-
-	_, err := svc.CreateUser(ctx, email, password, "admin")
-	if err == nil {
-		log.Infof("Admin account created: %s", email)
-		return
-	}
-	if errors.Is(err, domain.ErrConflict) {
-		return
-	}
-	log.Warnf("Failed to create admin account: %v", err)
 }

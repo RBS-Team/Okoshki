@@ -39,7 +39,7 @@ var allowedMimeTypes = map[string]bool{
 // @Failure      500      {object} response.ErrorResponse
 // @Security     CookieAuth
 // @Router       /masters/{masterID}/portfolio [post]
-func (h *Handler) UploadPortfolioPhotos(w http.ResponseWriter, r *http.Request) {
+func (h *handler) UploadPortfolioPhotos(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.UploadPortfolioPhotos"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -135,7 +135,7 @@ func (h *Handler) UploadPortfolioPhotos(w http.ResponseWriter, r *http.Request) 
 // @Failure      404      {object} response.ErrorResponse
 // @Failure      500      {object} response.ErrorResponse
 // @Router       /masters/{masterID}/portfolio [get]
-func (h *Handler) GetPortfolioPhotos(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetPortfolioPhotos(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetPortfolioPhotos"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -171,7 +171,7 @@ func (h *Handler) GetPortfolioPhotos(w http.ResponseWriter, r *http.Request) {
 // @Failure      500      {object} response.ErrorResponse
 // @Security     CookieAuth
 // @Router       /masters/{masterID}/portfolio/{photoID} [delete]
-func (h *Handler) DeletePortfolioPhoto(w http.ResponseWriter, r *http.Request) {
+func (h *handler) DeletePortfolioPhoto(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.DeletePortfolioPhoto"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -201,7 +201,7 @@ func (h *Handler) DeletePortfolioPhoto(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) handlePortfolioError(w http.ResponseWriter, err error) {
+func (h *handler) handlePortfolioError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, domain.ErrForbidden):
 		response.ForbiddenJSON(w)

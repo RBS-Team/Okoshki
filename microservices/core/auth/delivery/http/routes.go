@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func (h *AuthHandler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
+func (h *handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 	public.HandleFunc("/login", h.Login).Methods(http.MethodPost, http.MethodOptions)
 	public.HandleFunc("/guest/session", h.CreateGuestSession).Methods(http.MethodPost, http.MethodOptions)
 	

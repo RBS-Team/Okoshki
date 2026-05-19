@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
+	"io"
 	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/RBS-Team/Okoshki/internal/model"
+	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
 	usersDTO "github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 )
@@ -45,14 +47,33 @@ type IStorage interface {
 	Remove(ctx context.Context, bucket, objectName string) error
 }
 
-type Service struct {
+type Service interface {
+	GetCategoryByID(ctx context.Context, id uuid.UUID) (*dto.Category, error)
+	GetAllCategories(ctx context.Context) ([]*dto.Category, error)
+	UploadCategoryAvatar(ctx context.Context, categoryIDStr string, file io.Reader, size int64, contentType string) error
+
+	GetMasterSettings(ctx context.Context, masterID uuid.UUID) (*dto.MasterSettings, error)
+	UpsertMasterSettings(ctx context.Context, masterID uuid.UUID, req dto.UpsertMasterSettingsRequest) error
+
+	CreateServiceItem(ctx context.Context, masterID uuid.UUID, req dto.CreateServiceItemRequest) (*dto.ServiceItem, error)
+	GetServiceItemsByMasterID(ctx context.Context, masterID uuid.UUID) ([]dto.ServiceItem, error)
+	GetServicesByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.ServiceWithMaster, error)
+	GetServiceItemByID(ctx context.Context, id uuid.UUID) (*dto.ServiceItem, error)
+
+	CreateWorkInterval(ctx context.Context, masterID uuid.UUID, req dto.CreateWorkIntervalRequest) (*dto.WorkInterval, error)
+	DeleteWorkInterval(ctx context.Context, masterID, intervalID uuid.UUID) error
+	ListWorkIntervals(ctx context.Context, masterID uuid.UUID, fromStr, toStr string) ([]dto.WorkInterval, error)
+	ReplaceWorkIntervalsForDate(ctx context.Context, masterID uuid.UUID, req dto.ReplaceWorkIntervalsForDateRequest) error
+}
+
+type service struct {
 	repo    IRepository
 	masters MasterProvider
 	storage IStorage
 }
 
-func New(repo IRepository, masters MasterProvider, storage IStorage) *Service {
-	return &Service{
+func New(repo IRepository, masters MasterProvider, storage IStorage) Service {
+	return &service{
 		repo:    repo,
 		masters: masters,
 		storage: storage,

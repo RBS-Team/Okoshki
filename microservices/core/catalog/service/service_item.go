@@ -14,7 +14,7 @@ import (
 	usersDTO "github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 )
 
-func (s *Service) CreateServiceItem(ctx context.Context, masterID uuid.UUID, req dto.CreateServiceItemRequest) (*dto.ServiceItem, error) {
+func (s *service) CreateServiceItem(ctx context.Context, masterID uuid.UUID, req dto.CreateServiceItemRequest) (*dto.ServiceItem, error) {
 	const op = "catalog.service.CreateServiceItem"
 
 	if titleLen := utf8.RuneCountInString(req.Title); titleLen < 3 || titleLen > 50 {
@@ -62,7 +62,7 @@ func (s *Service) CreateServiceItem(ctx context.Context, masterID uuid.UUID, req
 	return mapServiceItemModelToDTO(&itemModel), nil
 }
 
-func (s *Service) GetServiceItemsByMasterID(ctx context.Context, masterID uuid.UUID) ([]dto.ServiceItem, error) {
+func (s *service) GetServiceItemsByMasterID(ctx context.Context, masterID uuid.UUID) ([]dto.ServiceItem, error) {
 	const op = "catalog.service.GetServiceItemsByMasterID"
 
 	itemModels, err := s.repo.GetServiceItemsByMasterID(ctx, masterID)
@@ -82,7 +82,7 @@ func (s *Service) GetServiceItemsByMasterID(ctx context.Context, masterID uuid.U
 	return itemDTOs, nil
 }
 
-func (s *Service) GetServicesByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.ServiceWithMaster, error) {
+func (s *service) GetServicesByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.ServiceWithMaster, error) {
 	const op = "catalog.service.GetServicesByCategory"
 
 	_, err := s.repo.GetCategoryByID(ctx, categoryID)
@@ -157,7 +157,7 @@ func (s *Service) GetServicesByCategory(ctx context.Context, categoryID uuid.UUI
 	return dtos, nil
 }
 
-func (s *Service) GetServiceItemByID(ctx context.Context, id uuid.UUID) (*dto.ServiceItem, error) {
+func (s *service) GetServiceItemByID(ctx context.Context, id uuid.UUID) (*dto.ServiceItem, error) {
 	const op = "catalog.service.GetServiceItemByID"
 
 	itemModel, err := s.repo.GetServiceItemByID(ctx, id)

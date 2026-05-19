@@ -27,7 +27,7 @@ import (
 // @Failure      409 {object} response.ErrorResponse
 // @Failure      500 {object} response.ErrorResponse
 // @Router       /master/register [post]
-func (h *Handler) RegisterMaster(w http.ResponseWriter, r *http.Request) {
+func (h *handler) RegisterMaster(w http.ResponseWriter, r *http.Request) {
 	const op = "users.handler.RegisterMaster"
 	defer r.Body.Close()
 
@@ -84,7 +84,7 @@ func (h *Handler) RegisterMaster(w http.ResponseWriter, r *http.Request) {
 // @Failure      404 {object} response.ErrorResponse "Мастер не найден"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /masters/{id} [get]
-func (h *Handler) GetMasterByID(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetMasterByID(w http.ResponseWriter, r *http.Request) {
 	const op = "users.handler.GetMasterByID"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -126,7 +126,7 @@ func (h *Handler) GetMasterByID(w http.ResponseWriter, r *http.Request) {
 // @Failure      404 {object} response.ErrorResponse "Мастер не найден"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /masters/user/{userID} [get]
-func (h *Handler) GetMasterByUserID(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetMasterByUserID(w http.ResponseWriter, r *http.Request) {
 	const op = "users.handler.GetMasterByUserID"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -167,7 +167,7 @@ func (h *Handler) GetMasterByUserID(w http.ResponseWriter, r *http.Request) {
 // @Success      200 {array}  dto.Master "Список мастеров"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /masters [get]
-func (h *Handler) GetAllMasters(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetAllMasters(w http.ResponseWriter, r *http.Request) {
 	const op = "users.handler.GetAllMasters"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -197,7 +197,7 @@ func (h *Handler) GetAllMasters(w http.ResponseWriter, r *http.Request) {
 // @Failure      404 {object} response.ErrorResponse "Категория не найдена"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /categories/{id}/masters [get]
-func (h *Handler) GetMastersByCategory(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetMastersByCategory(w http.ResponseWriter, r *http.Request) {
 	const op = "users.handler.GetMastersByCategory"
 	log := middleware.LoggerFromContext(r.Context())
 

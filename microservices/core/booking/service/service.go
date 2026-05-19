@@ -8,6 +8,7 @@ import (
 
 	"github.com/RBS-Team/Okoshki/internal/model"
 	catalogDTO "github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
+	"github.com/RBS-Team/Okoshki/microservices/core/booking/dto"
 	usersDTO "github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 )
 
@@ -33,14 +34,25 @@ type UserProvider interface {
 	GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*usersDTO.Master, error)
 }
 
-type Service struct {
+type Service interface {
+	GetAvailableSlots(ctx context.Context, serviceID uuid.UUID, fromStr, toStr string) (*dto.GetAvailableSlotsResponse, error)
+	CreateAppointment(ctx context.Context, clientID uuid.UUID, req dto.CreateAppointmentRequest) (*dto.AppointmentResponse, error)
+	GetMasterIDByUserID(ctx context.Context, userID uuid.UUID) (uuid.UUID, error)
+	GetClientAppointments(ctx context.Context, clientID uuid.UUID, limit, offset uint64) ([]dto.ClientAppointmentView, error)
+	GetMasterAppointments(ctx context.Context, masterID uuid.UUID, start, end time.Time, status model.AppointmentStatus) ([]dto.MasterAppointmentView, error)
+	UpdateAppointmentStatus(ctx context.Context, actorID uuid.UUID, appointmentID uuid.UUID, req dto.UpdateAppointmentStatusRequest, isClient bool) error
+	CreateManualBlock(ctx context.Context, masterID uuid.UUID, req dto.CreateManualBlockRequest) (*dto.CreateManualBlockResponse, error)
+	DeleteManualBlock(ctx context.Context, masterID, blockID uuid.UUID) error
+}
+
+type service struct {
 	repo    AppointmentRepository
 	catalog CatalogProvider
 	user    UserProvider
 }
 
-func New(repo AppointmentRepository, catalog CatalogProvider, user UserProvider) *Service {
-	return &Service{
+func New(repo AppointmentRepository, catalog CatalogProvider, user UserProvider) Service {
+	return &service{
 		repo:    repo,
 		catalog: catalog,
 		user:    user,

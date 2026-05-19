@@ -13,7 +13,7 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
-func (r *Repository) CreateMaster(ctx context.Context, master model.Master) error {
+func (r *repository) CreateMaster(ctx context.Context, master model.Master) error {
 	const op = "catalog.repository.postgres.CreateMaster"
 
 	query := `
@@ -53,7 +53,7 @@ func (r *Repository) CreateMaster(ctx context.Context, master model.Master) erro
 	return nil
 }
 
-func (r *Repository) GetMasterByID(ctx context.Context, id uuid.UUID) (*model.Master, error) {
+func (r *repository) GetMasterByID(ctx context.Context, id uuid.UUID) (*model.Master, error) {
 	const op = "users.repository.postgres.GetMasterByID"
 
 	query := `
@@ -72,7 +72,7 @@ func (r *Repository) GetMasterByID(ctx context.Context, id uuid.UUID) (*model.Ma
 	return master, nil
 }
 
-func (r *Repository) GetAllMasters(ctx context.Context, limit, offset uint64) ([]model.Master, error) {
+func (r *repository) GetAllMasters(ctx context.Context, limit, offset uint64) ([]model.Master, error) {
 	const op = "users.repository.postgres.GetAllMasters"
 
 	query := `
@@ -112,7 +112,7 @@ func (r *Repository) GetAllMasters(ctx context.Context, limit, offset uint64) ([
 	return masters, nil
 }
 
-func (r *Repository) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Master, error) {
+func (r *repository) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Master, error) {
 	const op = "users.repository.postgres.GetMastersByIDs"
 
 	if len(ids) == 0 {
@@ -154,7 +154,7 @@ func (r *Repository) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]mo
 	return masters, nil
 }
 
-func (r *Repository) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*model.Master, error) {
+func (r *repository) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*model.Master, error) {
 	const op = "users.repository.postgres.GetMasterByUserID"
 
 	query := `
@@ -173,7 +173,7 @@ func (r *Repository) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*
 	return master, nil
 }
 
-func (r *Repository) selectMaster(ctx context.Context, query string, args ...any) (*model.Master, error) {
+func (r *repository) selectMaster(ctx context.Context, query string, args ...any) (*model.Master, error) {
 	var m model.Master
 
 	err := r.db.QueryRowContext(ctx, query, args...).Scan(
@@ -192,7 +192,7 @@ func (r *Repository) selectMaster(ctx context.Context, query string, args ...any
 	return &m, nil
 }
 
-func (r *Repository) GetMastersByCategoryID(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]model.Master, error) {
+func (r *repository) GetMastersByCategoryID(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]model.Master, error) {
 	const op = "users.repository.postgres.GetMastersByCategoryID"
 
 	query := `
@@ -233,7 +233,7 @@ func (r *Repository) GetMastersByCategoryID(ctx context.Context, categoryID uuid
 	return masters, nil
 }
 
-func (r *Repository) UpdateMasterAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
+func (r *repository) UpdateMasterAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
 	const op = "users.repository.postgres.UpdateMasterAvatarURL"
 
 	_, err := r.db.ExecContext(ctx,

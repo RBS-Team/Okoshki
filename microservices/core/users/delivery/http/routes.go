@@ -9,7 +9,7 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
-func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
+func (h *handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 	public.HandleFunc("/master/register", h.RegisterMaster).Methods(http.MethodPost, http.MethodOptions)
 	public.HandleFunc("/client/register", h.RegisterClient).Methods(http.MethodPost, http.MethodOptions)
 

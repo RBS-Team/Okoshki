@@ -39,7 +39,7 @@ var categoryAllowedMimeTypes = map[string]bool{
 // @Failure      500 {object} response.ErrorResponse
 // @Security     CookieAuth
 // @Router       /categories/{id}/avatar [put]
-func (h *Handler) UploadCategoryAvatar(w http.ResponseWriter, r *http.Request) {
+func (h *handler) UploadCategoryAvatar(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.UploadCategoryAvatar"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -106,7 +106,7 @@ func (h *Handler) UploadCategoryAvatar(w http.ResponseWriter, r *http.Request) {
 // @Success      200 {array} dto.Category "Список категорий"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /categories [get]
-func (h *Handler) GetAllCategories(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetAllCategories(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetAllCategories"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -132,7 +132,7 @@ func (h *Handler) GetAllCategories(w http.ResponseWriter, r *http.Request) {
 // @Failure      404 {object} response.ErrorResponse "Категория не найдена"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /categories/{id} [get]
-func (h *Handler) GetCategoryByID(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetCategoryByID(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetCategoryByID"
 	log := middleware.LoggerFromContext(r.Context())
 

@@ -30,7 +30,7 @@ const sessionTokenCookie = "session_token"
 // @Failure      409 {object} response.ErrorResponse
 // @Failure      500 {object} response.ErrorResponse
 // @Router       /client/register [post]
-func (h *Handler) RegisterClient(w http.ResponseWriter, r *http.Request) {
+func (h *handler) RegisterClient(w http.ResponseWriter, r *http.Request) {
 	const op = "users.handler.RegisterClient"
 	defer r.Body.Close()
 
@@ -86,7 +86,7 @@ func (h *Handler) RegisterClient(w http.ResponseWriter, r *http.Request) {
 // @Failure      404 {object} response.ErrorResponse "Клиент не найден"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /clients/user/{userID} [get]
-func (h *Handler) GetClientByUserID(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetClientByUserID(w http.ResponseWriter, r *http.Request) {
 	const op = "users.handler.GetClientByUserID"
 	log := middleware.LoggerFromContext(r.Context())
 

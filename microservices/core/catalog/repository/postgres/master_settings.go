@@ -14,7 +14,7 @@ import (
 
 // GetMasterSettings возвращает настройки мастера. Если строки нет — domain.ErrNotFound.
 // Решение «что подставить вместо» принимается на уровне сервиса.
-func (r *Repository) GetMasterSettings(ctx context.Context, masterID uuid.UUID) (*model.MasterSettings, error) {
+func (r *repository) GetMasterSettings(ctx context.Context, masterID uuid.UUID) (*model.MasterSettings, error) {
 	const op = "catalog.repository.postgres.GetMasterSettings"
 
 	query := `
@@ -41,7 +41,7 @@ func (r *Repository) GetMasterSettings(ctx context.Context, masterID uuid.UUID) 
 // UpsertMasterSettings создаёт строку настроек или обновляет её.
 // Поля с nil НЕ перезаписываются (для частичного update).
 // При вставке используются дефолты столбцов БД (step=30, lead=0).
-func (r *Repository) UpsertMasterSettings(ctx context.Context, masterID uuid.UUID, slotStep, leadTime *int) error {
+func (r *repository) UpsertMasterSettings(ctx context.Context, masterID uuid.UUID, slotStep, leadTime *int) error {
 	const op = "catalog.repository.postgres.UpsertMasterSettings"
 
 	query := `

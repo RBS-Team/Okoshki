@@ -12,7 +12,7 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
-func (r *Repository) SavePortfolioPhotos(ctx context.Context, photos []model.PortfolioPhoto) error {
+func (r *repository) SavePortfolioPhotos(ctx context.Context, photos []model.PortfolioPhoto) error {
 	const op = "catalog.repository.postgres.SavePortfolioPhotos"
 
 	tx, err := r.db.BeginTx(ctx, nil)
@@ -43,7 +43,7 @@ func (r *Repository) SavePortfolioPhotos(ctx context.Context, photos []model.Por
 	return nil
 }
 
-func (r *Repository) GetPortfolioPhotosByMasterID(ctx context.Context, masterID uuid.UUID) ([]model.PortfolioPhoto, error) {
+func (r *repository) GetPortfolioPhotosByMasterID(ctx context.Context, masterID uuid.UUID) ([]model.PortfolioPhoto, error) {
 	const op = "catalog.repository.postgres.GetPortfolioPhotosByMasterID"
 
 	rows, err := r.db.QueryContext(ctx, `
@@ -73,7 +73,7 @@ func (r *Repository) GetPortfolioPhotosByMasterID(ctx context.Context, masterID 
 	return photos, nil
 }
 
-func (r *Repository) GetPortfolioPhotoByID(ctx context.Context, photoID uuid.UUID) (*model.PortfolioPhoto, error) {
+func (r *repository) GetPortfolioPhotoByID(ctx context.Context, photoID uuid.UUID) (*model.PortfolioPhoto, error) {
 	const op = "catalog.repository.postgres.GetPortfolioPhotoByID"
 
 	var p model.PortfolioPhoto
@@ -92,7 +92,7 @@ func (r *Repository) GetPortfolioPhotoByID(ctx context.Context, photoID uuid.UUI
 	return &p, nil
 }
 
-func (r *Repository) DeletePortfolioPhotoByID(ctx context.Context, photoID uuid.UUID) error {
+func (r *repository) DeletePortfolioPhotoByID(ctx context.Context, photoID uuid.UUID) error {
 	const op = "catalog.repository.postgres.DeletePortfolioPhotoByID"
 
 	res, err := r.db.ExecContext(ctx, `

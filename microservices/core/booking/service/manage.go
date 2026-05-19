@@ -30,7 +30,7 @@ func isValidTransition(current, next model.AppointmentStatus) bool {
 	return false
 }
 
-func (s *Service) UpdateAppointmentStatus(ctx context.Context, actorID uuid.UUID, appointmentID uuid.UUID, req dto.UpdateAppointmentStatusRequest, isClient bool) error {
+func (s *service) UpdateAppointmentStatus(ctx context.Context, actorID uuid.UUID, appointmentID uuid.UUID, req dto.UpdateAppointmentStatusRequest, isClient bool) error {
 	const op = "booking.service.UpdateAppointmentStatus"
 
 	appt, err := s.repo.GetAppointmentByID(ctx, appointmentID)
@@ -65,7 +65,7 @@ func (s *Service) UpdateAppointmentStatus(ctx context.Context, actorID uuid.UUID
 	return nil
 }
 
-func (s *Service) CreateManualBlock(ctx context.Context, masterID uuid.UUID, req dto.CreateManualBlockRequest) (*dto.CreateManualBlockResponse, error) {
+func (s *service) CreateManualBlock(ctx context.Context, masterID uuid.UUID, req dto.CreateManualBlockRequest) (*dto.CreateManualBlockResponse, error) {
 	const op = "booking.service.CreateManualBlock"
 
 	master, err := s.user.GetMasterByID(ctx, masterID)
@@ -118,7 +118,7 @@ func (s *Service) CreateManualBlock(ctx context.Context, masterID uuid.UUID, req
 	}, nil
 }
 
-func (s *Service) DeleteManualBlock(ctx context.Context, masterID, blockID uuid.UUID) error {
+func (s *service) DeleteManualBlock(ctx context.Context, masterID, blockID uuid.UUID) error {
 	const op = "booking.service.DeleteManualBlock"
 	if err := s.repo.DeleteManualBlock(ctx, blockID, masterID); err != nil {
 		return fmt.Errorf("[%s]: %w", op, err)
@@ -126,7 +126,7 @@ func (s *Service) DeleteManualBlock(ctx context.Context, masterID, blockID uuid.
 	return nil
 }
 
-func (s *Service) GetClientAppointments(ctx context.Context, clientID uuid.UUID, limit, offset uint64) ([]dto.ClientAppointmentView, error) {
+func (s *service) GetClientAppointments(ctx context.Context, clientID uuid.UUID, limit, offset uint64) ([]dto.ClientAppointmentView, error) {
 	const op = "booking.service.GetClientAppointments"
 
 	appts, err := s.repo.GetAppointmentsByClientID(ctx, clientID, limit, offset)
@@ -171,7 +171,7 @@ func (s *Service) GetClientAppointments(ctx context.Context, clientID uuid.UUID,
 	return views, nil
 }
 
-func (s *Service) GetMasterAppointments(ctx context.Context, masterID uuid.UUID, start, end time.Time, status model.AppointmentStatus) ([]dto.MasterAppointmentView, error) {
+func (s *service) GetMasterAppointments(ctx context.Context, masterID uuid.UUID, start, end time.Time, status model.AppointmentStatus) ([]dto.MasterAppointmentView, error) {
 	const op = "booking.service.GetMasterAppointments"
 
 	appts, err := s.repo.GetAppointmentsByMasterID(ctx, masterID, start, end, status)
@@ -235,7 +235,7 @@ func (s *Service) GetMasterAppointments(ctx context.Context, masterID uuid.UUID,
 	return views, nil
 }
 
-func (s *Service) GetMasterIDByUserID(ctx context.Context, userID uuid.UUID) (uuid.UUID, error) {
+func (s *service) GetMasterIDByUserID(ctx context.Context, userID uuid.UUID) (uuid.UUID, error) {
 	master, err := s.user.GetMasterByUserID(ctx, userID)
 	if err != nil {
 		return uuid.Nil, err

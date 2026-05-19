@@ -23,7 +23,7 @@ import (
 // @Success      200 {object} dto.WorkIntervalList
 // @Failure      400 {object} response.ErrorResponse
 // @Router       /masters/{masterID}/work-intervals [get]
-func (h *Handler) ListWorkIntervals(w http.ResponseWriter, r *http.Request) {
+func (h *handler) ListWorkIntervals(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.ListWorkIntervals"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -63,7 +63,7 @@ func (h *Handler) ListWorkIntervals(w http.ResponseWriter, r *http.Request) {
 // @Failure      403 {object} response.ErrorResponse
 // @Failure      409 {object} response.ErrorResponse
 // @Router       /me/work-intervals [post]
-func (h *Handler) CreateWorkInterval(w http.ResponseWriter, r *http.Request) {
+func (h *handler) CreateWorkInterval(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.CreateWorkInterval"
 	log := middleware.LoggerFromContext(r.Context())
 	defer r.Body.Close()
@@ -104,7 +104,7 @@ func (h *Handler) CreateWorkInterval(w http.ResponseWriter, r *http.Request) {
 // @Failure      403 {object} response.ErrorResponse
 // @Failure      409 {object} response.ErrorResponse
 // @Router       /me/work-intervals [put]
-func (h *Handler) ReplaceWorkIntervalsForDate(w http.ResponseWriter, r *http.Request) {
+func (h *handler) ReplaceWorkIntervalsForDate(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.ReplaceWorkIntervalsForDate"
 	log := middleware.LoggerFromContext(r.Context())
 	defer r.Body.Close()
@@ -143,7 +143,7 @@ func (h *Handler) ReplaceWorkIntervalsForDate(w http.ResponseWriter, r *http.Req
 // @Failure      404 {object} response.ErrorResponse
 // @Failure      409 {object} response.ErrorResponse
 // @Router       /me/work-intervals/{intervalID} [delete]
-func (h *Handler) DeleteWorkInterval(w http.ResponseWriter, r *http.Request) {
+func (h *handler) DeleteWorkInterval(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.DeleteWorkInterval"
 	log := middleware.LoggerFromContext(r.Context())
 

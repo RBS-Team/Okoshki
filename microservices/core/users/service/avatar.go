@@ -13,7 +13,7 @@ import (
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 )
 
-func (s *Service) UploadMasterAvatar(ctx context.Context, userIDStr, masterIDStr string, file io.Reader, size int64, contentType string) (string, error) {
+func (s *service) UploadMasterAvatar(ctx context.Context, userIDStr, masterIDStr string, file io.Reader, size int64, contentType string) (string, error) {
 	const op = "users.service.UploadMasterAvatar"
 
 	userID, err := uuid.Parse(userIDStr)
@@ -57,7 +57,7 @@ func (s *Service) UploadMasterAvatar(ctx context.Context, userIDStr, masterIDStr
 	return s.storage.BuildObjectURL(usersBucket, objectName), nil
 }
 
-func (s *Service) UploadClientAvatar(ctx context.Context, userIDStr string, file io.Reader, size int64, contentType string) (string, error) {
+func (s *service) UploadClientAvatar(ctx context.Context, userIDStr string, file io.Reader, size int64, contentType string) (string, error) {
 	const op = "users.service.UploadClientAvatar"
 
 	userID, err := uuid.Parse(userIDStr)
@@ -92,7 +92,7 @@ func (s *Service) UploadClientAvatar(ctx context.Context, userIDStr string, file
 	return s.storage.BuildObjectURL(usersBucket, objectName), nil
 }
 
-func (s *Service) mapClientToDTO(c *model.Client) dto.Client {
+func (s *service) mapClientToDTO(c *model.Client) dto.Client {
 	d := dto.Client{
 		ID:        c.ID.String(),
 		UserID:    c.UserID.String(),
