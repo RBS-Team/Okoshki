@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"sync"
@@ -17,12 +16,14 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/internal/server"
+	"github.com/RBS-Team/Okoshki/pkg/closer"
 	"github.com/RBS-Team/Okoshki/pkg/logger"
 )
 
 type App struct {
 	cfg        *Config
 	logger     logger.Logger
+	closer     *closer.Closer
 	di         *diContainer
 	httpServer *server.Server
 }
@@ -38,10 +39,16 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 		return nil, fmt.Errorf("failed to init logger: %w", err)
 	}
 
+	appCloser := closer.New(appLogger)
+	appCloser.Add("logger", func(_ context.Context) error {
+		return appLogger.Sync()
+	})
+
 	a := &App{
 		cfg:    cfg,
 		logger: appLogger,
-		di:     newDIContainer(ctx, cfg, appLogger),
+		closer: appCloser,
+		di:     newDIContainer(ctx, cfg, appLogger, appCloser),
 	}
 
 	if err := a.initDeps(ctx); err != nil {
@@ -133,7 +140,7 @@ func (a *App) Run(ctx context.Context) error {
 		}
 	}()
 
-	a.logger.Infof("Auth microservice is running...")
+	a.logger.Infof("Core microservice is running...")
 
 	select {
 	case err := <-serverErrors:
@@ -155,18 +162,12 @@ func (a *App) Stop() error {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), a.cfg.Auth.HTTP.ShutdownTimeout)
 	defer cancel()
 
-	errHTTP := a.httpServer.Shutdown(shutdownCtx)
-	errDB := a.di.db.Close()
-
-	errLog := a.logger.Sync()
-	if errLog != nil {
-		log.Printf("ERROR: failed to sync logger: %v", errLog)
+	if err := a.httpServer.Shutdown(shutdownCtx); err != nil {
+		a.logger.Errorf("http server shutdown error: %v", err)
 	}
 
-	if errHTTP != nil || errDB != nil {
-		return fmt.Errorf("shutdown errors: http=%v, db=%v", errHTTP, errDB)
-	}
+	closerCtx, closerCancel := context.WithTimeout(context.Background(), a.cfg.Auth.HTTP.ShutdownTimeout)
+	defer closerCancel()
 
-	a.logger.Infof("Application stopped gracefully.")
-	return nil
+	return a.closer.CloseAll(closerCtx)
 }

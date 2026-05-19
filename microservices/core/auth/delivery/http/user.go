@@ -103,3 +103,10 @@ var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]
 func isValidEmail(email string) bool {
 	return len(email) <= 254 && emailRegex.MatchString(email)
 }
+
+func (h *handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
+	const op = "auth.handler.GetUserByUserID"
+	defer r.Body.Close()
+
+	
+}

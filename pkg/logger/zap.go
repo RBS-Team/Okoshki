@@ -1,8 +1,10 @@
 package logger
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"syscall"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -79,10 +81,14 @@ func (l *ZapLogger) Fatalf(template string, args ...interface{}) {
 }
 
 func (l *ZapLogger) Sync() error {
-	if l.sl != nil {
-		return l.sl.Sync()
+	if l.sl == nil {
+		return nil
 	}
-	return nil
+	err := l.sl.Sync()
+	if errors.Is(err, syscall.EINVAL) || errors.Is(err, syscall.ENOTTY) {
+		return nil
+	}
+	return err
 }
 
 func (l *ZapLogger) With(args ...interface{}) Logger {

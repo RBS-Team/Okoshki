@@ -16,6 +16,7 @@ import (
 	userHttp "github.com/RBS-Team/Okoshki/microservices/core/users/delivery/http"
 	userRepo "github.com/RBS-Team/Okoshki/microservices/core/users/repository/postgres"
 	userService "github.com/RBS-Team/Okoshki/microservices/core/users/service"
+	closerPkg "github.com/RBS-Team/Okoshki/pkg/closer"
 	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
 	"github.com/RBS-Team/Okoshki/pkg/logger"
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
@@ -26,6 +27,7 @@ type diContainer struct {
 	ctx    context.Context
 	cfg    *Config
 	logger logger.Logger
+	closer *closerPkg.Closer
 
 	// Инфраструктура
 	db          *sql.DB
@@ -51,8 +53,8 @@ type diContainer struct {
 	bookingHandler bookingHttp.Handler
 }
 
-func newDIContainer(ctx context.Context, cfg *Config, log logger.Logger) *diContainer {
-	return &diContainer{ctx: ctx, cfg: cfg, logger: log}
+func newDIContainer(ctx context.Context, cfg *Config, log logger.Logger, c *closerPkg.Closer) *diContainer {
+	return &diContainer{ctx: ctx, cfg: cfg, logger: log, closer: c}
 }
 
 // --- Инфраструктура ---
@@ -64,6 +66,9 @@ func (d *diContainer) DB() *sql.DB {
 			d.logger.Fatalf("failed to connect to db: %v", err)
 		}
 		d.db = db
+		d.closer.Add("postgres", func(_ context.Context) error {
+			return db.Close()
+		})
 		d.logger.Infof("POSTGRES CONNECTION established")
 	}
 	return d.db
