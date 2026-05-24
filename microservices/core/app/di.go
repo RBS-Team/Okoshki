@@ -13,6 +13,9 @@ import (
 	catalogHttp "github.com/RBS-Team/Okoshki/microservices/core/catalog/delivery/http"
 	catalogRepo "github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
 	catalogService "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
+	reviewsHttp "github.com/RBS-Team/Okoshki/microservices/core/reviews/delivery/http"
+	reviewsRepo "github.com/RBS-Team/Okoshki/microservices/core/reviews/repository/postgres"
+	reviewsService "github.com/RBS-Team/Okoshki/microservices/core/reviews/service"
 	userHttp "github.com/RBS-Team/Okoshki/microservices/core/users/delivery/http"
 	userRepo "github.com/RBS-Team/Okoshki/microservices/core/users/repository/postgres"
 	userService "github.com/RBS-Team/Okoshki/microservices/core/users/service"
@@ -39,18 +42,21 @@ type diContainer struct {
 	userRepo    userRepo.Repository
 	catalogRepo catalogRepo.Repository
 	bookingRepo bookingRepo.Repository
+	reviewsRepo reviewsRepo.Repository
 
 	// Сервисы
 	authSvc    authService.Service
 	userSvc    userService.Service
 	catalogSvc catalogService.Service
 	bookingSvc bookingService.Service
+	reviewsSvc reviewsService.Service
 
 	// Хендлеры
 	authHandler    authHttp.Handler
 	userHandler    userHttp.Handler
 	catalogHandler catalogHttp.Handler
 	bookingHandler bookingHttp.Handler
+	reviewsHandler reviewsHttp.Handler
 }
 
 func newDIContainer(ctx context.Context, cfg *Config, log logger.Logger, c *closerPkg.Closer) *diContainer {
@@ -128,6 +134,14 @@ func (d *diContainer) BookingRepo() bookingRepo.Repository {
 	return d.bookingRepo
 }
 
+func (d *diContainer) ReviewsRepo() reviewsRepo.Repository {
+	if d.reviewsRepo == nil {
+		d.reviewsRepo = reviewsRepo.New(d.DB())
+		d.logger.Infof("REVIEWS REPOSITORY created")
+	}
+	return d.reviewsRepo
+}
+
 // --- Сервисы ---
 
 func (d *diContainer) AuthSvc() authService.Service {
@@ -162,6 +176,14 @@ func (d *diContainer) BookingSvc() bookingService.Service {
 	return d.bookingSvc
 }
 
+func (d *diContainer) ReviewsSvc() reviewsService.Service {
+	if d.reviewsSvc == nil {
+		d.reviewsSvc = reviewsService.New(d.ReviewsRepo(), d.BookingSvc(), d.UserSvc())
+		d.logger.Infof("REVIEWS SERVICE created")
+	}
+	return d.reviewsSvc
+}
+
 // --- Хендлеры ---
 
 func (d *diContainer) AuthHandler() authHttp.Handler {
@@ -194,4 +216,12 @@ func (d *diContainer) BookingHandler() bookingHttp.Handler {
 		d.logger.Infof("BOOKING HANDLER created")
 	}
 	return d.bookingHandler
+}
+
+func (d *diContainer) ReviewsHandler() reviewsHttp.Handler {
+	if d.reviewsHandler == nil {
+		d.reviewsHandler = reviewsHttp.NewHandler(d.ReviewsSvc())
+		d.logger.Infof("REVIEWS HANDLER created")
+	}
+	return d.reviewsHandler
 }

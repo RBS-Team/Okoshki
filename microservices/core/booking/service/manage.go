@@ -235,6 +235,10 @@ func (s *service) GetMasterAppointments(ctx context.Context, masterID uuid.UUID,
 	return views, nil
 }
 
+func (s *service) GetAppointmentByID(ctx context.Context, id uuid.UUID) (*model.Appointment, error) {
+	return s.repo.GetAppointmentByID(ctx, id)
+}
+
 func (s *service) GetMasterIDByUserID(ctx context.Context, userID uuid.UUID) (uuid.UUID, error) {
 	master, err := s.user.GetMasterByUserID(ctx, userID)
 	if err != nil {

@@ -37,6 +37,7 @@ type UserProvider interface {
 type Service interface {
 	GetAvailableSlots(ctx context.Context, serviceID uuid.UUID, fromStr, toStr string) (*dto.GetAvailableSlotsResponse, error)
 	CreateAppointment(ctx context.Context, clientID uuid.UUID, req dto.CreateAppointmentRequest) (*dto.AppointmentResponse, error)
+	GetAppointmentByID(ctx context.Context, id uuid.UUID) (*model.Appointment, error)
 	GetMasterIDByUserID(ctx context.Context, userID uuid.UUID) (uuid.UUID, error)
 	GetClientAppointments(ctx context.Context, clientID uuid.UUID, limit, offset uint64) ([]dto.ClientAppointmentView, error)
 	GetMasterAppointments(ctx context.Context, masterID uuid.UUID, start, end time.Time, status model.AppointmentStatus) ([]dto.MasterAppointmentView, error)

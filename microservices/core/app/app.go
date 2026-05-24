@@ -123,6 +123,7 @@ func (a *App) initHTTPServer() error {
 	a.di.AuthHandler().RegisterRoutes(public, protected, csrfProtected)
 	a.di.UserHandler().RegisterRoutes(public, protected, csrfProtected)
 	a.di.BookingHandler().RegisterRoutes(public, protected, csrfProtected)
+	a.di.ReviewsHandler().RegisterRoutes(public, protected, csrfProtected)
 
 	a.httpServer = server.NewHTTPServer(&a.cfg.Auth.HTTP, router, a.logger)
 	return nil
