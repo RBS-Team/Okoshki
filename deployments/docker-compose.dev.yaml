@@ -19,21 +19,32 @@ services:
     build:
       context: ../
       dockerfile: docker/core.Dockerfile
+
     container_name: okoshki-core-service
+
     restart: always
+
     ports:
       - "8080:8080"
+
     env_file:
       - ../.env.${APP_ENV:-dev}
+
     environment:
       - CONFIG_FILE=config.${APP_ENV:-dev}
+
     volumes:
       - ../config:/config:ro
+
     depends_on:
       db:
         condition: service_healthy
+
       migrate:
         condition: service_completed_successfully
+
+      ml-service:
+        condition: service_healthy
 
   db:
     image: postgres:15-alpine
@@ -119,7 +130,32 @@ services:
     volumes:
       - min_data4-1:/data1
       - min_data4-2:/data2
-    
+
+  ml-service:
+    build:
+      context: ../../AI_Okoski
+      dockerfile: Dockerfile
+
+    container_name: okoshki-ml-service
+
+    restart: always
+
+    ports:
+      - "8010:8010"
+
+    env_file:
+      - ../.env.${APP_ENV:-dev}
+
+    volumes:
+      - ../../AI_Okoski:/app
+
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8010/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
 volumes:
   pg_data:
   min_data1-1:
