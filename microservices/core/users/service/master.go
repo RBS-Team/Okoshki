@@ -166,6 +166,48 @@ func (s *service) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]model
 	return s.repo.GetMastersByIDs(ctx, ids)
 }
 
+func (s *service) UpdateMaster(ctx context.Context, userID uuid.UUID, req dto.UpdateMasterRequest) (*dto.Master, error) {
+	const op = "users.service.UpdateMaster"
+
+	if req.FirstName != nil {
+		if n := utf8.RuneCountInString(*req.FirstName); n < 2 || n > 70 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.LastName != nil {
+		if n := utf8.RuneCountInString(*req.LastName); n < 2 || n > 70 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.Bio != nil {
+		if n := utf8.RuneCountInString(*req.Bio); n < 10 || n > 500 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.City != nil {
+		if n := utf8.RuneCountInString(*req.City); n < 2 || n > 100 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.Address != nil {
+		if n := utf8.RuneCountInString(*req.Address); n < 2 || n > 300 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.Timezone != nil {
+		if _, err := time.LoadLocation(*req.Timezone); err != nil {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidTimezone)
+		}
+	}
+
+	master, err := s.repo.UpdateMaster(ctx, userID, req)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, err)
+	}
+
+	return s.mapMasterToDTO(master), nil
+}
+
 const usersBucket = "okoshki-users"
 
 func (s *service) mapMasterToDTO(m *model.Master) *dto.Master {

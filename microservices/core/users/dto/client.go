@@ -23,9 +23,16 @@ type RegisterClientRequest struct {
 
 //easyjson:json
 type RegisterClientResponse struct {
-	UserID   string `json:"user_id"`
-	ClientID string `json:"client_id"`
-	FirstName string  `json:"first_name"`
-	LastName  string  `json:"last_name"`
-	Role     string `json:"role"`
+	UserID    string `json:"user_id"`
+	ClientID  string `json:"client_id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Role      string `json:"role"`
+}
+
+//easyjson:json
+type UpdateClientRequest struct {
+	FirstName *string `json:"first_name,omitempty"`
+	LastName  *string `json:"last_name,omitempty"`
+	Phone     *string `json:"phone,omitempty"`
 }

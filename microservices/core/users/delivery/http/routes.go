@@ -21,6 +21,7 @@ func (h *handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 	masterProtected := csrfProtected.PathPrefix("").Subrouter()
 	masterProtected.Use(middleware.RequireRole(string(model.RoleMaster)))
 
+	masterProtected.HandleFunc("/masters/me", h.UpdateMaster).Methods(http.MethodPatch, http.MethodOptions)
 	masterProtected.HandleFunc("/masters/{masterID}/avatar", h.UploadMasterAvatar).Methods(http.MethodPut, http.MethodOptions)
 	masterProtected.HandleFunc("/masters/{masterID}/portfolio", h.UploadPortfolioPhotos).Methods(http.MethodPost, http.MethodOptions)
 	masterProtected.HandleFunc("/masters/{masterID}/portfolio/{photoID}", h.DeletePortfolioPhoto).Methods(http.MethodDelete, http.MethodOptions)
@@ -28,6 +29,7 @@ func (h *handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 	clientProtected := csrfProtected.PathPrefix("").Subrouter()
 	clientProtected.Use(middleware.RequireRole(string(model.RoleClient)))
 
+	clientProtected.HandleFunc("/clients/me", h.UpdateClient).Methods(http.MethodPatch, http.MethodOptions)
 	clientProtected.HandleFunc("/clients/me/avatar", h.UploadClientAvatar).Methods(http.MethodPut, http.MethodOptions)
 
 	protected.HandleFunc("/clients/user/{userID}", h.GetClientByUserID).Methods(http.MethodGet, http.MethodOptions)

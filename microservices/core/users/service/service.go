@@ -29,12 +29,14 @@ type IRepository interface {
 	GetMastersByCategoryID(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]model.Master, error)
 
 	UpdateMasterAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error
+	UpdateMaster(ctx context.Context, userID uuid.UUID, req dto.UpdateMasterRequest) (*model.Master, error)
 
 	CreateClient(ctx context.Context, client model.Client) error
 	GetClientByUserID(ctx context.Context, userID uuid.UUID) (*model.Client, error)
 	GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Client, error)
 
 	UpdateClientAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error
+	UpdateClient(ctx context.Context, userID uuid.UUID, req dto.UpdateClientRequest) (*model.Client, error)
 
 	SavePortfolioPhotos(ctx context.Context, photos []model.PortfolioPhoto) error
 	GetPortfolioPhotosByMasterID(ctx context.Context, masterID uuid.UUID) ([]model.PortfolioPhoto, error)
@@ -59,6 +61,8 @@ type Service interface {
 	RegisterClient(ctx context.Context, req dto.RegisterClientRequest) (*dto.RegisterClientResponse, error)
 	GetClientByUserID(ctx context.Context, userID uuid.UUID) (*dto.Client, error)
 	GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]dto.Client, error)
+	UpdateClient(ctx context.Context, userID uuid.UUID, req dto.UpdateClientRequest) (*dto.Client, error)
+	UpdateMaster(ctx context.Context, userID uuid.UUID, req dto.UpdateMasterRequest) (*dto.Master, error)
 
 	UploadMasterAvatar(ctx context.Context, userIDStr, masterIDStr string, file io.Reader, size int64, contentType string) (string, error)
 	UploadClientAvatar(ctx context.Context, userIDStr string, file io.Reader, size int64, contentType string) (string, error)

@@ -17,12 +17,14 @@ type UserSaver interface {
 type UserProvider interface {
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
 	GetUsersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.User, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error)
 }
 
 type Service interface {
 	CreateUser(ctx context.Context, email, password, role string) (uuid.UUID, error)
 	Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error)
 	DeleteUserByID(ctx context.Context, id uuid.UUID) error
+	GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error)
 }
 
 type service struct {

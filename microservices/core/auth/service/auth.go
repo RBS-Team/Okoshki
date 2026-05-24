@@ -61,3 +61,14 @@ func (a *service) Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginRe
 func (a *service) DeleteUserByID(ctx context.Context, id uuid.UUID) error {
 	return a.usrSaver.DeleteUserByID(ctx, id)
 }
+
+func (a *service) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
+	const op = "auth.service.GetUserByID"
+
+	user, err := a.usrProvider.GetUserByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, err)
+	}
+
+	return user, nil
+}

@@ -3,9 +3,10 @@ package http
 import (
 	"context"
 
-	"github.com/gorilla/mux"
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 
+	"github.com/RBS-Team/Okoshki/internal/model"
 	"github.com/RBS-Team/Okoshki/microservices/core/auth/dto"
 	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
 )
@@ -14,6 +15,7 @@ import (
 type IService interface {
 	Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error)
 	DeleteUserByID(ctx context.Context, userID uuid.UUID) error
+	GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error)
 }
 
 type Handler interface {
