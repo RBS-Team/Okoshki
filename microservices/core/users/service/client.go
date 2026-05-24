@@ -80,6 +80,11 @@ func (s *service) UpdateClient(ctx context.Context, userID uuid.UUID, req dto.Up
 			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 		}
 	}
+	if req.Phone != nil && *req.Phone != "" {
+		if !phoneRe.MatchString(*req.Phone) {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
 
 	client, err := s.repo.UpdateClient(ctx, userID, req)
 	if err != nil {

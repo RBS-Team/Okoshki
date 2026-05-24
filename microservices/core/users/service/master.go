@@ -15,6 +15,7 @@ import (
 )
 
 var emailRe = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
+var phoneRe = regexp.MustCompile(`^\+[1-9][0-9]{6,14}$`)
 
 func (s *service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequest) (*dto.RegisterMasterResponse, error) {
 	const op = "users.service.RegisterMaster"
@@ -191,6 +192,11 @@ func (s *service) UpdateMaster(ctx context.Context, userID uuid.UUID, req dto.Up
 	}
 	if req.Address != nil {
 		if n := utf8.RuneCountInString(*req.Address); n < 2 || n > 300 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.Phone != nil {
+		if !phoneRe.MatchString(*req.Phone) {
 			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
 		}
 	}
