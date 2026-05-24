@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/RBS-Team/Okoshki/internal/ml"
 	"log"
 	"net/http"
 	"os"
@@ -21,15 +22,15 @@ import (
 	authHtpp "github.com/RBS-Team/Okoshki/microservices/core/auth/delivery/http"
 	authRepo "github.com/RBS-Team/Okoshki/microservices/core/auth/repository/postgres"
 	authService "github.com/RBS-Team/Okoshki/microservices/core/auth/service"
-	userHttp "github.com/RBS-Team/Okoshki/microservices/core/users/delivery/http"
-	userRepo "github.com/RBS-Team/Okoshki/microservices/core/users/repository/postgres"
-	userService "github.com/RBS-Team/Okoshki/microservices/core/users/service"
 	bookingHttp "github.com/RBS-Team/Okoshki/microservices/core/booking/delivery/http"
 	bookingRepo "github.com/RBS-Team/Okoshki/microservices/core/booking/repository/postgres"
 	bookingService "github.com/RBS-Team/Okoshki/microservices/core/booking/service"
 	catalogHttp "github.com/RBS-Team/Okoshki/microservices/core/catalog/delivery/http"
 	catalogRepo "github.com/RBS-Team/Okoshki/microservices/core/catalog/repository/postgres"
 	catalogService "github.com/RBS-Team/Okoshki/microservices/core/catalog/service"
+	userHttp "github.com/RBS-Team/Okoshki/microservices/core/users/delivery/http"
+	userRepo "github.com/RBS-Team/Okoshki/microservices/core/users/repository/postgres"
+	userService "github.com/RBS-Team/Okoshki/microservices/core/users/service"
 	"github.com/RBS-Team/Okoshki/pkg/jwtmanager"
 	"github.com/RBS-Team/Okoshki/pkg/logger"
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
@@ -77,6 +78,12 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	userSvc := userService.New(authSvc, userRepository, minioClient)
 	userHandler := userHttp.NewHandler(userSvc, jwtManager)
 
+	mlClient := ml.NewClient()
+
+	mlHandler := &ml.Handler{
+		Client: mlClient,
+	}
+
 	catalogRepository := catalogRepo.New(db)
 	catalogSvc := catalogService.New(catalogRepository, userSvc, minioClient)
 	catalogHandler := catalogHttp.NewHandler(catalogSvc)
@@ -121,6 +128,7 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	authHandler.RegisterRoutes(public, protected, csrfProtected)
 	userHandler.RegisterRoutes(public, protected, csrfProtected)
 	bookingHandler.RegisterRoutes(public, protected, csrfProtected)
+	mlHandler.RegisterRoutes(public, protected, csrfProtected)
 
 	httpServer := server.NewHTTPServer(&cfg.Auth.HTTP, router, appLogger)
 
