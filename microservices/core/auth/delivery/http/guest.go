@@ -24,9 +24,9 @@ func (h *handler) CreateGuestSession(w http.ResponseWriter, r *http.Request) {
 	const op = "handler.GuestSession"
 	log := middleware.LoggerFromContext(r.Context())
 
-	// Если уже есть валидный гостевой токен — возвращаем тот же guest_id.
+	// Если уже есть любой валидный токен — не перезаписываем сессию.
 	if cookie, err := r.Cookie(sessionTokenCookie); err == nil {
-		if claims, err := h.jwtManager.Validate(cookie.Value); err == nil && claims.Role == string(model.RoleGuest) {
+		if claims, err := h.jwtManager.Validate(cookie.Value); err == nil {
 			response.JSON(w, http.StatusOK, dto.GuestSessionResponse{GuestID: claims.Subject, Role: claims.Role})
 			return
 		}
