@@ -48,13 +48,19 @@ func (s *service) CreateReview(ctx context.Context, userID uuid.UUID, req dto.Cr
 		return nil, fmt.Errorf("[%s]: %w", op, domain.ErrForbidden)
 	}
 
+	serviceItem, err := s.catalog.GetServiceItemByID(ctx, appt.ServiceID)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, err)
+	}
+
 	created, err := s.repo.CreateReview(ctx, model.Review{
-		ID:            uuid.New(),
-		ClientID:      clientID,
-		MasterID:      appt.MasterID,
-		AppointmentID: appointmentID,
-		Rating:        req.Rating,
-		Comment:       req.Comment,
+		ID:               uuid.New(),
+		ClientID:         clientID,
+		MasterID:         appt.MasterID,
+		AppointmentID:    appointmentID,
+		Rating:           req.Rating,
+		Comment:          req.Comment,
+		ServiceItemTitle: serviceItem.Title,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, err)
@@ -65,13 +71,14 @@ func (s *service) CreateReview(ctx context.Context, userID uuid.UUID, req dto.Cr
 	}
 
 	return &dto.ReviewResponse{
-		ID:            created.ID.String(),
-		ClientID:      created.ClientID.String(),
-		MasterID:      created.MasterID.String(),
-		AppointmentID: created.AppointmentID.String(),
-		Rating:        created.Rating,
-		Comment:       created.Comment,
-		CreatedAt:     created.CreatedAt,
+		ID:               created.ID.String(),
+		ClientID:         created.ClientID.String(),
+		MasterID:         created.MasterID.String(),
+		AppointmentID:    created.AppointmentID.String(),
+		Rating:           created.Rating,
+		Comment:          created.Comment,
+		ServiceItemTitle: created.ServiceItemTitle,
+		CreatedAt:        created.CreatedAt,
 	}, nil
 }
 
@@ -130,13 +137,14 @@ func (s *service) GetClientReviews(ctx context.Context, userID uuid.UUID, limit,
 	result := make([]dto.ReviewResponse, 0, len(reviews))
 	for _, rv := range reviews {
 		result = append(result, dto.ReviewResponse{
-			ID:            rv.ID.String(),
-			ClientID:      rv.ClientID.String(),
-			MasterID:      rv.MasterID.String(),
-			AppointmentID: rv.AppointmentID.String(),
-			Rating:        rv.Rating,
-			Comment:       rv.Comment,
-			CreatedAt:     rv.CreatedAt,
+			ID:               rv.ID.String(),
+			ClientID:         rv.ClientID.String(),
+			MasterID:         rv.MasterID.String(),
+			AppointmentID:    rv.AppointmentID.String(),
+			Rating:           rv.Rating,
+			Comment:          rv.Comment,
+			ServiceItemTitle: rv.ServiceItemTitle,
+			CreatedAt:        rv.CreatedAt,
 		})
 	}
 	return result, nil
@@ -153,13 +161,14 @@ func (s *service) GetMasterReviews(ctx context.Context, masterID uuid.UUID, limi
 	result := make([]dto.ReviewResponse, 0, len(reviews))
 	for _, rv := range reviews {
 		result = append(result, dto.ReviewResponse{
-			ID:            rv.ID.String(),
-			ClientID:      rv.ClientID.String(),
-			MasterID:      rv.MasterID.String(),
-			AppointmentID: rv.AppointmentID.String(),
-			Rating:        rv.Rating,
-			Comment:       rv.Comment,
-			CreatedAt:     rv.CreatedAt,
+			ID:               rv.ID.String(),
+			ClientID:         rv.ClientID.String(),
+			MasterID:         rv.MasterID.String(),
+			AppointmentID:    rv.AppointmentID.String(),
+			Rating:           rv.Rating,
+			Comment:          rv.Comment,
+			ServiceItemTitle: rv.ServiceItemTitle,
+			CreatedAt:        rv.CreatedAt,
 		})
 	}
 	return result, nil

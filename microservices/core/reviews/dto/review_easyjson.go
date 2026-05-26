@@ -67,6 +67,12 @@ func easyjson2f096870DecodeGithubComRBSTeamOkoshkiMicroservicesCoreReviewsDto(in
 			} else {
 				out.Comment = string(in.String())
 			}
+		case "service_item_title":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				out.ServiceItemTitle = string(in.String())
+			}
 		case "created_at":
 			if in.IsNull() {
 				in.Skip()
@@ -118,6 +124,11 @@ func easyjson2f096870EncodeGithubComRBSTeamOkoshkiMicroservicesCoreReviewsDto(ou
 		const prefix string = ",\"comment\":"
 		out.RawString(prefix)
 		out.String(string(in.Comment))
+	}
+	{
+		const prefix string = ",\"service_item_title\":"
+		out.RawString(prefix)
+		out.String(string(in.ServiceItemTitle))
 	}
 	{
 		const prefix string = ",\"created_at\":"

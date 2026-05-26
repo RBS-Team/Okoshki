@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/RBS-Team/Okoshki/internal/model"
+	catalogDTO "github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
 	"github.com/RBS-Team/Okoshki/microservices/core/reviews/dto"
 	usersDTO "github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 )
@@ -28,6 +29,10 @@ type UserProvider interface {
 	GetClientByUserID(ctx context.Context, userID uuid.UUID) (*usersDTO.Client, error)
 }
 
+type CatalogProvider interface {
+	GetServiceItemByID(ctx context.Context, id uuid.UUID) (*catalogDTO.ServiceItem, error)
+}
+
 type Service interface {
 	CreateReview(ctx context.Context, userID uuid.UUID, req dto.CreateReviewRequest) (*dto.ReviewResponse, error)
 	DeleteReview(ctx context.Context, actorID uuid.UUID, actorRole string, reviewID uuid.UUID) error
@@ -39,8 +44,9 @@ type service struct {
 	repo    IRepository
 	booking BookingProvider
 	user    UserProvider
+	catalog CatalogProvider
 }
 
-func New(repo IRepository, booking BookingProvider, user UserProvider) Service {
-	return &service{repo: repo, booking: booking, user: user}
+func New(repo IRepository, booking BookingProvider, user UserProvider, catalog CatalogProvider) Service {
+	return &service{repo: repo, booking: booking, user: user, catalog: catalog}
 }

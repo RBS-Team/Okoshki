@@ -13,17 +13,17 @@ func (r *repository) CreateReview(ctx context.Context, review model.Review) (*mo
 	const op = "reviews.repository.postgres.CreateReview"
 
 	query := `
-		INSERT INTO reviews (id, client_id, master_id, appointment_id, rating, comment, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		RETURNING id, client_id, master_id, appointment_id, rating, comment, created_at, updated_at
+		INSERT INTO reviews (id, client_id, master_id, appointment_id, rating, comment, service_item_title, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		RETURNING id, client_id, master_id, appointment_id, rating, comment, service_item_title, created_at, updated_at
 	`
 	var rv model.Review
 	err := r.db.QueryRowContext(ctx, query,
 		review.ID, review.ClientID, review.MasterID, review.AppointmentID,
-		review.Rating, review.Comment, review.CreatedAt, review.UpdatedAt,
+		review.Rating, review.Comment, review.ServiceItemTitle, review.CreatedAt, review.UpdatedAt,
 	).Scan(
 		&rv.ID, &rv.ClientID, &rv.MasterID, &rv.AppointmentID,
-		&rv.Rating, &rv.Comment, &rv.CreatedAt, &rv.UpdatedAt,
+		&rv.Rating, &rv.Comment, &rv.ServiceItemTitle, &rv.CreatedAt, &rv.UpdatedAt,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, mapReviewErrors(err))
@@ -35,14 +35,14 @@ func (r *repository) GetReviewByID(ctx context.Context, id uuid.UUID) (*model.Re
 	const op = "reviews.repository.postgres.GetReviewByID"
 
 	query := `
-		SELECT id, client_id, master_id, appointment_id, rating, comment, created_at, updated_at
+		SELECT id, client_id, master_id, appointment_id, rating, comment, service_item_title, created_at, updated_at
 		FROM reviews
 		WHERE id = $1
 	`
 	var rv model.Review
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&rv.ID, &rv.ClientID, &rv.MasterID, &rv.AppointmentID,
-		&rv.Rating, &rv.Comment, &rv.CreatedAt, &rv.UpdatedAt,
+		&rv.Rating, &rv.Comment, &rv.ServiceItemTitle, &rv.CreatedAt, &rv.UpdatedAt,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, mapReviewErrors(err))
@@ -54,14 +54,14 @@ func (r *repository) GetReviewByAppointmentID(ctx context.Context, appointmentID
 	const op = "reviews.repository.postgres.GetReviewByAppointmentID"
 
 	query := `
-		SELECT id, client_id, master_id, appointment_id, rating, comment, created_at, updated_at
+		SELECT id, client_id, master_id, appointment_id, rating, comment, service_item_title, created_at, updated_at
 		FROM reviews
 		WHERE appointment_id = $1
 	`
 	var rv model.Review
 	err := r.db.QueryRowContext(ctx, query, appointmentID).Scan(
 		&rv.ID, &rv.ClientID, &rv.MasterID, &rv.AppointmentID,
-		&rv.Rating, &rv.Comment, &rv.CreatedAt, &rv.UpdatedAt,
+		&rv.Rating, &rv.Comment, &rv.ServiceItemTitle, &rv.CreatedAt, &rv.UpdatedAt,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("[%s]: %w", op, mapReviewErrors(err))
@@ -109,7 +109,7 @@ func (r *repository) GetReviewsByClientID(ctx context.Context, clientID uuid.UUI
 	const op = "reviews.repository.postgres.GetReviewsByClientID"
 
 	query := `
-		SELECT id, client_id, master_id, appointment_id, rating, comment, created_at, updated_at
+		SELECT id, client_id, master_id, appointment_id, rating, comment, service_item_title, created_at, updated_at
 		FROM reviews
 		WHERE client_id = $1
 		ORDER BY created_at DESC
@@ -126,7 +126,7 @@ func (r *repository) GetReviewsByClientID(ctx context.Context, clientID uuid.UUI
 		var rv model.Review
 		if err := rows.Scan(
 			&rv.ID, &rv.ClientID, &rv.MasterID, &rv.AppointmentID,
-			&rv.Rating, &rv.Comment, &rv.CreatedAt, &rv.UpdatedAt,
+			&rv.Rating, &rv.Comment, &rv.ServiceItemTitle, &rv.CreatedAt, &rv.UpdatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("[%s]: %w", op, err)
 		}
@@ -139,7 +139,7 @@ func (r *repository) GetReviewsByMasterID(ctx context.Context, masterID uuid.UUI
 	const op = "reviews.repository.postgres.GetReviewsByMasterID"
 
 	query := `
-		SELECT id, client_id, master_id, appointment_id, rating, comment, created_at, updated_at
+		SELECT id, client_id, master_id, appointment_id, rating, comment, service_item_title, created_at, updated_at
 		FROM reviews
 		WHERE master_id = $1
 		ORDER BY created_at DESC
@@ -156,7 +156,7 @@ func (r *repository) GetReviewsByMasterID(ctx context.Context, masterID uuid.UUI
 		var rv model.Review
 		if err := rows.Scan(
 			&rv.ID, &rv.ClientID, &rv.MasterID, &rv.AppointmentID,
-			&rv.Rating, &rv.Comment, &rv.CreatedAt, &rv.UpdatedAt,
+			&rv.Rating, &rv.Comment, &rv.ServiceItemTitle, &rv.CreatedAt, &rv.UpdatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("[%s]: %w", op, err)
 		}

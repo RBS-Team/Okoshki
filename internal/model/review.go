@@ -7,12 +7,13 @@ import (
 )
 
 type Review struct {
-	ID            uuid.UUID
-	ClientID      uuid.UUID
-	MasterID      uuid.UUID
-	AppointmentID uuid.UUID
-	Rating        int
-	Comment       string
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID               uuid.UUID
+	ClientID         uuid.UUID
+	MasterID         uuid.UUID
+	AppointmentID    uuid.UUID
+	Rating           int
+	Comment          string
+	ServiceItemTitle string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }

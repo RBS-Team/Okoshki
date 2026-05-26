@@ -178,7 +178,7 @@ func (d *diContainer) BookingSvc() bookingService.Service {
 
 func (d *diContainer) ReviewsSvc() reviewsService.Service {
 	if d.reviewsSvc == nil {
-		d.reviewsSvc = reviewsService.New(d.ReviewsRepo(), d.BookingSvc(), d.UserSvc())
+		d.reviewsSvc = reviewsService.New(d.ReviewsRepo(), d.BookingSvc(), d.UserSvc(), d.CatalogSvc())
 		d.logger.Infof("REVIEWS SERVICE created")
 	}
 	return d.reviewsSvc

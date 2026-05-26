@@ -212,14 +212,15 @@ FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 -- reviews
 
 CREATE TABLE IF NOT EXISTS reviews (
-    id             UUID     PRIMARY KEY DEFAULT uuid_generate_v4(),
-    client_id      UUID     NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-    master_id      UUID     NOT NULL REFERENCES masters(id) ON DELETE CASCADE,
-    appointment_id UUID     NOT NULL UNIQUE REFERENCES appointments(id) ON DELETE CASCADE,
-    rating         SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
-    comment        TEXT     NOT NULL CHECK (char_length(comment) BETWEEN 1 AND 1000),
-    created_at     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    id                 UUID     PRIMARY KEY DEFAULT uuid_generate_v4(),
+    client_id          UUID     NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+    master_id          UUID     NOT NULL REFERENCES masters(id) ON DELETE CASCADE,
+    appointment_id     UUID     NOT NULL UNIQUE REFERENCES appointments(id) ON DELETE CASCADE,
+    rating             SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment            TEXT     NOT NULL CHECK (char_length(comment) BETWEEN 1 AND 1000),
+    service_item_title TEXT     NOT NULL DEFAULT '',
+    created_at         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_reviews_master_id ON reviews(master_id);
