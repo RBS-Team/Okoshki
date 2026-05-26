@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/gorilla/mux"
 	"github.com/google/uuid"
 
 	"github.com/RBS-Team/Okoshki/microservices/core/catalog/dto"
@@ -28,12 +29,16 @@ type IService interface {
 	ReplaceWorkIntervalsForDate(ctx context.Context, masterID uuid.UUID, req dto.ReplaceWorkIntervalsForDateRequest) error
 }
 
-type Handler struct {
+type Handler interface {
+	RegisterRoutes(public, protected, csrfProtected *mux.Router, masterCtx mux.MiddlewareFunc)
+}
+
+type handler struct {
 	service IService
 }
 
-func NewHandler(service IService) *Handler {
-	return &Handler{
+func NewHandler(service IService) Handler {
+	return &handler{
 		service: service,
 	}
 }

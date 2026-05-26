@@ -43,11 +43,11 @@ func easyjson4a0f95aaDecodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(in *j
 			} else {
 				out.Email = string(in.String())
 			}
-		case "avatar_url":
+		case "role":
 			if in.IsNull() {
 				in.Skip()
 			} else {
-				out.AvatarURL = string(in.String())
+				out.Role = string(in.String())
 			}
 		default:
 			in.SkipRecursive()
@@ -74,9 +74,9 @@ func easyjson4a0f95aaEncodeGithubComRBSTeamOkoshkiMicroservicesCoreAuthDto(out *
 		out.String(string(in.Email))
 	}
 	{
-		const prefix string = ",\"avatar_url\":"
+		const prefix string = ",\"role\":"
 		out.RawString(prefix)
-		out.String(string(in.AvatarURL))
+		out.String(string(in.Role))
 	}
 	out.RawByte('}')
 }

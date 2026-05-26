@@ -9,7 +9,7 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
-func (r *Repository) UpdateCategoryAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
+func (r *repository) UpdateCategoryAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
 	const op = "catalog.repository.postgres.UpdateCategoryAvatarURL"
 
 	_, err := r.db.ExecContext(ctx,
@@ -23,7 +23,7 @@ func (r *Repository) UpdateCategoryAvatarURL(ctx context.Context, id uuid.UUID, 
 	return nil
 }
 
-func (r *Repository) GetCategoryByID(ctx context.Context, id uuid.UUID) (*model.Category, error) {
+func (r *repository) GetCategoryByID(ctx context.Context, id uuid.UUID) (*model.Category, error) {
 	const op = "catalog.repository.postgres.GetCategoryByID"
 
 	query := `
@@ -53,7 +53,7 @@ func (r *Repository) GetCategoryByID(ctx context.Context, id uuid.UUID) (*model.
 	return &cat, nil
 }
 
-func (r *Repository) GetAllCategories(ctx context.Context) ([]model.Category, error) {
+func (r *repository) GetAllCategories(ctx context.Context) ([]model.Category, error) {
 	const op = "catalog.repository.postgres.GetAllCategories"
 
 	query := `

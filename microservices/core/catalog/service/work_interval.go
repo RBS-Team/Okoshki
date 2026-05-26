@@ -19,7 +19,7 @@ const (
 
 // CreateWorkInterval создаёт один интервал. Дата/время валидируются.
 // Если на эту дату уже есть пересекающийся интервал — domain.ErrIntervalOverlap.
-func (s *Service) CreateWorkInterval(ctx context.Context, masterID uuid.UUID, req dto.CreateWorkIntervalRequest) (*dto.WorkInterval, error) {
+func (s *service) CreateWorkInterval(ctx context.Context, masterID uuid.UUID, req dto.CreateWorkIntervalRequest) (*dto.WorkInterval, error) {
 	const op = "catalog.service.CreateWorkInterval"
 
 	workDate, err := time.Parse(dateFormat, req.Date)
@@ -50,7 +50,7 @@ func (s *Service) CreateWorkInterval(ctx context.Context, masterID uuid.UUID, re
 
 // DeleteWorkInterval удаляет интервал.
 // Если внутри удаляемого интервала есть активные записи (pending/confirmed) — domain.ErrIntervalHasAppointments.
-func (s *Service) DeleteWorkInterval(ctx context.Context, masterID, intervalID uuid.UUID) error {
+func (s *service) DeleteWorkInterval(ctx context.Context, masterID, intervalID uuid.UUID) error {
 	const op = "catalog.service.DeleteWorkInterval"
 
 	wi, err := s.repo.GetWorkIntervalByID(ctx, masterID, intervalID)
@@ -84,7 +84,7 @@ func (s *Service) DeleteWorkInterval(ctx context.Context, masterID, intervalID u
 }
 
 // ListWorkIntervals возвращает все интервалы мастера в диапазоне [from, to] включительно.
-func (s *Service) ListWorkIntervals(ctx context.Context, masterID uuid.UUID, fromStr, toStr string) ([]dto.WorkInterval, error) {
+func (s *service) ListWorkIntervals(ctx context.Context, masterID uuid.UUID, fromStr, toStr string) ([]dto.WorkInterval, error) {
 	const op = "catalog.service.ListWorkIntervals"
 
 	from, err := time.Parse(dateFormat, fromStr)
@@ -115,7 +115,7 @@ func (s *Service) ListWorkIntervals(ctx context.Context, masterID uuid.UUID, fro
 // ReplaceWorkIntervalsForDate атомарно заменяет все интервалы мастера на конкретную дату.
 // Каждая активная запись (pending/confirmed) на эту дату должна полностью попадать
 // хотя бы в один из новых интервалов; иначе — domain.ErrIntervalHasAppointments.
-func (s *Service) ReplaceWorkIntervalsForDate(ctx context.Context, masterID uuid.UUID, req dto.ReplaceWorkIntervalsForDateRequest) error {
+func (s *service) ReplaceWorkIntervalsForDate(ctx context.Context, masterID uuid.UUID, req dto.ReplaceWorkIntervalsForDateRequest) error {
 	const op = "catalog.service.ReplaceWorkIntervalsForDate"
 
 	workDate, err := time.Parse(dateFormat, req.Date)
@@ -173,7 +173,7 @@ func (s *Service) ReplaceWorkIntervalsForDate(ctx context.Context, masterID uuid
 }
 
 // loadMasterTZ — общий хелпер чтения таймзоны мастера.
-func (s *Service) loadMasterTZ(ctx context.Context, masterID uuid.UUID) (*time.Location, error) {
+func (s *service) loadMasterTZ(ctx context.Context, masterID uuid.UUID) (*time.Location, error) {
 	master, err := s.masters.GetMasterByID(ctx, masterID)
 	if err != nil {
 		return nil, err

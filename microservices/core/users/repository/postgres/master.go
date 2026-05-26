@@ -11,9 +11,10 @@ import (
 
 	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
+	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 )
 
-func (r *Repository) CreateMaster(ctx context.Context, master model.Master) error {
+func (r *repository) CreateMaster(ctx context.Context, master model.Master) error {
 	const op = "catalog.repository.postgres.CreateMaster"
 
 	query := `
@@ -53,7 +54,7 @@ func (r *Repository) CreateMaster(ctx context.Context, master model.Master) erro
 	return nil
 }
 
-func (r *Repository) GetMasterByID(ctx context.Context, id uuid.UUID) (*model.Master, error) {
+func (r *repository) GetMasterByID(ctx context.Context, id uuid.UUID) (*model.Master, error) {
 	const op = "users.repository.postgres.GetMasterByID"
 
 	query := `
@@ -72,7 +73,7 @@ func (r *Repository) GetMasterByID(ctx context.Context, id uuid.UUID) (*model.Ma
 	return master, nil
 }
 
-func (r *Repository) GetAllMasters(ctx context.Context, limit, offset uint64) ([]model.Master, error) {
+func (r *repository) GetAllMasters(ctx context.Context, limit, offset uint64) ([]model.Master, error) {
 	const op = "users.repository.postgres.GetAllMasters"
 
 	query := `
@@ -112,7 +113,7 @@ func (r *Repository) GetAllMasters(ctx context.Context, limit, offset uint64) ([
 	return masters, nil
 }
 
-func (r *Repository) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Master, error) {
+func (r *repository) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Master, error) {
 	const op = "users.repository.postgres.GetMastersByIDs"
 
 	if len(ids) == 0 {
@@ -154,7 +155,7 @@ func (r *Repository) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]mo
 	return masters, nil
 }
 
-func (r *Repository) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*model.Master, error) {
+func (r *repository) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*model.Master, error) {
 	const op = "users.repository.postgres.GetMasterByUserID"
 
 	query := `
@@ -173,7 +174,7 @@ func (r *Repository) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*
 	return master, nil
 }
 
-func (r *Repository) selectMaster(ctx context.Context, query string, args ...any) (*model.Master, error) {
+func (r *repository) selectMaster(ctx context.Context, query string, args ...any) (*model.Master, error) {
 	var m model.Master
 
 	err := r.db.QueryRowContext(ctx, query, args...).Scan(
@@ -192,7 +193,7 @@ func (r *Repository) selectMaster(ctx context.Context, query string, args ...any
 	return &m, nil
 }
 
-func (r *Repository) GetMastersByCategoryID(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]model.Master, error) {
+func (r *repository) GetMastersByCategoryID(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]model.Master, error) {
 	const op = "users.repository.postgres.GetMastersByCategoryID"
 
 	query := `
@@ -233,7 +234,45 @@ func (r *Repository) GetMastersByCategoryID(ctx context.Context, categoryID uuid
 	return masters, nil
 }
 
-func (r *Repository) UpdateMasterAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
+func (r *repository) UpdateMaster(ctx context.Context, userID uuid.UUID, req dto.UpdateMasterRequest) (*model.Master, error) {
+	const op = "users.repository.postgres.UpdateMaster"
+
+	var m model.Master
+	err := r.db.QueryRowContext(ctx, `
+		UPDATE masters SET
+			category_id = COALESCE($1::uuid, category_id),
+			first_name  = COALESCE($2, first_name),
+			last_name   = COALESCE($3, last_name),
+			phone       = COALESCE($4, phone),
+			address     = COALESCE($5, address),
+			city        = COALESCE($6, city),
+			bio         = COALESCE($7, bio),
+			timezone    = COALESCE($8, timezone),
+			lat         = COALESCE($9, lat),
+			lon         = COALESCE($10, lon)
+		WHERE user_id = $11
+		RETURNING id, user_id, category_id, first_name, last_name, phone, address, city, bio, avatar_url,
+			timezone, lat, lon, rating, review_count, reports_count, is_blocked, created_at, updated_at`,
+		req.CategoryID, req.FirstName, req.LastName, req.Phone,
+		req.Address, req.City, req.Bio, req.Timezone,
+		req.Lat, req.Lon, userID,
+	).Scan(
+		&m.ID, &m.UserID, &m.CategoryID, &m.FirstName, &m.LastName, &m.Phone,
+		&m.Address, &m.City, &m.Bio, &m.AvatarURL, &m.Timezone,
+		&m.Lat, &m.Lon, &m.Rating, &m.ReviewCount, &m.ReportsCount,
+		&m.IsBlocked, &m.CreatedAt, &m.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrNotFound)
+		}
+		return nil, fmt.Errorf("[%s]: %w", op, handleMasterPostgresError(err))
+	}
+
+	return &m, nil
+}
+
+func (r *repository) UpdateMasterAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
 	const op = "users.repository.postgres.UpdateMasterAvatarURL"
 
 	_, err := r.db.ExecContext(ctx,

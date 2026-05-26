@@ -10,9 +10,10 @@ import (
 
 	"github.com/RBS-Team/Okoshki/internal/domain"
 	"github.com/RBS-Team/Okoshki/internal/model"
+	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 )
 
-func (r *Repository) CreateClient(ctx context.Context, client model.Client) error {
+func (r *repository) CreateClient(ctx context.Context, client model.Client) error {
 	const op = "users.repository.postgres.CreateClient"
 
 	query := `
@@ -37,7 +38,7 @@ func (r *Repository) CreateClient(ctx context.Context, client model.Client) erro
 	return nil
 }
 
-func (r *Repository) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*model.Client, error) {
+func (r *repository) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*model.Client, error) {
 	const op = "users.repository.postgres.GetClientByUserID"
 
 	var c model.Client
@@ -56,7 +57,7 @@ func (r *Repository) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*
 	return &c, nil
 }
 
-func (r *Repository) UpdateClientAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
+func (r *repository) UpdateClientAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error {
 	const op = "users.repository.postgres.UpdateClientAvatarURL"
 
 	_, err := r.db.ExecContext(ctx,
@@ -70,7 +71,30 @@ func (r *Repository) UpdateClientAvatarURL(ctx context.Context, id uuid.UUID, ob
 	return nil
 }
 
-func (r *Repository) GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Client, error) {
+func (r *repository) UpdateClient(ctx context.Context, userID uuid.UUID, req dto.UpdateClientRequest) (*model.Client, error) {
+	const op = "users.repository.postgres.UpdateClient"
+
+	var c model.Client
+	err := r.db.QueryRowContext(ctx, `
+		UPDATE clients SET
+			first_name = COALESCE($1, first_name),
+			last_name  = COALESCE($2, last_name),
+			phone      = COALESCE($3, phone)
+		WHERE user_id = $4
+		RETURNING id, user_id, first_name, last_name, phone, avatar_url, created_at, updated_at`,
+		req.FirstName, req.LastName, req.Phone, userID,
+	).Scan(&c.ID, &c.UserID, &c.FirstName, &c.LastName, &c.Phone, &c.AvatarURL, &c.CreatedAt, &c.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrNotFound)
+		}
+		return nil, fmt.Errorf("[%s]: %w", op, err)
+	}
+
+	return &c, nil
+}
+
+func (r *repository) GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Client, error) {
 	const op = "users.repository.postgres.GetClientsByIDs"
 
 	if len(ids) == 0 {

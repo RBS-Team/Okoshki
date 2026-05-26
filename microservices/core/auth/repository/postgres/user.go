@@ -13,7 +13,7 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
-func (r *Repository) CreateUser(ctx context.Context, user model.User) error {
+func (r *repository) CreateUser(ctx context.Context, user model.User) error {
 	const op = "auth.repository.postgres.CreateUser"
 
 	query := `
@@ -36,7 +36,7 @@ func (r *Repository) CreateUser(ctx context.Context, user model.User) error {
 	return nil
 }
 
-func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *repository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	const op = "auth.repository.postgres.GetUserByEmail"
 
 	query := `
@@ -53,7 +53,7 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*model.U
 	return user, nil
 }
 
-func (r *Repository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
+func (r *repository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	const op = "auth.repository.postgres.GetUserByID"
 
 	query := `
@@ -70,7 +70,7 @@ func (r *Repository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User
 	return user, nil
 }
 
-func (r *Repository) GetUsersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.User, error) {
+func (r *repository) GetUsersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.User, error) {
 	const op = "auth.repository.postgres.GetUsersByIDs"
 
 	if len(ids) == 0 {
@@ -104,7 +104,7 @@ func (r *Repository) GetUsersByIDs(ctx context.Context, ids []uuid.UUID) ([]mode
 	return users, nil
 }
 
-func (r *Repository) selectUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
+func (r *repository) selectUser(ctx context.Context, query string, args ...interface{}) (*model.User, error) {
 	var user model.User
 
 	err := r.db.QueryRowContext(ctx, query, args...).Scan(
@@ -125,7 +125,7 @@ func (r *Repository) selectUser(ctx context.Context, query string, args ...inter
 	return &user, nil
 }
 
-func (r *Repository) DeleteUserByID(ctx context.Context, id uuid.UUID) error {
+func (r *repository) DeleteUserByID(ctx context.Context, id uuid.UUID) error {
 	const op = "auth.repository.postgres.DeleteUserByID"
 	_, err := r.db.ExecContext(ctx, `DELETE FROM "user" WHERE user_id = $1`, id)
 	if err != nil {

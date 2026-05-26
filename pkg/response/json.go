@@ -66,6 +66,11 @@ func InternalErrorJSON(w http.ResponseWriter) {
 	JSON(w, http.StatusInternalServerError, ErrInternalServer)
 }
 
+// 204 No Content
+func NoContentJSON(w http.ResponseWriter) {
+	JSON(w, http.StatusNoContent, nil)
+}
+
 // 401 Registration Required (guest tries to access auth-only endpoint)
 func RegistrationRequiredJSON(w http.ResponseWriter) {
 	JSON(w, http.StatusUnauthorized, ErrRegistrationRequired)

@@ -25,7 +25,7 @@ import (
 // @Failure      404 {object} response.ErrorResponse "Услуга или мастер не найдены"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /available-slots [get]
-func (h *Handler) GetAvailableSlots(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetAvailableSlots(w http.ResponseWriter, r *http.Request) {
 	const op = "booking.handler.GetAvailableSlots"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -70,7 +70,7 @@ func (h *Handler) GetAvailableSlots(w http.ResponseWriter, r *http.Request) {
 // @Failure      409 {object} response.ErrorResponse "Временной слот уже занят"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /appointments [post]
-func (h *Handler) CreateAppointment(w http.ResponseWriter, r *http.Request) {
+func (h *handler) CreateAppointment(w http.ResponseWriter, r *http.Request) {
 	const op = "booking.handler.CreateAppointment"
 	log := middleware.LoggerFromContext(r.Context())
 	defer r.Body.Close()

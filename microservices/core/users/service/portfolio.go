@@ -15,7 +15,7 @@ import (
 
 const portfolioBucket = "okoshki-portfolio"
 
-func (s *Service) UploadPortfolioPhotos(
+func (s *service) UploadPortfolioPhotos(
 	ctx context.Context,
 	userIDStr, masterIDStr string,
 	files []dto.FileUpload,
@@ -72,7 +72,7 @@ func (s *Service) UploadPortfolioPhotos(
 	return s.buildPhotoDTOs(photos), nil
 }
 
-func (s *Service) GetPortfolioPhotos(ctx context.Context, masterIDStr string) ([]dto.PortfolioPhoto, error) {
+func (s *service) GetPortfolioPhotos(ctx context.Context, masterIDStr string) ([]dto.PortfolioPhoto, error) {
 	const op = "catalog.service.GetPortfolioPhotos"
 
 	masterID, err := uuid.Parse(masterIDStr)
@@ -92,7 +92,7 @@ func (s *Service) GetPortfolioPhotos(ctx context.Context, masterIDStr string) ([
 	return s.buildPhotoDTOs(photos), nil
 }
 
-func (s *Service) DeletePortfolioPhoto(ctx context.Context, userIDStr, masterIDStr, photoIDStr string) error {
+func (s *service) DeletePortfolioPhoto(ctx context.Context, userIDStr, masterIDStr, photoIDStr string) error {
 	const op = "catalog.service.DeletePortfolioPhoto"
 
 	userID, err := uuid.Parse(userIDStr)
@@ -139,7 +139,7 @@ func (s *Service) DeletePortfolioPhoto(ctx context.Context, userIDStr, masterIDS
 	return nil
 }
 
-func (s *Service) buildPhotoDTOs(photos []model.PortfolioPhoto) []dto.PortfolioPhoto {
+func (s *service) buildPhotoDTOs(photos []model.PortfolioPhoto) []dto.PortfolioPhoto {
 	result := make([]dto.PortfolioPhoto, 0, len(photos))
 
 	for _, p := range photos {

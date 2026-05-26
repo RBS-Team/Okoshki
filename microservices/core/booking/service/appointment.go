@@ -15,7 +15,7 @@ import (
 
 const dateTimeFormat = "2006-01-02 15:04"
 
-func (s *Service) CreateAppointment(ctx context.Context, clientID uuid.UUID, req dto.CreateAppointmentRequest) (*dto.AppointmentResponse, error) {
+func (s *service) CreateAppointment(ctx context.Context, clientID uuid.UUID, req dto.CreateAppointmentRequest) (*dto.AppointmentResponse, error) {
 	const op = "booking.service.CreateAppointment"
 
 	serviceID, err := uuid.Parse(req.ServiceID)

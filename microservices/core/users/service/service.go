@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"io"
 
 	"github.com/google/uuid"
 
 	"github.com/RBS-Team/Okoshki/internal/model"
+	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 	minioPkg "github.com/RBS-Team/Okoshki/pkg/minio"
 )
 
@@ -27,11 +29,14 @@ type IRepository interface {
 	GetMastersByCategoryID(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]model.Master, error)
 
 	UpdateMasterAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error
+	UpdateMaster(ctx context.Context, userID uuid.UUID, req dto.UpdateMasterRequest) (*model.Master, error)
 
 	CreateClient(ctx context.Context, client model.Client) error
 	GetClientByUserID(ctx context.Context, userID uuid.UUID) (*model.Client, error)
 	GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Client, error)
+
 	UpdateClientAvatarURL(ctx context.Context, id uuid.UUID, objectName string) error
+	UpdateClient(ctx context.Context, userID uuid.UUID, req dto.UpdateClientRequest) (*model.Client, error)
 
 	SavePortfolioPhotos(ctx context.Context, photos []model.PortfolioPhoto) error
 	GetPortfolioPhotosByMasterID(ctx context.Context, masterID uuid.UUID) ([]model.PortfolioPhoto, error)
@@ -45,14 +50,36 @@ type IStorage interface {
 	Remove(ctx context.Context, bucket, objectName string) error
 }
 
-type Service struct {
+type Service interface {
+	RegisterMaster(ctx context.Context, req dto.RegisterMasterRequest) (*dto.RegisterMasterResponse, error)
+	GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto.Master, error)
+	GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error)
+	GetMasterByID(ctx context.Context, id uuid.UUID) (*dto.Master, error)
+	GetAllMasters(ctx context.Context, limit, offset uint64) ([]dto.Master, error)
+	GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Master, error)
+
+	RegisterClient(ctx context.Context, req dto.RegisterClientRequest) (*dto.RegisterClientResponse, error)
+	GetClientByUserID(ctx context.Context, userID uuid.UUID) (*dto.Client, error)
+	GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]dto.Client, error)
+	UpdateClient(ctx context.Context, userID uuid.UUID, req dto.UpdateClientRequest) (*dto.Client, error)
+	UpdateMaster(ctx context.Context, userID uuid.UUID, req dto.UpdateMasterRequest) (*dto.Master, error)
+
+	UploadMasterAvatar(ctx context.Context, userIDStr, masterIDStr string, file io.Reader, size int64, contentType string) (string, error)
+	UploadClientAvatar(ctx context.Context, userIDStr string, file io.Reader, size int64, contentType string) (string, error)
+
+	UploadPortfolioPhotos(ctx context.Context, userIDStr, masterIDStr string, files []dto.FileUpload) ([]dto.PortfolioPhoto, error)
+	GetPortfolioPhotos(ctx context.Context, masterIDStr string) ([]dto.PortfolioPhoto, error)
+	DeletePortfolioPhoto(ctx context.Context, userIDStr, masterIDStr, photoIDStr string) error
+}
+
+type service struct {
 	auth    AccountCreator
 	repo    IRepository
 	storage IStorage
 }
 
-func New(auth AccountCreator, repo IRepository, storage IStorage) *Service {
-	return &Service{
+func New(auth AccountCreator, repo IRepository, storage IStorage) Service {
+	return &service{
 		auth:    auth,
 		repo:    repo,
 		storage: storage,

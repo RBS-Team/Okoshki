@@ -30,7 +30,7 @@ const sessionTokenCookie = "session_token"
 // @Failure      409 {object} response.ErrorResponse
 // @Failure      500 {object} response.ErrorResponse
 // @Router       /client/register [post]
-func (h *Handler) RegisterClient(w http.ResponseWriter, r *http.Request) {
+func (h *handler) RegisterClient(w http.ResponseWriter, r *http.Request) {
 	const op = "users.handler.RegisterClient"
 	defer r.Body.Close()
 
@@ -86,7 +86,7 @@ func (h *Handler) RegisterClient(w http.ResponseWriter, r *http.Request) {
 // @Failure      404 {object} response.ErrorResponse "Клиент не найден"
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /clients/user/{userID} [get]
-func (h *Handler) GetClientByUserID(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetClientByUserID(w http.ResponseWriter, r *http.Request) {
 	const op = "users.handler.GetClientByUserID"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -109,6 +109,56 @@ func (h *Handler) GetClientByUserID(w http.ResponseWriter, r *http.Request) {
 		if !errors.Is(err, domain.ErrNotFound) {
 			log.Errorf("[%s]: service error: %v", op, err)
 		}
+		h.handleUsersError(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, client)
+}
+
+// UpdateClient godoc
+// @Summary      Обновить профиль клиента
+// @Description  Обновляет поля профиля текущего клиента. Все поля опциональны.
+// @Tags         clients
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.UpdateClientRequest true "Поля для обновления"
+// @Success      200 {object} dto.Client
+// @Failure      400 {object} response.ErrorResponse
+// @Failure      401 {object} response.ErrorResponse
+// @Failure      404 {object} response.ErrorResponse
+// @Failure      500 {object} response.ErrorResponse
+// @Security     CookieAuth
+// @Router       /clients/me [patch]
+func (h *handler) UpdateClient(w http.ResponseWriter, r *http.Request) {
+	const op = "users.handler.UpdateClient"
+	defer r.Body.Close()
+
+	log := middleware.LoggerFromContext(r.Context())
+
+	userIDStr, ok := middleware.GetUserID(r.Context())
+	if !ok || userIDStr == "" {
+		response.UnauthorizedJSON(w)
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		log.Errorf("[%s]: invalid userID in token: %v", op, err)
+		response.UnauthorizedJSON(w)
+		return
+	}
+
+	var req dto.UpdateClientRequest
+	if err := easyjson.UnmarshalFromReader(r.Body, &req); err != nil {
+		log.Errorf("[%s]: invalid request body: %v", op, err)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	client, err := h.service.UpdateClient(r.Context(), userID, req)
+	if err != nil {
+		log.Errorf("[%s]: service error: %v", op, err)
 		h.handleUsersError(w, err)
 		return
 	}

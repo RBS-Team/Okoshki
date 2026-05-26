@@ -13,7 +13,7 @@ import (
 	"github.com/RBS-Team/Okoshki/microservices/core/users/dto"
 )
 
-func (s *Service) RegisterClient(ctx context.Context, req dto.RegisterClientRequest) (*dto.RegisterClientResponse, error) {
+func (s *service) RegisterClient(ctx context.Context, req dto.RegisterClientRequest) (*dto.RegisterClientResponse, error) {
 	const op = "users.service.RegisterClient"
 
 	if !emailRe.MatchString(req.Email) {
@@ -55,7 +55,7 @@ func (s *Service) RegisterClient(ctx context.Context, req dto.RegisterClientRequ
 	}, nil
 }
 
-func (s *Service) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*dto.Client, error) {
+func (s *service) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*dto.Client, error) {
 	const op = "users.service.GetClientByUserID"
 
 	client, err := s.repo.GetClientByUserID(ctx, userID)
@@ -67,7 +67,35 @@ func (s *Service) GetClientByUserID(ctx context.Context, userID uuid.UUID) (*dto
 	return &result, nil
 }
 
-func (s *Service) GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]dto.Client, error) {
+func (s *service) UpdateClient(ctx context.Context, userID uuid.UUID, req dto.UpdateClientRequest) (*dto.Client, error) {
+	const op = "users.service.UpdateClient"
+
+	if req.FirstName != nil {
+		if n := utf8.RuneCountInString(*req.FirstName); n < 2 || n > 70 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.LastName != nil {
+		if n := utf8.RuneCountInString(*req.LastName); n != 0 && (n < 2 || n > 70) {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.Phone != nil && *req.Phone != "" {
+		if !phoneRe.MatchString(*req.Phone) {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+
+	client, err := s.repo.UpdateClient(ctx, userID, req)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, err)
+	}
+
+	result := s.mapClientToDTO(client)
+	return &result, nil
+}
+
+func (s *service) GetClientsByIDs(ctx context.Context, ids []uuid.UUID) ([]dto.Client, error) {
 	const op = "users.service.GetClientsByIDs"
 	clients, err := s.repo.GetClientsByIDs(ctx, ids)
 	if err != nil {

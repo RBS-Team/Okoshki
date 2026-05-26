@@ -15,8 +15,9 @@ import (
 )
 
 var emailRe = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
+var phoneRe = regexp.MustCompile(`^\+[1-9][0-9]{6,14}$`)
 
-func (s *Service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequest) (*dto.RegisterMasterResponse, error) {
+func (s *service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequest) (*dto.RegisterMasterResponse, error) {
 	const op = "users.service.RegisterMaster"
 
 	if !emailRe.MatchString(req.Email) {
@@ -96,7 +97,7 @@ func (s *Service) RegisterMaster(ctx context.Context, req dto.RegisterMasterRequ
 	}, nil
 }
 
-func (s *Service) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto.Master, error) {
+func (s *service) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto.Master, error) {
 	const op = "catalog.service.GetMasterByUserID"
 
 	masterModel, err := s.repo.GetMasterByUserID(ctx, userID)
@@ -107,7 +108,7 @@ func (s *Service) GetMasterByUserID(ctx context.Context, userID uuid.UUID) (*dto
 	return s.mapMasterToDTO(masterModel), nil
 }
 
-func (s *Service) GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error) {
+func (s *service) GetMastersByCategory(ctx context.Context, categoryID uuid.UUID, limit, offset uint64) ([]dto.Master, error) {
 	const op = "users.service.GetMastersByCategory"
 
 	masterModels, err := s.repo.GetMastersByCategoryID(ctx, categoryID, limit, offset)
@@ -128,7 +129,7 @@ func (s *Service) GetMastersByCategory(ctx context.Context, categoryID uuid.UUID
 }
 
 // GetMasterByID возвращает профиль мастера по ID как DTO (для HTTP-хендлеров).
-func (s *Service) GetMasterByID(ctx context.Context, id uuid.UUID) (*dto.Master, error) {
+func (s *service) GetMasterByID(ctx context.Context, id uuid.UUID) (*dto.Master, error) {
 	const op = "users.service.GetMasterByID"
 
 	m, err := s.repo.GetMasterByID(ctx, id)
@@ -140,7 +141,7 @@ func (s *Service) GetMasterByID(ctx context.Context, id uuid.UUID) (*dto.Master,
 }
 
 // GetAllMasters возвращает страницу мастеров как DTO (для HTTP-хендлеров).
-func (s *Service) GetAllMasters(ctx context.Context, limit, offset uint64) ([]dto.Master, error) {
+func (s *service) GetAllMasters(ctx context.Context, limit, offset uint64) ([]dto.Master, error) {
 	const op = "users.service.GetAllMasters"
 
 	masters, err := s.repo.GetAllMasters(ctx, limit, offset)
@@ -162,13 +163,60 @@ func (s *Service) GetAllMasters(ctx context.Context, limit, offset uint64) ([]dt
 
 // Find* методы возвращают model.Master и реализуют catalog/service.MasterProvider (duck typing).
 // Названия отличаются от Get*, чтобы не конфликтовать с DTO-возвращающими методами.
-func (s *Service) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Master, error) {
+func (s *service) GetMastersByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Master, error) {
 	return s.repo.GetMastersByIDs(ctx, ids)
+}
+
+func (s *service) UpdateMaster(ctx context.Context, userID uuid.UUID, req dto.UpdateMasterRequest) (*dto.Master, error) {
+	const op = "users.service.UpdateMaster"
+
+	if req.FirstName != nil {
+		if n := utf8.RuneCountInString(*req.FirstName); n < 2 || n > 70 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.LastName != nil {
+		if n := utf8.RuneCountInString(*req.LastName); n < 2 || n > 70 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.Bio != nil {
+		if n := utf8.RuneCountInString(*req.Bio); n < 10 || n > 500 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.City != nil {
+		if n := utf8.RuneCountInString(*req.City); n < 2 || n > 100 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.Address != nil {
+		if n := utf8.RuneCountInString(*req.Address); n < 2 || n > 300 {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.Phone != nil {
+		if !phoneRe.MatchString(*req.Phone) {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidInput)
+		}
+	}
+	if req.Timezone != nil {
+		if _, err := time.LoadLocation(*req.Timezone); err != nil {
+			return nil, fmt.Errorf("[%s]: %w", op, domain.ErrInvalidTimezone)
+		}
+	}
+
+	master, err := s.repo.UpdateMaster(ctx, userID, req)
+	if err != nil {
+		return nil, fmt.Errorf("[%s]: %w", op, err)
+	}
+
+	return s.mapMasterToDTO(master), nil
 }
 
 const usersBucket = "okoshki-users"
 
-func (s *Service) mapMasterToDTO(m *model.Master) *dto.Master {
+func (s *service) mapMasterToDTO(m *model.Master) *dto.Master {
 	d := &dto.Master{
 		ID:          m.ID.String(),
 		UserID:      m.UserID.String(),

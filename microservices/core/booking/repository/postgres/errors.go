@@ -5,12 +5,8 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5/pgconn"
-)
 
-var (
-	ErrNotFound     = errors.New("appointment not found")
-	ErrTimeConflict = errors.New("time slot is already booked")
-	ErrInternal     = errors.New("internal db error")
+	"github.com/RBS-Team/Okoshki/internal/domain"
 )
 
 func mapAppointmentErrors(err error) error {
@@ -19,14 +15,18 @@ func mapAppointmentErrors(err error) error {
 	}
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return ErrNotFound
+		return domain.ErrNotFound
 	}
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
-		// 23P01 - exclusion_violation (EXCLUDE констрейнт на пересечение времени)
-		if pgErr.Code == "23P01" {
-			return ErrTimeConflict
+		switch pgErr.Code {
+		case "23P01":
+			return domain.ErrTimeConflict
+		case "23503":
+			if pgErr.ConstraintName == "appointments_client_id_fkey" {
+				return domain.ErrUnauthorized
+			}
 		}
 	}
 

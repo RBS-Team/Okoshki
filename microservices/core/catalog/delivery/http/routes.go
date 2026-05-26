@@ -12,7 +12,7 @@ import (
 // RegisterRoutes регистрирует маршруты каталога.
 // masterCtx — middleware, который резолвит master_id из JWT и кладёт в контекст.
 // Применяется к эндпоинтам /me/..., где мастер действует над собственными ресурсами.
-func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router, masterCtx mux.MiddlewareFunc) {
+func (h *handler) RegisterRoutes(public, protected, csrfProtected *mux.Router, masterCtx mux.MiddlewareFunc) {
 	public.HandleFunc("/categories", h.GetAllCategories).Methods(http.MethodGet, http.MethodOptions)
 	public.HandleFunc("/categories/{id}", h.GetCategoryByID).Methods(http.MethodGet, http.MethodOptions)
 	public.HandleFunc("/categories/{id}/services", h.GetServicesByCategory).Methods(http.MethodGet, http.MethodOptions)

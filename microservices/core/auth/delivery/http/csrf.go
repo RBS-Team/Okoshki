@@ -20,7 +20,7 @@ import (
 // @Failure 401 {object} response.ErrorResponse "Не авторизован - отсутствует или недействительный токен аутентификации"
 // @Failure 500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /csrf-token [get]
-func (h *AuthHandler) GetCSRFToken(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetCSRFToken(w http.ResponseWriter, r *http.Request) {
 	const op = "handler.user.GetCSRFToken"
 	log := middleware.LoggerFromContext(r.Context())
 

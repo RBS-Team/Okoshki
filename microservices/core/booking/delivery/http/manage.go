@@ -25,7 +25,7 @@ var allowedMasterAppointmentStatuses = map[model.AppointmentStatus]struct{}{
 
 const dateFormat = "2006-01-02"
 
-func (h *Handler) getMasterID(r *http.Request) (uuid.UUID, error) {
+func (h *handler) getMasterID(r *http.Request) (uuid.UUID, error) {
 	userIDStr, ok := middleware.GetUserID(r.Context())
 	if !ok {
 		return uuid.Nil, errors.New("unauthorized")
@@ -34,7 +34,7 @@ func (h *Handler) getMasterID(r *http.Request) (uuid.UUID, error) {
 	return h.service.GetMasterIDByUserID(r.Context(), userID)
 }
 
-func (h *Handler) getClientID(r *http.Request) (uuid.UUID, error) {
+func (h *handler) getClientID(r *http.Request) (uuid.UUID, error) {
 	userIDStr, ok := middleware.GetUserID(r.Context())
 	if !ok {
 		return uuid.Nil, errors.New("unauthorized")
@@ -57,7 +57,7 @@ func (h *Handler) getClientID(r *http.Request) (uuid.UUID, error) {
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Security     ApiKeyAuth
 // @Router       /appointments/my [get]
-func (h *Handler) GetMyAppointments(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetMyAppointments(w http.ResponseWriter, r *http.Request) {
 	const op = "booking.handler.GetMyAppointments"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -95,7 +95,7 @@ func (h *Handler) GetMyAppointments(w http.ResponseWriter, r *http.Request) {
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Security     ApiKeyAuth
 // @Router       /appointments/{id}/cancel [patch]
-func (h *Handler) CancelAppointment(w http.ResponseWriter, r *http.Request) {
+func (h *handler) CancelAppointment(w http.ResponseWriter, r *http.Request) {
 	const op = "booking.handler.CancelAppointment"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -138,7 +138,7 @@ func (h *Handler) CancelAppointment(w http.ResponseWriter, r *http.Request) {
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Security     ApiKeyAuth
 // @Router       /master-appointments [get]
-func (h *Handler) GetMasterAppointments(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetMasterAppointments(w http.ResponseWriter, r *http.Request) {
 	const op = "booking.handler.GetMasterAppointments"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -205,7 +205,7 @@ func (h *Handler) GetMasterAppointments(w http.ResponseWriter, r *http.Request) 
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Security     ApiKeyAuth
 // @Router       /appointments/{id}/status [patch]
-func (h *Handler) UpdateAppointmentStatus(w http.ResponseWriter, r *http.Request) {
+func (h *handler) UpdateAppointmentStatus(w http.ResponseWriter, r *http.Request) {
 	const op = "booking.handler.UpdateAppointmentStatus"
 	log := middleware.LoggerFromContext(r.Context())
 	defer r.Body.Close()
@@ -253,7 +253,7 @@ func (h *Handler) UpdateAppointmentStatus(w http.ResponseWriter, r *http.Request
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Security     ApiKeyAuth
 // @Router       /appointments/block [post]
-func (h *Handler) CreateManualBlock(w http.ResponseWriter, r *http.Request) {
+func (h *handler) CreateManualBlock(w http.ResponseWriter, r *http.Request) {
 	const op = "booking.handler.CreateManualBlock"
 	log := middleware.LoggerFromContext(r.Context())
 	defer r.Body.Close()
@@ -296,7 +296,7 @@ func (h *Handler) CreateManualBlock(w http.ResponseWriter, r *http.Request) {
 // @Failure      500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Security     ApiKeyAuth
 // @Router       /appointments/block/{id} [delete]
-func (h *Handler) DeleteManualBlock(w http.ResponseWriter, r *http.Request) {
+func (h *handler) DeleteManualBlock(w http.ResponseWriter, r *http.Request) {
 	const op = "booking.handler.DeleteManualBlock"
 	log := middleware.LoggerFromContext(r.Context())
 

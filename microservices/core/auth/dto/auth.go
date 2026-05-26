@@ -16,13 +16,14 @@ type LoginResponse struct {
 
 //easyjson:json
 type UserInfo struct {
-	ID        string `json:"id"`
-	Email     string `json:"email"`
-	AvatarURL string `json:"avatar_url"`
+	ID    string `json:"id"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
+
 }
 
 //easyjson:json
 type GuestSessionResponse struct {
 	GuestID string `json:"guest_id"`
-	Role string `json:"role"`
+	Role    string `json:"role"`
 }

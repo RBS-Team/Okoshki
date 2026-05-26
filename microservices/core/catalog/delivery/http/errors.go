@@ -8,7 +8,7 @@ import (
 	"github.com/RBS-Team/Okoshki/pkg/response"
 )
 
-func (h *Handler) handleError(w http.ResponseWriter, err error) {
+func (h *handler) handleError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, domain.ErrNotFound):
 		response.NotFoundJSON(w)

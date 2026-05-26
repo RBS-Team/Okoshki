@@ -29,7 +29,7 @@ import (
 // @Failure      500     {object}  response.ErrorResponse       "Внутренняя ошибка сервера"
 // @Security     CookieAuth
 // @Router       /masters/{id}/services [post]
-func (h *Handler) CreateServiceItem(w http.ResponseWriter, r *http.Request) {
+func (h *handler) CreateServiceItem(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.CreateServiceItem"
 	log := middleware.LoggerFromContext(r.Context())
 	defer r.Body.Close()
@@ -89,7 +89,7 @@ func (h *Handler) CreateServiceItem(w http.ResponseWriter, r *http.Request) {
 // @Failure      404  {object}  response.ErrorResponse  "Мастер не найден"
 // @Failure      500  {object}  response.ErrorResponse  "Внутренняя ошибка сервера"
 // @Router       /masters/{id}/services [get]
-func (h *Handler) GetServiceItemsByMasterID(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetServiceItemsByMasterID(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetServiceItemsByMasterID"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -133,7 +133,7 @@ func (h *Handler) GetServiceItemsByMasterID(w http.ResponseWriter, r *http.Reque
 // @Failure      404     {object} response.ErrorResponse "Категория не найдена"
 // @Failure      500     {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router       /categories/{id}/services [get]
-func (h *Handler) GetServicesByCategory(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetServicesByCategory(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetServicesByCategory"
 	log := middleware.LoggerFromContext(r.Context())
 

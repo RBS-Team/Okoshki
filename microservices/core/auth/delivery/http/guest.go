@@ -20,7 +20,7 @@ import (
 // @Success      200 {object} dto.GuestSessionResponse
 // @Failure      500 {object} response.ErrorResponse
 // @Router       /guest/session [post]
-func (h *AuthHandler) CreateGuestSession(w http.ResponseWriter, r *http.Request) {
+func (h *handler) CreateGuestSession(w http.ResponseWriter, r *http.Request) {
 	const op = "handler.GuestSession"
 	log := middleware.LoggerFromContext(r.Context())
 

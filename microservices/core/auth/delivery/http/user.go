@@ -6,6 +6,8 @@ import (
 	"time"
 
 	easyjson "github.com/mailru/easyjson"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 
 	"github.com/RBS-Team/Okoshki/internal/middleware"
 	"github.com/RBS-Team/Okoshki/microservices/core/auth/dto"
@@ -26,7 +28,7 @@ const sessionTokenCookie = "session_token"
 // @Failure      401 {object} response.ErrorResponse
 // @Failure      500 {object} response.ErrorResponse
 // @Router       /login [post]
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	const op = "auth.handler.Login"
 	defer r.Body.Close()
 
@@ -75,7 +77,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Tags         auth
 // @Produce      json
 // @Router       /logout [post]
-func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *handler) Logout(w http.ResponseWriter, r *http.Request) {
 	const op = "auth.handler.Logout"
 	defer r.Body.Close()
 
@@ -102,4 +104,43 @@ var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]
 
 func isValidEmail(email string) bool {
 	return len(email) <= 254 && emailRegex.MatchString(email)
+}
+
+// GetUserByUserID godoc
+// @Summary      Получить пользователя по ID
+// @Description  Возвращает публичную информацию о пользователе по его UUID
+// @Tags         auth
+// @Produce      json
+// @Param        id path string true "UUID пользователя"
+// @Success      200 {object} dto.UserInfo
+// @Failure      400 {object} response.ErrorResponse
+// @Failure      404 {object} response.ErrorResponse
+// @Failure      500 {object} response.ErrorResponse
+// @Router       /user/{id} [get]
+func (h *handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
+	const op = "auth.handler.GetUserByUserID"
+	defer r.Body.Close()
+
+	log := middleware.LoggerFromContext(r.Context())
+
+	rawID := mux.Vars(r)["id"]
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		log.Errorf("[%s]: invalid user_id: %v", op, err)
+		response.BadRequestJSON(w)
+		return
+	}
+
+	user, err := h.service.GetUserByID(r.Context(), id)
+	if err != nil {
+		log.Errorf("[%s]: service error: %v", op, err)
+		h.handleAuthError(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, &dto.UserInfo{
+		ID:    user.ID.String(),
+		Email: user.Email,
+		Role:  user.Role,
+	})
 }

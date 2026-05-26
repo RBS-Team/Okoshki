@@ -9,7 +9,7 @@ import (
 	"github.com/RBS-Team/Okoshki/internal/model"
 )
 
-func (h *Handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
+func (h *handler) RegisterRoutes(public, protected, csrfProtected *mux.Router) {
 	public.HandleFunc("/available-slots", h.GetAvailableSlots).Methods(http.MethodGet, http.MethodOptions)
 
 	clientProtected := csrfProtected.PathPrefix("").Subrouter()

@@ -22,7 +22,7 @@ var AllowedSlotSteps = []int{5, 10, 15, 20, 30, 60}
 
 // GetMasterSettings возвращает настройки мастера. Если строки нет — отдаёт дефолты.
 // Дефолты — внутренняя константа, не из БД.
-func (s *Service) GetMasterSettings(ctx context.Context, masterID uuid.UUID) (*dto.MasterSettings, error) {
+func (s *service) GetMasterSettings(ctx context.Context, masterID uuid.UUID) (*dto.MasterSettings, error) {
 	const op = "catalog.service.GetMasterSettings"
 
 	settings, err := s.repo.GetMasterSettings(ctx, masterID)
@@ -46,7 +46,7 @@ func (s *Service) GetMasterSettings(ctx context.Context, masterID uuid.UUID) (*d
 
 // UpsertMasterSettings создаёт строку настроек или обновляет указанные поля.
 // nil-поля в req не трогают существующие значения.
-func (s *Service) UpsertMasterSettings(ctx context.Context, masterID uuid.UUID, req dto.UpsertMasterSettingsRequest) error {
+func (s *service) UpsertMasterSettings(ctx context.Context, masterID uuid.UUID, req dto.UpsertMasterSettingsRequest) error {
 	const op = "catalog.service.UpsertMasterSettings"
 
 	if req.SlotStepMinutes == nil && req.LeadTimeMinutes == nil {

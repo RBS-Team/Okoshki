@@ -29,7 +29,7 @@ const (
 //   - помещается целиком в один из рабочих интервалов;
 //   - не пересекается ни с одной активной записью;
 //   - его начало (UTC) >= now + lead_time.
-func (s *Service) GetAvailableSlots(ctx context.Context, serviceID uuid.UUID, fromStr, toStr string) (*dto.GetAvailableSlotsResponse, error) {
+func (s *service) GetAvailableSlots(ctx context.Context, serviceID uuid.UUID, fromStr, toStr string) (*dto.GetAvailableSlotsResponse, error) {
 	const op = "booking.service.GetAvailableSlots"
 
 	from, err := time.Parse(dateFormat, fromStr)

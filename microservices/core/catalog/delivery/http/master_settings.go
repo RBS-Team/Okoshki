@@ -27,7 +27,7 @@ func parseMasterIDFromURL(r *http.Request) (uuid.UUID, bool) {
 // @Failure      401 {object} response.ErrorResponse
 // @Failure      403 {object} response.ErrorResponse
 // @Router       /me/settings [get]
-func (h *Handler) GetMasterSettings(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetMasterSettings(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.GetMasterSettings"
 	log := middleware.LoggerFromContext(r.Context())
 
@@ -59,7 +59,7 @@ func (h *Handler) GetMasterSettings(w http.ResponseWriter, r *http.Request) {
 // @Failure      400 {object} response.ErrorResponse
 // @Failure      403 {object} response.ErrorResponse
 // @Router       /me/settings [put]
-func (h *Handler) UpsertMasterSettings(w http.ResponseWriter, r *http.Request) {
+func (h *handler) UpsertMasterSettings(w http.ResponseWriter, r *http.Request) {
 	const op = "catalog.handler.UpsertMasterSettings"
 	log := middleware.LoggerFromContext(r.Context())
 	defer r.Body.Close()
