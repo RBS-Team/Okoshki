@@ -63,7 +63,7 @@ func (s *service) DeleteWorkInterval(ctx context.Context, masterID, intervalID u
 		return fmt.Errorf("[%s]: %w", op, err)
 	}
 
-	startUTC, endUTC, err := intervalToUTCRange(wi.WorkDate, wi.StartTime, wi.EndTime, masterLoc)
+	startUTC, endUTC, err := intervalToUTCRange(wi.WorkDate, trimTimeToHHMM(wi.StartTime), trimTimeToHHMM(wi.EndTime), masterLoc)
 	if err != nil {
 		return fmt.Errorf("[%s]: %w", op, err)
 	}
