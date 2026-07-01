@@ -114,8 +114,8 @@ func (a *App) initHTTPServer() error {
 	protected.Use(authMiddleware.AuthMiddleware)
 
 	csrfProtected := protected.PathPrefix("").Subrouter()
-	csrfProtected.Use(csrfMiddleware)
-	// _ = csrfMiddleware
+	// csrfProtected.Use(csrfMiddleware)
+	 _ = csrfMiddleware
 
 	masterCtx := middleware.MasterContext(a.di.UserSvc())
 
